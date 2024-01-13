@@ -10,11 +10,13 @@ namespace Parking_Zone.Areas.Admin.Controllers
     {
         private readonly IParkingSlotService _parkingSlotService;
         private readonly IParkingZoneService _parkingZoneService;
+
         public ParkingSlotController(IParkingZoneService parkingZoneService, IParkingSlotService parkingSlotService)
         {
             _parkingSlotService = parkingSlotService;
             _parkingZoneService = parkingZoneService;
         }
+
         public IActionResult Index(Guid parkingZoneId)
         {
             var parkingZone = _parkingZoneService.GetById(parkingZoneId);

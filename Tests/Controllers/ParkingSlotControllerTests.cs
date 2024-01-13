@@ -19,7 +19,9 @@ namespace Tests.Controllers
 
         private readonly Mock<IParkingZoneService> mockParkingZoneService;
         private readonly Mock<IParkingSlotService> mockParkingSlotService;
+
         private readonly ParkingSlotController controller;
+
         public ParkingSlotControllerTests()
         {
             mockParkingZoneService = new Mock<IParkingZoneService>();
@@ -42,6 +44,7 @@ namespace Tests.Controllers
             Category = SlotCategoryEnum.Business,
             IsAvailableForBooking = true,
         };
+
         private readonly ParkingZone _testParkingZone = new ParkingZone()
         {
             Id = Guid.Parse("dd09a090-b0f6-4369-b24a-656843d227bc"),
@@ -49,6 +52,7 @@ namespace Tests.Controllers
             Address = "Andijon",
             Description = "Arzon"
         };
+
         private readonly IEnumerable<ParkingSlot> _testParkingSlots = new List<ParkingSlot>()
         {
             new ParkingSlot()

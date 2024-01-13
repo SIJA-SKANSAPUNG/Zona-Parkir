@@ -16,8 +16,11 @@ namespace Tests.Services
     {
         private readonly Guid _testParkingSlotId = Guid.Parse("ab8e46f4-a343-4571-a1a5-14892bccc7f5");
         private readonly Guid _testParkingZoneId = Guid.Parse("dd09a090-b0f6-4369-b24a-656843d227bc");
+
         private readonly Mock<IParkingSlotRepository> mockParkingSlotRepository;
+
         private readonly ParkingSlotService service;
+
         public ParkingSlotServiceTests()
         {
             mockParkingSlotRepository = new Mock<IParkingSlotRepository>();
