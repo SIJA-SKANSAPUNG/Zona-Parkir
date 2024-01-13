@@ -17,16 +17,16 @@ namespace Parking_Zone.Areas.Admin.Controllers
         }
         public IActionResult Index(Guid parkingZoneId)
         {
-            var slots = _parkingSlotService.GetByParkingZoneId(parkingZoneId);
-
-            var slotVMs = slots.Select(x => new ParkingSlotListItemVM(x)).ToList();
-
             var parkingZone = _parkingZoneService.GetById(parkingZoneId);
 
             if (parkingZone is null)
             {
                 return BadRequest();
             }
+
+            var slots = _parkingSlotService.GetByParkingZoneId(parkingZoneId);
+
+            var slotVMs = slots.Select(x => new ParkingSlotListItemVM(x)).ToList();
 
             ViewData["parkingZoneName"] = parkingZone.Name;
             ViewData["parkingZoneId"] = parkingZoneId;

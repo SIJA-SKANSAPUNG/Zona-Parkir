@@ -85,6 +85,7 @@ namespace Tests.Controllers
             //Assert
             Assert.IsType<ViewResult>(result);
             Assert.NotNull((result as ViewResult).Model);
+            Assert.Equal(2, _testParkingSlots.Count());
             mockParkingZoneService.Verify(s => s.GetById(_testParkingZoneId), Times.Once);
             mockParkingSlotService.Verify(s => s.GetByParkingZoneId(_testParkingZoneId), Times.Once);
         }

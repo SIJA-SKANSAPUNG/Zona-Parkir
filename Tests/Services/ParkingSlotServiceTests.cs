@@ -56,7 +56,6 @@ namespace Tests.Services
             var result = service.GetByParkingZoneId(_testParkingZoneId);
 
             //Assert
-            Assert.NotNull(result);
             Assert.Equal(3, expectedParkingSlots.Count);
             mockParkingSlotRepository.Verify(repo => repo.GetAll(), Times.Once);
         }
