@@ -73,11 +73,16 @@ namespace Tests.Controllers
 
         #region Index
         [Fact]
-        public void GivenParkingZoneId_WhenIndexIsCalled_ThenParkingZoneAndParkingSlotServicesCallledOnceAndReturnedNotEmptyViewResult()
+        public void GivenParkingZoneId_WhenIndexIsCalled_ThenParkingZoneAndParkingSlotServicesCalledOnceAndReturnedNotEmptyViewResult()
         {
             //Arrange
-            mockParkingZoneService.Setup(service => service.GetById(_testParkingZoneId)).Returns(_testParkingZone);
-            mockParkingSlotService.Setup(service => service.GetByParkingZoneId(_testParkingZoneId)).Returns(_testParkingSlots);
+            mockParkingZoneService
+                .Setup(service => service.GetById(_testParkingZoneId))
+                .Returns(_testParkingZone);
+
+            mockParkingSlotService
+                .Setup(service => service.GetByParkingZoneId(_testParkingZoneId))
+                .Returns(_testParkingSlots);
 
             //Act
             var result = controller.Index(_testParkingZoneId);
@@ -88,6 +93,18 @@ namespace Tests.Controllers
             Assert.Equal(2, _testParkingSlots.Count());
             mockParkingZoneService.Verify(s => s.GetById(_testParkingZoneId), Times.Once);
             mockParkingSlotService.Verify(s => s.GetByParkingZoneId(_testParkingZoneId), Times.Once);
+        }
+
+        public void GivenNullParkingZoneId_WhenIndexIsCalled_ThenParkingZoneServiceIsCalledOnceAndActionReturnedBadRequest()
+        {
+            //Arrange
+
+            //Act
+            var result = controller.Index(Guid.Parse(""));
+
+            //Assert
+            Assert.IsType<BadRequestResult>(result);
+            mockParkingZoneService.Verify(s => s.GetById(Guid.Parse("")), Times.Once);
         }
         #endregion
     }

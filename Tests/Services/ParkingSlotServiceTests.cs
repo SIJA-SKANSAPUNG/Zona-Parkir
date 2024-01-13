@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using Microsoft.AspNetCore.Mvc;
+using Moq;
 using Parking_Zone.Enums;
 using Parking_Zone.Models;
 using Parking_Zone.Repositories;
@@ -48,15 +49,19 @@ namespace Tests.Services
             {
                 _testParkingSlot,
                 _testParkingSlot,
-                _testParkingSlot
+                new ParkingSlot
+                {
+                    Id = Guid.Parse("14fd0c1d-6a80-41d2-bb35-1c21cd7278c9")
+                }
             };
-            mockParkingSlotRepository.Setup(repo => repo.GetAll()).Returns(expectedParkingSlots);
+            mockParkingSlotRepository
+                .Setup(repo => repo.GetAll()).Returns(expectedParkingSlots);
 
             //Act
             var result = service.GetByParkingZoneId(_testParkingZoneId);
 
             //Assert
-            Assert.Equal(3, expectedParkingSlots.Count);
+            Assert.Equal(2, result.Count());
             mockParkingSlotRepository.Verify(repo => repo.GetAll(), Times.Once);
         }
         #endregion
