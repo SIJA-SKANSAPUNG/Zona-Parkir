@@ -8,29 +8,29 @@ namespace Parking_Zone.Areas.Admin.Controllers
     [Area("Admin")]
     public class ParkingSlotController : Controller
     {
-        private readonly IParkingSlotService _parkingSlotService;
-        private readonly IParkingZoneService _parkingZoneService;
+        private readonly IParkingSlotService _slotService;
+        private readonly IParkingZoneService _zoneService;
 
-        public ParkingSlotController(IParkingZoneService parkingZoneService, IParkingSlotService parkingSlotService)
+        public ParkingSlotController(IParkingZoneService zoneService, IParkingSlotService slotService)
         {
-            _parkingSlotService = parkingSlotService;
-            _parkingZoneService = parkingZoneService;
+            _slotService = slotService;
+            _zoneService = zoneService;
         }
 
         public IActionResult Index(Guid parkingZoneId)
         {
-            var parkingZone = _parkingZoneService.GetById(parkingZoneId);
+            var Zone = _zoneService.GetById(parkingZoneId);
 
-            if (parkingZone is null)
+            if (Zone is null)
             {
                 return BadRequest();
             }
 
-            var slots = _parkingSlotService.GetByParkingZoneId(parkingZoneId);
+            var slots = _slotService.GetByParkingZoneId(parkingZoneId);
 
             var slotVMs = slots.Select(x => new ParkingSlotListItemVM(x)).ToList();
 
-            ViewData["parkingZoneName"] = parkingZone.Name;
+            ViewData["parkingZoneName"] = Zone.Name;
             ViewData["parkingZoneId"] = parkingZoneId;
 
             return View(slotVMs);
@@ -39,38 +39,38 @@ namespace Parking_Zone.Areas.Admin.Controllers
         // GET: Admin/ParkingSlots/Create
         public IActionResult Create(Guid parkingZoneId)
         {
-            var parkingZone = _parkingZoneService.GetById(parkingZoneId);
+            var Zone = _zoneService.GetById(parkingZoneId);
 
-            if (parkingZone is null)
+            if (Zone is null)
             {
                 return BadRequest();
             }
 
-            var parkingSlotCreateVM = new ParkingSlotCreateVM();
+            var SlotCreateVM = new ParkingSlotCreateVM();
 
-            parkingSlotCreateVM.ParkingZoneId = parkingZoneId;
-            parkingSlotCreateVM.ParkingZoneName = parkingZone.Name;
+            SlotCreateVM.ParkingZoneId = parkingZoneId;
+            SlotCreateVM.ParkingZoneName = Zone.Name;
 
-            return View(parkingSlotCreateVM);
+            return View(SlotCreateVM);
         }
 
         // POST: Admin/ParkingSlots/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(ParkingSlotCreateVM parkingSlotCreateVM)
+        public IActionResult Create(ParkingSlotCreateVM slotCreateVM)
         {
             if (ModelState.IsValid)
             {
-                if (_parkingSlotService.SlotExistsWithThisNumber(parkingSlotCreateVM.Number, null, parkingSlotCreateVM.ParkingZoneId))
+                if (_slotService.SlotExistsWithThisNumber(slotCreateVM.Number, null, slotCreateVM.ParkingZoneId))
                 {
                     return BadRequest("Slot with this number already exists");
                 }
 
-                var slot = parkingSlotCreateVM.MapToModel();
-                _parkingSlotService.Insert(slot);
-                return RedirectToAction("Index", "ParkingSlot", new { parkingZoneId = parkingSlotCreateVM.ParkingZoneId });
+                var slot = slotCreateVM.MapToModel();
+                _slotService.Insert(slot);
+                return RedirectToAction("Index", "ParkingSlot", new { parkingZoneId = slotCreateVM.ParkingZoneId });
             }
-            return View(parkingSlotCreateVM);
+            return View(slotCreateVM);
         }
     }
 }

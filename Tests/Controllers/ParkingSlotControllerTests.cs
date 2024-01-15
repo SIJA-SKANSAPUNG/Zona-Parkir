@@ -16,22 +16,22 @@ namespace Tests.Controllers
 {
     public class ParkingSlotControllerTests
     {
-        private readonly Guid _testParkingZoneId = Guid.Parse("dd09a090-b0f6-4369-b24a-656843d227bc");
-        private readonly Guid _testParkingSlotId = Guid.Parse("ab8e46f4-a343-4571-a1a5-14892bccc7f5");
+        private readonly Guid _testZoneId = Guid.Parse("dd09a090-b0f6-4369-b24a-656843d227bc");
+        private readonly Guid _testSlotId = Guid.Parse("ab8e46f4-a343-4571-a1a5-14892bccc7f5");
 
-        private readonly Mock<IParkingZoneService> mockParkingZoneService;
-        private readonly Mock<IParkingSlotService> mockParkingSlotService;
+        private readonly Mock<IParkingZoneService> mockZoneService;
+        private readonly Mock<IParkingSlotService> mockSlotService;
 
         private readonly ParkingSlotController controller;
 
         public ParkingSlotControllerTests()
         {
-            mockParkingZoneService = new Mock<IParkingZoneService>();
-            mockParkingSlotService = new Mock<IParkingSlotService>();
-            controller = new ParkingSlotController(mockParkingZoneService.Object, mockParkingSlotService.Object);
+            mockZoneService = new Mock<IParkingZoneService>();
+            mockSlotService = new Mock<IParkingSlotService>();
+            controller = new ParkingSlotController(mockZoneService.Object, mockSlotService.Object);
         }
 
-        private readonly ParkingSlot _testParkingSlot = new ParkingSlot()
+        private readonly ParkingSlot _testSlot = new ParkingSlot()
         {
             Id = Guid.Parse("ab8e46f4-a343-4571-a1a5-14892bccc7f5"),
             Number = 1,
@@ -47,7 +47,7 @@ namespace Tests.Controllers
             IsAvailableForBooking = true,
         };
 
-        private readonly ParkingZone _testParkingZone = new ParkingZone()
+        private readonly ParkingZone _testZone = new ParkingZone()
         {
             Id = Guid.Parse("dd09a090-b0f6-4369-b24a-656843d227bc"),
             Name = "Sharafshon",
@@ -55,7 +55,7 @@ namespace Tests.Controllers
             Description = "Arzon"
         };
 
-        private readonly IEnumerable<ParkingSlot> _testParkingSlots = new List<ParkingSlot>()
+        private readonly IEnumerable<ParkingSlot> _testSlots = new List<ParkingSlot>()
         {
             new ParkingSlot()
             {
@@ -82,23 +82,23 @@ namespace Tests.Controllers
         public void GivenParkingZoneId_WhenIndexIsCalled_ThenParkingZoneAndParkingSlotServicesCalledOnceAndReturnedNotEmptyViewResult()
         {
             //Arrange
-            mockParkingZoneService
-                .Setup(service => service.GetById(_testParkingZoneId))
-                .Returns(_testParkingZone);
+            mockZoneService
+                .Setup(service => service.GetById(_testZoneId))
+                .Returns(_testZone);
 
-            mockParkingSlotService
-                .Setup(service => service.GetByParkingZoneId(_testParkingZoneId))
-                .Returns(_testParkingSlots);
+            mockSlotService
+                .Setup(service => service.GetByParkingZoneId(_testZoneId))
+                .Returns(_testSlots);
 
             //Act
-            var result = controller.Index(_testParkingZoneId);
+            var result = controller.Index(_testZoneId);
 
             //Assert
             Assert.IsType<ViewResult>(result);
             Assert.NotNull((result as ViewResult).Model);
-            Assert.Equal(2, _testParkingSlots.Count());
-            mockParkingZoneService.Verify(s => s.GetById(_testParkingZoneId), Times.Once);
-            mockParkingSlotService.Verify(s => s.GetByParkingZoneId(_testParkingZoneId), Times.Once);
+            Assert.Equal(2, _testSlots.Count());
+            mockZoneService.Verify(s => s.GetById(_testZoneId), Times.Once);
+            mockSlotService.Verify(s => s.GetByParkingZoneId(_testZoneId), Times.Once);
         }
 
         public void GivenNullParkingZoneId_WhenIndexIsCalled_ThenParkingZoneServiceIsCalledOnceAndActionReturnedBadRequest()
@@ -110,7 +110,7 @@ namespace Tests.Controllers
 
             //Assert
             Assert.IsType<BadRequestResult>(result);
-            mockParkingZoneService.Verify(s => s.GetById(Guid.Parse("")), Times.Once);
+            mockZoneService.Verify(s => s.GetById(Guid.Parse("")), Times.Once);
         }
         #endregion
 
@@ -119,15 +119,15 @@ namespace Tests.Controllers
         public void GivenParkingZoneId_WhenGetCreateIsCalled_ThenParkingZoneServiceIsCalledAndReturnedNotEmptyViewResult()
         {
             //Arrange
-            mockParkingZoneService.Setup(service => service.GetById(_testParkingZoneId)).Returns(_testParkingZone);
+            mockZoneService.Setup(service => service.GetById(_testZoneId)).Returns(_testZone);
 
             //Act
-            var result = controller.Create(_testParkingZoneId);
+            var result = controller.Create(_testZoneId);
 
             //Assert
             Assert.IsType<ViewResult>(result);
             Assert.NotNull((result as ViewResult).Model);
-            mockParkingZoneService.Verify(s => s.GetById(_testParkingZoneId), Times.Once);
+            mockZoneService.Verify(s => s.GetById(_testZoneId), Times.Once);
         }
 
         [Fact]
@@ -137,12 +137,12 @@ namespace Tests.Controllers
             var parkingSlotCreateVM = new ParkingSlotCreateVM()
             {
                 Number = 1,
-                ParkingZoneId = _testParkingZoneId,
+                ParkingZoneId = _testZoneId,
                 Category = SlotCategoryEnum.Business,
                 IsAvailableForBooking = true
             };
 
-            mockParkingSlotService.Setup(service => service.Insert(It.IsAny<ParkingSlot>()));
+            mockSlotService.Setup(service => service.Insert(It.IsAny<ParkingSlot>()));
 
             //Act
             var result = controller.Create(parkingSlotCreateVM);
@@ -152,7 +152,7 @@ namespace Tests.Controllers
             var redirectToActionResult = result as RedirectToActionResult;
             Assert.Equal("ParkingSlot", redirectToActionResult.ControllerName);
             Assert.Equal("Index", redirectToActionResult.ActionName);
-            mockParkingSlotService.Verify(s => s.Insert(It.IsAny<ParkingSlot>()), Times.Once);
+            mockSlotService.Verify(s => s.Insert(It.IsAny<ParkingSlot>()), Times.Once);
         }
 
         [Fact]
@@ -161,7 +161,7 @@ namespace Tests.Controllers
             //Arrange
             var parkingSlotCreateVM = new ParkingSlotCreateVM()
             {
-                ParkingZoneId = _testParkingZoneId,
+                ParkingZoneId = _testZoneId,
                 Category = SlotCategoryEnum.Business,
                 IsAvailableForBooking = true
             };
@@ -184,7 +184,7 @@ namespace Tests.Controllers
             var parkingSlotCreateVM = new ParkingSlotCreateVM()
             {
                 Number = 1,
-                ParkingZoneId = _testParkingZoneId,
+                ParkingZoneId = _testZoneId,
                 IsAvailableForBooking = true
             };
 
