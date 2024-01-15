@@ -45,20 +45,18 @@ namespace Tests.Services
 
         #region GetByZoneId
         [Fact]
-        public void GivenParkingZoneId_WhenGetByParkingZoneId_ThenRepositoryIsCalledTwiceAndReturnedExpectedZones()
+        public void GivenParkingZoneId_WhenGetByParkingZoneId_ThenRepositoryIsCalledTwiceAndReturnedExpectedSlots()
         {
             //Arrange
-            var expectedParkingSlots = new List<ParkingSlot>()
+            var testParkingSlots = new List<ParkingSlot>()
             {
                 _testParkingSlot,
                 _testParkingSlot,
-                new ParkingSlot
-                {
-                    Id = Guid.Parse("14fd0c1d-6a80-41d2-bb35-1c21cd7278c9")
-                }
+                new ()
             };
             mockParkingSlotRepository
-                .Setup(repo => repo.GetAll()).Returns(expectedParkingSlots);
+                .Setup(repo => repo.GetAll())
+                .Returns(testParkingSlots);
 
             //Act
             var result = service.GetByParkingZoneId(_testParkingZoneId);
