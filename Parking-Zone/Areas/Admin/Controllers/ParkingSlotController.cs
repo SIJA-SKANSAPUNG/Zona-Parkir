@@ -35,5 +35,42 @@ namespace Parking_Zone.Areas.Admin.Controllers
 
             return View(slotVMs);
         }
+
+        // GET: Admin/ParkingSlots/Create
+        public IActionResult Create(Guid parkingZoneId)
+        {
+            var parkingZone = _parkingZoneService.GetById(parkingZoneId);
+
+            if (parkingZone is null)
+            {
+                return BadRequest();
+            }
+
+            var parkingSlotCreateVM = new ParkingSlotCreateVM();
+
+            parkingSlotCreateVM.ParkingZoneId = parkingZoneId;
+            parkingSlotCreateVM.ParkingZoneName = parkingZone.Name;
+
+            return View(parkingSlotCreateVM);
+        }
+
+        // POST: Admin/ParkingSlots/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Create(ParkingSlotCreateVM parkingSlotCreateVM)
+        {
+            if (ModelState.IsValid)
+            {
+                if (_parkingSlotService.SlotExistsWithThisNumber(parkingSlotCreateVM.Number, null, parkingSlotCreateVM.ParkingZoneId))
+                {
+                    return BadRequest("Slot with this number already exists");
+                }
+
+                var slot = parkingSlotCreateVM.MapToModel();
+                _parkingSlotService.Insert(slot);
+                return RedirectToAction("Index", "ParkingSlot", new { parkingZoneId = parkingSlotCreateVM.ParkingZoneId });
+            }
+            return View(parkingSlotCreateVM);
+        }
     }
 }

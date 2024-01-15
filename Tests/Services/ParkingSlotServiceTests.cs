@@ -66,5 +66,22 @@ namespace Tests.Services
             mockParkingSlotRepository.Verify(repo => repo.GetAll(), Times.Once);
         }
         #endregion
+
+        #region Insert
+        [Fact]
+        public void GivenSlotModel_WhenInsertIsCalled_ThenRepositoryIsCalledTwice()
+        {
+            //Arrange
+            mockParkingSlotRepository.Setup(repo => repo.Insert(_testParkingSlot));
+            mockParkingSlotRepository.Setup(repo => repo.Save());
+
+            //Act
+            service.Insert(_testParkingSlot);
+
+            //Assert
+            mockParkingSlotRepository.Verify(repo => repo.Insert(_testParkingSlot), Times.Once);
+            mockParkingSlotRepository.Verify(repo => repo.Save(), Times.Once);
+        }
+        #endregion
     }
 }

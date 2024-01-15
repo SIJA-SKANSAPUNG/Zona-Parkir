@@ -4,10 +4,12 @@ using Parking_Zone.Areas.Admin.Controllers;
 using Parking_Zone.Enums;
 using Parking_Zone.Models;
 using Parking_Zone.Services;
+using Parking_Zone.ViewModels.ParkingSlot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Tests.Controllers
@@ -109,6 +111,92 @@ namespace Tests.Controllers
             //Assert
             Assert.IsType<BadRequestResult>(result);
             mockParkingZoneService.Verify(s => s.GetById(Guid.Parse("")), Times.Once);
+        }
+        #endregion
+
+        #region Create
+        [Fact]
+        public void GivenParkingZoneId_WhenGetCreateIsCalled_ThenParkingZoneServiceIsCalledAndReturnedNotEmptyViewResult()
+        {
+            //Arrange
+            mockParkingZoneService.Setup(service => service.GetById(_testParkingZoneId)).Returns(_testParkingZone);
+
+            //Act
+            var result = controller.Create(_testParkingZoneId);
+
+            //Assert
+            Assert.IsType<ViewResult>(result);
+            Assert.NotNull((result as ViewResult).Model);
+            mockParkingZoneService.Verify(s => s.GetById(_testParkingZoneId), Times.Once);
+        }
+
+        [Fact]
+        public void GivenValidModel_WhenPostCreateIsCalled_ThenParkingSlotServiceIsCalledOnceAndRedirectedToIndexView()
+        {
+            //Arrange
+            var parkingSlotCreateVM = new ParkingSlotCreateVM()
+            {
+                Number = 1,
+                ParkingZoneId = _testParkingZoneId,
+                Category = SlotCategoryEnum.Business,
+                IsAvailableForBooking = true
+            };
+
+            mockParkingSlotService.Setup(service => service.Insert(It.IsAny<ParkingSlot>()));
+
+            //Act
+            var result = controller.Create(parkingSlotCreateVM);
+
+            //Assert
+            Assert.IsType<RedirectToActionResult>(result);
+            var redirectToActionResult = result as RedirectToActionResult;
+            Assert.Equal("ParkingSlot", redirectToActionResult.ControllerName);
+            Assert.Equal("Index", redirectToActionResult.ActionName);
+            mockParkingSlotService.Verify(s => s.Insert(It.IsAny<ParkingSlot>()), Times.Once);
+        }
+
+        [Fact]
+        public void GivenModelWithNullNumber_WhenPostCreateIsCalled_ThenCreateViewReturnedAndModelStateIsInvalid()
+        {
+            //Arrange
+            var parkingSlotCreateVM = new ParkingSlotCreateVM()
+            {
+                ParkingZoneId = _testParkingZoneId,
+                Category = SlotCategoryEnum.Business,
+                IsAvailableForBooking = true
+            };
+
+            controller.ModelState.AddModelError("Number", "Number of Slot is Required");
+
+            //Act
+            var result = controller.Create(parkingSlotCreateVM);
+
+            //Assert
+            Assert.False(controller.ModelState.IsValid);
+            Assert.IsType<ViewResult>(result);
+            Assert.Equal(JsonSerializer.Serialize(parkingSlotCreateVM), JsonSerializer.Serialize((result as ViewResult).Model));
+        }
+
+        [Fact]
+        public void GivenModelWithNullCategory_WhenPostCreateIsCalled_ThenCreateViewReturnedAndModelStateIsInvalid()
+        {
+            //Arrange
+            var parkingSlotCreateVM = new ParkingSlotCreateVM()
+            {
+                Number = 1,
+                ParkingZoneId = _testParkingZoneId,
+                IsAvailableForBooking = true
+            };
+
+            controller.ModelState.AddModelError("Category", "Category of Slot is Required");
+
+            //Act
+            var result = controller.Create(parkingSlotCreateVM);
+
+            //Assert
+            Assert.False(controller.ModelState.IsValid);
+            Assert.IsType<ViewResult>(result);
+            Assert.Equal(JsonSerializer.Serialize(parkingSlotCreateVM), JsonSerializer.Serialize((result as ViewResult).Model));
         }
         #endregion
     }
