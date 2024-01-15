@@ -52,7 +52,7 @@ namespace Tests.Services
             {
                 _testParkingSlot,
                 _testParkingSlot,
-                new ()
+                new()
             };
             mockParkingSlotRepository
                 .Setup(repo => repo.GetAll())
