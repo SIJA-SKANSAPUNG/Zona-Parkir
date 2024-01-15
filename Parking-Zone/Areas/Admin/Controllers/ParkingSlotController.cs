@@ -17,29 +17,29 @@ namespace Parking_Zone.Areas.Admin.Controllers
             _zoneService = zoneService;
         }
 
-        public IActionResult Index(Guid parkingZoneId)
+        public IActionResult Index(Guid zoneId)
         {
-            var Zone = _zoneService.GetById(parkingZoneId);
+            var Zone = _zoneService.GetById(zoneId);
 
             if (Zone is null)
             {
                 return BadRequest();
             }
 
-            var slots = _slotService.GetByParkingZoneId(parkingZoneId);
+            var slots = _slotService.GetByParkingZoneId(zoneId);
 
             var slotVMs = slots.Select(x => new ParkingSlotListItemVM(x)).ToList();
 
             ViewData["parkingZoneName"] = Zone.Name;
-            ViewData["parkingZoneId"] = parkingZoneId;
+            ViewData["parkingZoneId"] = zoneId;
 
             return View(slotVMs);
         }
 
         // GET: Admin/ParkingSlots/Create
-        public IActionResult Create(Guid parkingZoneId)
+        public IActionResult Create(Guid zoneId)
         {
-            var Zone = _zoneService.GetById(parkingZoneId);
+            var Zone = _zoneService.GetById(zoneId);
 
             if (Zone is null)
             {
@@ -48,7 +48,7 @@ namespace Parking_Zone.Areas.Admin.Controllers
 
             var SlotCreateVM = new ParkingSlotCreateVM();
 
-            SlotCreateVM.ParkingZoneId = parkingZoneId;
+            SlotCreateVM.ParkingZoneId = zoneId;
             SlotCreateVM.ParkingZoneName = Zone.Name;
 
             return View(SlotCreateVM);
