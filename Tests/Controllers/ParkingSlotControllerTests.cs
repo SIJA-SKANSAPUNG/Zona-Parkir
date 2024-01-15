@@ -134,7 +134,7 @@ namespace Tests.Controllers
         public void GivenValidModel_WhenPostCreateIsCalled_ThenParkingSlotServiceIsCalledOnceAndRedirectedToIndexView()
         {
             //Arrange
-            var parkingSlotCreateVM = new ParkingSlotCreateVM()
+            var slotCreateVM = new ParkingSlotCreateVM()
             {
                 Number = 1,
                 ParkingZoneId = _testZoneId,
@@ -145,7 +145,7 @@ namespace Tests.Controllers
             mockSlotService.Setup(service => service.Insert(It.IsAny<ParkingSlot>()));
 
             //Act
-            var result = controller.Create(parkingSlotCreateVM);
+            var result = controller.Create(slotCreateVM);
 
             //Assert
             Assert.IsType<RedirectToActionResult>(result);
@@ -159,7 +159,7 @@ namespace Tests.Controllers
         public void GivenModelWithNullNumber_WhenPostCreateIsCalled_ThenCreateViewReturnedAndModelStateIsInvalid()
         {
             //Arrange
-            var parkingSlotCreateVM = new ParkingSlotCreateVM()
+            var slotCreateVM = new ParkingSlotCreateVM()
             {
                 ParkingZoneId = _testZoneId,
                 Category = SlotCategoryEnum.Business,
@@ -169,19 +169,19 @@ namespace Tests.Controllers
             controller.ModelState.AddModelError("Number", "Number of Slot is Required");
 
             //Act
-            var result = controller.Create(parkingSlotCreateVM);
+            var result = controller.Create(slotCreateVM);
 
             //Assert
             Assert.False(controller.ModelState.IsValid);
             Assert.IsType<ViewResult>(result);
-            Assert.Equal(JsonSerializer.Serialize(parkingSlotCreateVM), JsonSerializer.Serialize((result as ViewResult).Model));
+            Assert.Equal(JsonSerializer.Serialize(slotCreateVM), JsonSerializer.Serialize((result as ViewResult).Model));
         }
 
         [Fact]
         public void GivenModelWithNullCategory_WhenPostCreateIsCalled_ThenCreateViewReturnedAndModelStateIsInvalid()
         {
             //Arrange
-            var parkingSlotCreateVM = new ParkingSlotCreateVM()
+            var slotCreateVM = new ParkingSlotCreateVM()
             {
                 Number = 1,
                 ParkingZoneId = _testZoneId,
@@ -191,12 +191,12 @@ namespace Tests.Controllers
             controller.ModelState.AddModelError("Category", "Category of Slot is Required");
 
             //Act
-            var result = controller.Create(parkingSlotCreateVM);
+            var result = controller.Create(slotCreateVM);
 
             //Assert
             Assert.False(controller.ModelState.IsValid);
             Assert.IsType<ViewResult>(result);
-            Assert.Equal(JsonSerializer.Serialize(parkingSlotCreateVM), JsonSerializer.Serialize((result as ViewResult).Model));
+            Assert.Equal(JsonSerializer.Serialize(slotCreateVM), JsonSerializer.Serialize((result as ViewResult).Model));
         }
         #endregion
     }
