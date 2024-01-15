@@ -59,12 +59,17 @@ namespace Parking_Zone.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(ParkingSlotCreateVM slotCreateVM)
         {
+            if (_slotService.SlotExistsWithThisNumber(slotCreateVM.Number, null, slotCreateVM.ParkingZoneId))
+            {
+                ModelState.AddModelError("Number", "This Slot number already exists");
+            }
+
             if (ModelState.IsValid)
             {
-                if (_slotService.SlotExistsWithThisNumber(slotCreateVM.Number, null, slotCreateVM.ParkingZoneId))
-                {
-                    return BadRequest("Slot with this number already exists");
-                }
+                var Zone = _zoneService.GetById(slotCreateVM.ParkingZoneId);
+
+                if (Zone is null)
+                    return BadRequest("Parking Zone Not Found");
 
                 var slot = slotCreateVM.MapToModel();
                 _slotService.Insert(slot);
