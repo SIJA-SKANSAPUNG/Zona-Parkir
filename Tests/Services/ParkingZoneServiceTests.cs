@@ -22,6 +22,7 @@ namespace Tests.Services
             Address = "Andijon",
             Description = "Arzon"
         };
+
         #region GetAll
         [Fact]
         public void GivenNothing_WhenGetAllIsCalled_ThenRepositoryIsCalledOnceAndReturnedExpectedZones()

@@ -11,12 +11,13 @@ using Parking_Zone.Repositories;
 using Parking_Zone.Services;
 using Parking_Zone.ViewModels.ParkingZone;
 
-namespace Parking_Zone.Areas.Admin
+namespace Parking_Zone.Areas.Admin.Controllers
 {
     [Area("Admin")]
     public class ParkingZoneController : Controller
     {
         private readonly IParkingZoneService _parkingZoneService;
+
         public ParkingZoneController(IParkingZoneService parkingZoneService)
         {
             _parkingZoneService = parkingZoneService;
@@ -46,7 +47,7 @@ namespace Parking_Zone.Areas.Admin
             }
 
             var vm = new ParkingZoneDetailsVM(parkingZone);
-            
+
             return View(vm);
         }
 
@@ -107,10 +108,10 @@ namespace Parking_Zone.Areas.Admin
                 {
                     return NotFound();
                 }
-                
+
                 parkingZone = parkingZoneVM.MapToModel(parkingZone);
                 _parkingZoneService.Update(parkingZone);
-                
+
                 return RedirectToAction(nameof(Index));
             }
             return View(parkingZoneVM);
