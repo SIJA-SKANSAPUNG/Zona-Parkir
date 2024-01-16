@@ -119,7 +119,15 @@ namespace Tests.Controllers
         public void GivenParkingZoneId_WhenGetCreateIsCalled_ThenParkingZoneServiceIsCalledAndReturnedNotEmptyViewResult()
         {
             //Arrange
-            mockZoneService.Setup(service => service.GetById(_testZoneId)).Returns(_testZone);
+            var expectedCreateSlotVM = new ParkingSlotCreateVM()
+            {
+                ParkingZoneName = "Sharafshon",
+                ParkingZoneId = _testZoneId
+            };
+
+            mockZoneService
+                .Setup(service => service.GetById(_testZoneId))
+                .Returns(_testZone);
 
             //Act
             var result = controller.Create(_testZoneId);
@@ -127,7 +135,24 @@ namespace Tests.Controllers
             //Assert
             Assert.IsType<ViewResult>(result);
             Assert.NotNull((result as ViewResult).Model);
+            Assert.IsAssignableFrom<ParkingSlotCreateVM>((result as ViewResult).Model);
+            Assert.Equal(JsonSerializer.Serialize(expectedCreateSlotVM), JsonSerializer.Serialize((result as ViewResult).Model));
             mockZoneService.Verify(s => s.GetById(_testZoneId), Times.Once);
+        }
+
+        [Fact]
+        public void GivenNullZoneId_WhenGetCreateIsCalled_ThenZoneServiceIsCalledOnceAndReturnedBadRequest()
+        {
+            //Arrange
+            mockZoneService
+                .Setup(service => service.GetById(_testZoneId));
+
+            //Act
+            var result = controller.Create(_testZoneId);
+
+            //Assert
+            Assert.IsType<BadRequestResult>(result);
+            mockZoneService.Verify(service => service.GetById(_testZoneId), Times.Once);
         }
 
         [Fact]
@@ -142,7 +167,12 @@ namespace Tests.Controllers
                 IsAvailableForBooking = true
             };
 
-            mockSlotService.Setup(service => service.Insert(It.IsAny<ParkingSlot>()));
+            mockSlotService
+                .Setup(service => service.Insert(It.IsAny<ParkingSlot>()));
+
+            mockZoneService
+                .Setup(service => service.GetById(_testZoneId))
+                .Returns(_testZone);
 
             //Act
             var result = controller.Create(slotCreateVM);
@@ -178,6 +208,45 @@ namespace Tests.Controllers
         }
 
         [Fact]
+        public void GivenModelWithAlreadyExistingNumber_WhenPostCreateIsCalled_ThenCreateViewReturnedAndModelStateIsInvalid()
+        {
+            //Arrange
+            var slotCreateVM = new ParkingSlotCreateVM()
+            {
+                Number = 1,
+                ParkingZoneId = _testZoneId,
+                IsAvailableForBooking = true
+            };
+
+            mockSlotService
+                .Setup(service => service.SlotExistsWithThisNumber(slotCreateVM.Number, null, _testZoneId))
+                .Returns(true);
+
+            //Act
+            var result = controller.Create(slotCreateVM);
+
+            //Assert
+            Assert.False(controller.ModelState.IsValid);
+            mockSlotService.Verify(service => service.SlotExistsWithThisNumber(slotCreateVM.Number, null, _testZoneId), Times.Once);
+        }
+
+        [Fact]
+        public void GivenModelWithNullZoneId_WhenPostCreateIsCalled_ThenCreateViewReturnedAndModelStateIsInvalid()
+        {
+            //Arrange
+            var slotCreateVM = new ParkingSlotCreateVM()
+            {
+                Number = 1,
+                IsAvailableForBooking = true
+            };
+
+            controller.ModelState.AddModelError("ParkingZoneId", "Parking Zone is Required");
+
+            //Act
+            Assert.False(controller.ModelState.IsValid);
+        }
+
+        [Fact]
         public void GivenModelWithNullCategory_WhenPostCreateIsCalled_ThenCreateViewReturnedAndModelStateIsInvalid()
         {
             //Arrange
@@ -197,6 +266,26 @@ namespace Tests.Controllers
             Assert.False(controller.ModelState.IsValid);
             Assert.IsType<ViewResult>(result);
             Assert.Equal(JsonSerializer.Serialize(slotCreateVM), JsonSerializer.Serialize((result as ViewResult).Model));
+        }
+
+        [Fact]
+        public void GivenValidModelWithNotExistingZoneId__WhenPostCreateIsCalled_ThenServiceIsCalledOnceAndReturnedBadRequest()
+        {
+            //Arrange
+            var slotVM = new ParkingSlotCreateVM()
+            {
+                ParkingZoneId = _testZoneId
+            };
+
+            mockZoneService
+                .Setup(service => service.GetById(_testZoneId));
+
+            //Act
+            var result = controller.Create(slotVM);
+
+            //Assert
+            Assert.IsType<BadRequestObjectResult>(result);
+            mockZoneService.Verify(service => service.GetById(_testZoneId), Times.Once());
         }
         #endregion
     }

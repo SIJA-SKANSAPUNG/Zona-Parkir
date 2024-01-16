@@ -24,7 +24,7 @@ namespace Parking_Zone.Services
 
         public bool SlotExistsWithThisNumber(int slotNumber, Guid? slotId, Guid parkingZoneId)
             => _parkingSlotRepository.GetAll()
-            .Where(s => s.ParkingZoneId == parkingZoneId && s.Id != slotId)
-            .FirstOrDefault(s => s.Number == slotNumber) != null;
+                .Where(s => s.ParkingZoneId == parkingZoneId && s.Id != slotId)
+                .FirstOrDefault(s => s.Number == slotNumber) != null;
     }
 }

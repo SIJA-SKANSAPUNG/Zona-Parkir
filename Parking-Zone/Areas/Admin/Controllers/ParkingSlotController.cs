@@ -39,19 +39,19 @@ namespace Parking_Zone.Areas.Admin.Controllers
         // GET: Admin/ParkingSlots/Create
         public IActionResult Create(Guid zoneId)
         {
-            var Zone = _zoneService.GetById(zoneId);
+            var zone = _zoneService.GetById(zoneId);
 
-            if (Zone is null)
+            if (zone is null)
             {
                 return BadRequest();
             }
 
-            var SlotCreateVM = new ParkingSlotCreateVM();
+            var slotCreateVM = new ParkingSlotCreateVM();
 
-            SlotCreateVM.ParkingZoneId = zoneId;
-            SlotCreateVM.ParkingZoneName = Zone.Name;
+            slotCreateVM.ParkingZoneId = zoneId;
+            slotCreateVM.ParkingZoneName = zone.Name;
 
-            return View(SlotCreateVM);
+            return View(slotCreateVM);
         }
 
         // POST: Admin/ParkingSlots/Create
@@ -66,9 +66,9 @@ namespace Parking_Zone.Areas.Admin.Controllers
 
             if (ModelState.IsValid)
             {
-                var Zone = _zoneService.GetById(slotCreateVM.ParkingZoneId);
+                var zone = _zoneService.GetById(slotCreateVM.ParkingZoneId);
 
-                if (Zone is null)
+                if (zone is null)
                     return BadRequest("Parking Zone Not Found");
 
                 var slot = slotCreateVM.MapToModel();

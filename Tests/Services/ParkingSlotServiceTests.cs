@@ -83,5 +83,97 @@ namespace Tests.Services
             mockSlotRepository.Verify(repo => repo.Save(), Times.Once);
         }
         #endregion
+
+        #region SlotExistsWithThisNumber
+        [Fact]
+        public void GivenNumberThatAlreadyExistsInDbAndZoneId_WhenSlotWithThisNumberExistsIsCalled_ThenRepositoryIsCalledOnceAndReturnedTrue()
+        {
+            //Arrange
+            var slots = new List<ParkingSlot>()
+            {
+                new ParkingSlot()
+                {
+                    Number = 1,
+                    ParkingZoneId = _testZoneId,
+                },
+                new ParkingSlot()
+                {
+                    ParkingZoneId = _testZoneId
+                }
+            };
+
+            mockSlotRepository
+                .Setup(repo => repo.GetAll())
+                .Returns(slots);
+
+            //Act
+            var result = service.SlotExistsWithThisNumber(1, _testSlotId, _testZoneId);
+
+            //Assert
+            Assert.True(result);
+            mockSlotRepository.Verify(repo => repo.GetAll(), Times.Once);
+        }
+
+        [Fact]
+        public void GivenNumberThatNotExistsInDbAndZoneId_WhenSlotWithThisNumberExistsIsCalled_ThenRepositoryIsCalledOnceAndReturnedFalse()
+        {
+            //Arrange
+            var slots = new List<ParkingSlot>()
+            {
+                new ParkingSlot()
+                {
+                    Number = 1,
+                    ParkingZoneId = _testZoneId,
+                },
+                new ParkingSlot()
+                {
+                    Number = 2,
+                    ParkingZoneId = _testZoneId
+                }
+            };
+
+            mockSlotRepository
+                .Setup(repo => repo.GetAll())
+                .Returns(slots);
+
+            //Act
+            var result = service.SlotExistsWithThisNumber(5, _testSlotId, _testZoneId);
+
+            //Assert
+            Assert.False(result);
+            mockSlotRepository.Verify(repo => repo.GetAll(), Times.Once);
+        }
+
+        [Fact]
+        public void GivenNumberAndIdOfExistingSlotAndZoneId_WhenSlotWithThisNumberExistsIsCalled_ThenRepositoryIsCalledOnceAndReturnedFalse()
+        {
+            //Arrange
+            var slots = new List<ParkingSlot>()
+            {
+                new ParkingSlot()
+                {
+                    Id = _testSlotId,
+                    Number = 1,
+                    ParkingZoneId = _testZoneId,
+                },
+                new ParkingSlot()
+                {
+                    Number = 2,
+                    ParkingZoneId = _testZoneId
+                }
+            };
+
+            mockSlotRepository
+                .Setup(repo => repo.GetAll())
+                .Returns(slots);
+
+            //Act
+            var result = service.SlotExistsWithThisNumber(1, _testSlotId, _testZoneId);
+
+            //Assert
+            Assert.False(result);
+            mockSlotRepository.Verify(repo => repo.GetAll(), Times.Once);
+        }
+        #endregion
     }
 }
