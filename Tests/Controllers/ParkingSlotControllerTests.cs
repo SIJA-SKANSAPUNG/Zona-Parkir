@@ -443,11 +443,35 @@ namespace Tests.Controllers
             Assert.IsType<RedirectToActionResult>(result);
             var redirectToActionResult = result as RedirectToActionResult;
 
-            Assert.Equal("ParkingSlots", redirectToActionResult.ControllerName);
+            Assert.Equal("ParkingSlot", redirectToActionResult.ControllerName);
             Assert.Equal("Index", redirectToActionResult.ActionName);
 
             mockSlotService.Verify(s => s.GetById(_testSlotId), Times.Once);
             mockSlotService.Verify(s => s.Update(It.IsAny<ParkingSlot>()), Times.Once);
+        }
+
+        [Fact]
+        public void GivenModelWithAlreadyExistingNumber_WhenPostEditIsCalled_ThenCreateViewReturnedAndModelStateIsInvalid()
+        {
+            //Arrange
+            var slotVM = new ParkingSlotEditVM()
+            {
+                Id = _testSlotId,
+                Number = 1,
+                ParkingZoneId = _testZoneId,
+                IsAvailableForBooking = true
+            };
+
+            mockSlotService
+                .Setup(service => service.SlotExistsWithThisNumber(slotVM.Number, _testSlotId, _testZoneId))
+                .Returns(true);
+
+            //Act
+            var result = controller.Edit(_testSlotId, slotVM);
+
+            //Assert
+            Assert.False(controller.ModelState.IsValid);
+            mockSlotService.Verify(service => service.SlotExistsWithThisNumber(slotVM.Number, _testSlotId, slotVM.ParkingZoneId), Times.Once);
         }
         #endregion
     }

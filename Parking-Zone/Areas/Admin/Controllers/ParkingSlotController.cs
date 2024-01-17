@@ -81,11 +81,6 @@ namespace Parking_Zone.Areas.Admin.Controllers
         // GET: Admin/ParkingSlots/Edit/5
         public IActionResult Edit(Guid id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
             var parkingSlot = _slotService.GetById(id);
 
             if (parkingSlot == null)
@@ -108,7 +103,7 @@ namespace Parking_Zone.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            if (_slotService.SlotExistsWithThisNumber(parkingSlotEditVM.Number, null, parkingSlotEditVM.ParkingZoneId))
+            if (_slotService.SlotExistsWithThisNumber(parkingSlotEditVM.Number, parkingSlotEditVM.Id, parkingSlotEditVM.ParkingZoneId))
             {
                 ModelState.AddModelError("Number", "This Slot number already exists");
             }
