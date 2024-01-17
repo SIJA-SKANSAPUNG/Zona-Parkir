@@ -124,5 +124,18 @@ namespace Parking_Zone.Areas.Admin.Controllers
             }
             return View(parkingSlotEditVM);
         }
+
+        // GET: Admin/ParkingSlots/Details/5
+        public IActionResult Details(Guid id)
+        {
+            var slot = _slotService.GetById(id);
+
+            if (slot is null)
+                return NotFound();
+
+            var slotVM = new ParkingSlotDetailsVM(slot);
+
+            return View(slotVM);
+        }
     }
 }
