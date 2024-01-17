@@ -490,7 +490,8 @@ namespace Tests.Controllers
                 IsAvailableForBooking = true,
             };
 
-            mockSlotService.Setup(service => service.GetById(_testSlotId)).Returns(_testSlot);
+            mockSlotService
+                .Setup(service => service.GetById(_testSlotId)).Returns(_testSlot);
 
             //Act
             var result = controller.Details(_testSlotId);
