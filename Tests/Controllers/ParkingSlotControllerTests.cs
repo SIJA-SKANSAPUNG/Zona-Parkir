@@ -288,5 +288,167 @@ namespace Tests.Controllers
             mockZoneService.Verify(service => service.GetById(_testZoneId), Times.Once());
         }
         #endregion
+
+        #region Edit
+        [Fact]
+        public void GivenIdOfNotExistingSlot_WhenEditIsCalled_ThenServiceIsCalledOnceAndReturnedNotFoundResult()
+        {
+            //Arrange
+
+            //Act
+            var result = controller.Edit(_testSlotId);
+
+            //Assert
+            Assert.True(result is NotFoundResult);
+            mockSlotService.Verify(s => s.GetById(_testSlotId), Times.Once);
+        }
+
+        [Fact]
+        public void GivenId_WhenGetEditIsCalled_ThenNotEmptyViewResultIsReturned()
+        {
+            //Arrange
+            var expextedParkingSlotEditVm = new ParkingSlotEditVM()
+            {
+                Id = _testSlotId,
+                Number = 1,
+                ParkingZoneId = _testZoneId,
+                Category = SlotCategoryEnum.Business,
+                IsAvailableForBooking = true,
+                ParkingZoneName = "Sharafshon"
+            };
+
+            mockSlotService
+                .Setup(service => service.GetById(_testSlotId))
+                .Returns(_testSlot);
+
+            //Act
+            var result = controller.Edit(_testSlotId);
+
+            //Assert
+            Assert.IsType<ViewResult>(result);
+            Assert.IsAssignableFrom<ParkingSlotEditVM>((result as ViewResult).Model);
+
+            var model = (result as ViewResult).Model as ParkingSlotEditVM;
+            Assert.Equal(JsonSerializer.Serialize(expextedParkingSlotEditVm), JsonSerializer.Serialize(model));
+            mockSlotService.Verify(s => s.GetById(_testSlotId), Times.Once);
+        }
+
+        [Fact]
+        public void GivenIdAndModelWithDifferentId_WhenPostEditIsCalled_ThenReturnedNotFoundResult()
+        {
+            //Arrange
+            var parkingSlotEditVM = new ParkingSlotEditVM()
+            {
+                Id = Guid.NewGuid()
+            };
+
+            //Act
+            var result = controller.Edit(_testSlotId, parkingSlotEditVM);
+
+            //Assert
+            Assert.True(result is NotFoundResult);
+        }
+
+        [Fact]
+        public void GivenIdOfNotExistingSlotAndValidModel_WhenEditIsCalled_ThenReturnedNotFoundResultAndSlotServiceCalledOnce()
+        {
+            //Arrange
+            var parkingSlotEditVM = new ParkingSlotEditVM()
+            {
+                Id = _testSlotId,
+                Number = 22,
+                Category = SlotCategoryEnum.Standard,
+                IsAvailableForBooking = true,
+                ParkingZoneName = "Sharafshon"
+            };
+
+            //Act
+            var result = controller.Edit(_testSlotId, parkingSlotEditVM);
+
+            //Assert
+            Assert.True(result is NotFoundResult);
+            mockSlotService.Verify(s => s.GetById(_testSlotId), Times.Once);
+        }
+
+        [Fact]
+        public void GivenIdAndModelWithNullNumber_WhenPostEditIsCalled_ThenEditViewIsReturnedAndModelStateIsInValid()
+        {
+            //Arrange
+            var parkingSlotEditVM = new ParkingSlotEditVM()
+            {
+                Id = _testSlotId,
+                Category = SlotCategoryEnum.Standard,
+                IsAvailableForBooking = true,
+                ParkingZoneName = "Sharafshon"
+            };
+
+            controller.ModelState.AddModelError("Number", "Number is Required");
+
+            //Act
+            var result = controller.Edit(_testSlotId, parkingSlotEditVM);
+
+            //Assert
+            Assert.IsType<ViewResult>(result);
+            Assert.False(controller.ModelState.IsValid);
+            Assert.Equal(JsonSerializer.Serialize(parkingSlotEditVM), JsonSerializer.Serialize((result as ViewResult).Model));
+        }
+
+        [Fact]
+        public void GivenIdAndModelWithNullCategory_WhenPostEditIsCalled_ThenEditViewIsReturnedAndModelStateIsInValid()
+        {
+            //Arrange
+            var parkingSlotEditVM = new ParkingSlotEditVM()
+            {
+                Id = _testSlotId,
+                Number = 22,
+                IsAvailableForBooking = true,
+                ParkingZoneName = "Sharafshon"
+            };
+
+            controller.ModelState.AddModelError("Category", "Category is Required");
+
+            //Act
+            var result = controller.Edit(_testSlotId, parkingSlotEditVM);
+
+            //Assert
+            Assert.IsType<ViewResult>(result);
+            Assert.False(controller.ModelState.IsValid);
+            Assert.Equal(JsonSerializer.Serialize(parkingSlotEditVM), JsonSerializer.Serialize((result as ViewResult).Model));
+        }
+
+        [Fact]
+        public void GivenIdAndValidModel_WhenPostEditIsCalled_ThenServiceIsCalledTwiceAndRedirectedToIndexView()
+        {
+            //Arrange
+            var parkingSlotEditVM = new ParkingSlotEditVM()
+            {
+                Id = _testSlotId,
+                Number = 1,
+                ParkingZoneId = _testZoneId,
+                Category = SlotCategoryEnum.Business,
+                IsAvailableForBooking = true,
+            };
+
+            mockSlotService
+                .Setup(service => service.GetById(_testSlotId))
+                .Returns(_testSlot);
+
+            mockSlotService
+                .Setup(service => service.Update(It.IsAny<ParkingSlot>()));
+
+            //Act
+            var result = controller.Edit(_testSlotId, parkingSlotEditVM);
+
+            //Assert
+            Assert.IsType<RedirectToActionResult>(result);
+            var redirectToActionResult = result as RedirectToActionResult;
+
+            Assert.Equal("ParkingSlots", redirectToActionResult.ControllerName);
+            Assert.Equal("Index", redirectToActionResult.ActionName);
+
+            mockSlotService.Verify(s => s.GetById(_testSlotId), Times.Once);
+            mockSlotService.Verify(s => s.Update(It.IsAny<ParkingSlot>()), Times.Once);
+        }
+        #endregion
     }
 }
