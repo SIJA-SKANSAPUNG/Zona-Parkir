@@ -474,5 +474,47 @@ namespace Tests.Controllers
             mockSlotService.Verify(service => service.SlotExistsWithThisNumber(slotVM.Number, _testSlotId, slotVM.ParkingZoneId), Times.Once);
         }
         #endregion
+
+        #region Details
+        [Fact]
+        public void GivenSlotId_WhenDetailsIsCalled_ThenServiceIsCalledOnceAndReturnedViewResultWithDetailsParkingSlotVmModel()
+        {
+            //Arrange
+            var expectedParkingSlotDetailsVM = new ParkingSlotDetailsVM()
+            {
+                Id = _testSlotId,
+                Number = 1,
+                ParkingZoneName = "Sharafshon",
+                ParkingZoneId = _testZoneId,
+                Category = SlotCategoryEnum.Business,
+                IsAvailableForBooking = true,
+            };
+
+            mockSlotService
+                .Setup(service => service.GetById(_testSlotId)).Returns(_testSlot);
+
+            //Act
+            var result = controller.Details(_testSlotId);
+
+            //Assert
+            Assert.IsType<ViewResult>(result);
+            var model = Assert.IsAssignableFrom<ParkingSlotDetailsVM>((result as ViewResult).Model);
+            Assert.Equal(JsonSerializer.Serialize(expectedParkingSlotDetailsVM), JsonSerializer.Serialize(model));
+            mockSlotService.Verify(s => s.GetById(_testSlotId), Times.Once);
+        }
+
+        [Fact]
+        public void GivenIdOfNotExistingParkingSlot_WhenDetailsIsCalled_ThenServiceIsCalledOnceAndReturnedNotFoundResult()
+        {
+            //Arrange
+
+            //Act
+            var result = controller.Details(_testSlotId);
+
+            //Assert
+            Assert.True(result is NotFoundResult);
+            mockSlotService.Verify(s => s.GetById(_testSlotId), Times.Once);
+        }
+        #endregion
     }
 }
