@@ -73,9 +73,56 @@ namespace Parking_Zone.Areas.Admin.Controllers
 
                 var slot = slotCreateVM.MapToModel();
                 _slotService.Insert(slot);
-                return RedirectToAction("Index", "ParkingSlot", new { parkingZoneId = slotCreateVM.ParkingZoneId });
+                return RedirectToAction("Index", "ParkingSlot", new { zoneId = slotCreateVM.ParkingZoneId });
             }
             return View(slotCreateVM);
+        }
+
+        // GET: Admin/ParkingSlots/Edit/5
+        public IActionResult Edit(Guid id)
+        {
+            var parkingSlot = _slotService.GetById(id);
+
+            if (parkingSlot == null)
+            {
+                return NotFound();
+            }
+
+            var parkingSlotEditVM = new ParkingSlotEditVM(parkingSlot);
+
+            return View(parkingSlotEditVM);
+        }
+
+        // POST: Admin/ParkingSlots/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(Guid id, ParkingSlotEditVM parkingSlotEditVM)
+        {
+            if (id != parkingSlotEditVM.Id)
+            {
+                return NotFound();
+            }
+
+            if (_slotService.SlotExistsWithThisNumber(parkingSlotEditVM.Number, parkingSlotEditVM.Id, parkingSlotEditVM.ParkingZoneId))
+            {
+                ModelState.AddModelError("Number", "This Slot number already exists");
+            }
+
+            if (ModelState.IsValid)
+            {
+                var existingSlot = _slotService.GetById(parkingSlotEditVM.Id);
+
+                if (existingSlot == null)
+                {
+                    return NotFound();
+                }
+
+                var slotVM = parkingSlotEditVM.MapToModel(existingSlot);
+                _slotService.Update(slotVM);
+
+                return RedirectToAction("Index", "ParkingSlot", new { zoneId = parkingSlotEditVM.ParkingZoneId });
+            }
+            return View(parkingSlotEditVM);
         }
     }
 }
