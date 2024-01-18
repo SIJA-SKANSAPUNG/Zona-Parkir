@@ -516,5 +516,83 @@ namespace Tests.Controllers
             mockSlotService.Verify(s => s.GetById(_testSlotId), Times.Once);
         }
         #endregion
+
+        #region Delete
+        [Fact]
+        public void GivenId_WhenGetDeleteIsCalled_ThenReturnedNotFoundResultAndServiceIsCalledOnce()
+        {
+            //Arrange
+
+            //Act
+            var result = controller.Delete(_testSlotId);
+
+            //Assert
+            Assert.True(result is NotFoundResult);
+            mockSlotService.Verify(s => s.GetById(_testSlotId), Times.Once);
+        }
+
+        [Fact]
+        public void GivenId_WhenGetDeleteIsCalled_ThenNotEmptyViewResultIsReturned()
+        {
+            //Arrange
+            Guid Id = _testSlotId;
+            int Number = 1;
+            Guid ParkingZoneId = _testZoneId;
+            bool IsAvailableForBooking = true;
+
+            mockSlotService
+                .Setup(service => service.GetById(_testSlotId)).Returns(_testSlot);
+
+            //Act
+            var result = controller.Delete(_testSlotId);
+
+            //Assert
+            Assert.IsType<ViewResult>(result);
+            var model = Assert.IsAssignableFrom<ParkingSlotDetailsVM>((result as ViewResult).Model);
+
+            Assert.Equal(Id, model.Id);
+            Assert.Equal(Number, model.Number);
+            Assert.Equal(ParkingZoneId, model.ParkingZoneId);
+            Assert.Equal(IsAvailableForBooking, model.IsAvailableForBooking);
+        }
+
+        [Fact]
+        public void GivenIdOfNotExistingSlot_WhenDeleteConfirmedIsCalled_ThenNotFoundResultIsReturnedAndServiceIsCalledOnce()
+        {
+            //Arrange
+
+            //Act
+            var result = controller.DeleteConfirmed(_testSlotId, _testZoneId);
+
+            //Assert
+            Assert.True(result is NotFoundResult);
+            mockSlotService.Verify(s => s.GetById(_testSlotId), Times.Once);
+        }
+
+        [Fact]
+        public void GivenIds_WhenDeleteConfirmedIsCalled_ThenSlotServiceIsCalledTwiceAndRedirectedToIndexView()
+        {
+            //Arrange
+            mockSlotService
+                .Setup(service => service.GetById(_testSlotId))
+                .Returns(_testSlot);
+
+            mockSlotService
+                .Setup(service => service.Delete(It.IsAny<ParkingSlot>()));
+
+            //Act
+            var result = controller.DeleteConfirmed(_testSlotId, _testZoneId);
+
+            //Assert
+            Assert.IsType<RedirectToActionResult>(result);
+            var redirectToActionResult = result as RedirectToActionResult;
+
+            Assert.Equal("ParkingSlot", redirectToActionResult.ControllerName);
+            Assert.Equal("Index", redirectToActionResult.ActionName);
+
+            mockSlotService.Verify(s => s.GetById(_testSlotId), Times.Once);
+            mockSlotService.Verify(s => s.Delete(It.IsAny<ParkingSlot>()), Times.Once);
+        }
+        #endregion
     }
 }
