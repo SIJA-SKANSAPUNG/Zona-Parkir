@@ -137,5 +137,37 @@ namespace Parking_Zone.Areas.Admin.Controllers
 
             return View(slotVM);
         }
+
+        // GET: Admin/ParkingSlots/Delete/5
+        public IActionResult Delete(Guid id)
+        {
+            var slot = _slotService.GetById(id);
+
+            if (slot == null)
+            {
+                return NotFound();
+            }
+            var slotVM = new ParkingSlotDetailsVM(slot);
+
+            return View(slotVM);
+        }
+
+        // POST: Admin/ParkingSlots/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteConfirmed(Guid id, Guid parkingZoneId)
+        {
+            var parkingSlot = _slotService.GetById(id);
+
+            if (parkingSlot != null)
+            {
+                _slotService.Delete(parkingSlot);
+            }
+            else
+            {
+                return NotFound();
+            }
+            return RedirectToAction("Index", "ParkingSlot", new { zoneId = parkingZoneId });
+        }
     }
 }
