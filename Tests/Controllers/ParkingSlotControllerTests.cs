@@ -555,11 +555,6 @@ namespace Tests.Controllers
             //Assert
             Assert.IsType<ViewResult>(result);
             var model = Assert.IsAssignableFrom<ParkingSlotDetailsVM>((result as ViewResult).Model);
-
-            Assert.Equal(expectedSlotVM.Id, model.Id);
-            Assert.Equal(expectedSlotVM.Number, model.Number);
-            Assert.Equal(_testZoneId, model.ParkingZoneId);
-            Assert.Equal(expectedSlotVM.IsAvailableForBooking, model.IsAvailableForBooking);
             Assert.Equal(JsonSerializer.Serialize(model), JsonSerializer.Serialize(expectedSlotVM));
         }
 
