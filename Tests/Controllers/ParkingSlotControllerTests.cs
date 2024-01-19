@@ -519,7 +519,7 @@ namespace Tests.Controllers
 
         #region Delete
         [Fact]
-        public void GivenId_WhenGetDeleteIsCalled_ThenReturnedNotFoundResultAndServiceIsCalledOnce()
+        public void GivenIdOfNotExistingSlot_WhenGetDeleteIsCalled_ThenReturnedNotFoundResultAndServiceIsCalledOnce()
         {
             //Arrange
 
@@ -535,13 +535,19 @@ namespace Tests.Controllers
         public void GivenId_WhenGetDeleteIsCalled_ThenNotEmptyViewResultIsReturned()
         {
             //Arrange
-            Guid Id = _testSlotId;
-            int Number = 1;
-            Guid ParkingZoneId = _testZoneId;
-            bool IsAvailableForBooking = true;
+            var expectedSlotVM = new ParkingSlotDetailsVM()
+            {
+                Id = _testSlotId,
+                Number = 1,
+                IsAvailableForBooking = true,
+                Category = SlotCategoryEnum.Business,
+                ParkingZoneId = _testZoneId,
+                ParkingZoneName = "Sharafshon"
+            };
 
             mockSlotService
-                .Setup(service => service.GetById(_testSlotId)).Returns(_testSlot);
+                .Setup(service => service.GetById(_testSlotId))
+                .Returns(_testSlot);
 
             //Act
             var result = controller.Delete(_testSlotId);
@@ -550,10 +556,11 @@ namespace Tests.Controllers
             Assert.IsType<ViewResult>(result);
             var model = Assert.IsAssignableFrom<ParkingSlotDetailsVM>((result as ViewResult).Model);
 
-            Assert.Equal(Id, model.Id);
-            Assert.Equal(Number, model.Number);
-            Assert.Equal(ParkingZoneId, model.ParkingZoneId);
-            Assert.Equal(IsAvailableForBooking, model.IsAvailableForBooking);
+            Assert.Equal(expectedSlotVM.Id, model.Id);
+            Assert.Equal(expectedSlotVM.Number, model.Number);
+            Assert.Equal(_testZoneId, model.ParkingZoneId);
+            Assert.Equal(expectedSlotVM.IsAvailableForBooking, model.IsAvailableForBooking);
+            Assert.Equal(JsonSerializer.Serialize(model), JsonSerializer.Serialize(expectedSlotVM));
         }
 
         [Fact]
