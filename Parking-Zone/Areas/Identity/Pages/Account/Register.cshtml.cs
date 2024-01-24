@@ -104,7 +104,6 @@ namespace Parking_Zone.Areas.Identity.Pages.Account
             [Display(Name = "Full Name")]
             public string FullName { get; set; }
 
-
             [Required]
             [DataType(DataType.PhoneNumber)]
             [Display(Name = "Phone Number")]
