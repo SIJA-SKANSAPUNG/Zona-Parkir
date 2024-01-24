@@ -68,7 +68,6 @@ namespace Parking_Zone.Areas.Identity.Pages.Account.Manage
             var userName = await _userManager.GetUserNameAsync(user);
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
 
-            Username = userName;
             FullName = user.FullName;
 
             Input = new InputModel
@@ -110,6 +109,17 @@ namespace Parking_Zone.Areas.Identity.Pages.Account.Manage
                 if (!setPhoneResult.Succeeded)
                 {
                     StatusMessage = "Unexpected error when trying to set phone number.";
+                    return RedirectToPage();
+                }
+            }
+
+            if (FullName != user.FullName)
+            {
+                user.FullName = FullName;
+                var setNameResult = await _userManager.UpdateAsync(user);
+                if (!setNameResult.Succeeded)
+                {
+                    StatusMessage = "Unexpected error when trying to set full name";
                     return RedirectToPage();
                 }
             }

@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-Parking_Zone-b32db18b-1f3e-452a-8e28-a9d873ee75e5</UserSecretsId>
     <RootNamespace>Parking_Zone</RootNamespace>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
