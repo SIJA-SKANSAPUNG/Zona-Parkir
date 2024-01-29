@@ -26,5 +26,23 @@ namespace Parking_Zone.Services
             => _parkingSlotRepository.GetAll()
                 .Where(s => s.ParkingZoneId == parkingZoneId && s.Id != slotId)
                 .FirstOrDefault(s => s.Number == slotNumber) != null;
+
+        public IEnumerable<ParkingSlot> GetAllSlotsByZoneIdForReservation(Guid zoneId, DateTime startTime, int duration)
+            => _parkingSlotRepository.GetAll()
+                .Where(x => x.ParkingZoneId == zoneId && x.IsAvailableForBooking && IsSlotFree(x, startTime, duration));
+
+        public bool IsSlotFree(ParkingSlot slot, DateTime startTime, int duration)
+        {
+            var reservations = slot.Reservations.ToList();
+
+            foreach (var reservation in reservations)
+            {
+                if (reservation.StartTime > startTime && startTime.AddHours(duration) <= reservation.StartTime)
+                    return true;
+                if (reservation.StartTime < startTime && reservation.StartTime.AddHours(reservation.Duration) <= startTime)
+                    return true;
+            }
+            return false;
+        }
     }
 }
