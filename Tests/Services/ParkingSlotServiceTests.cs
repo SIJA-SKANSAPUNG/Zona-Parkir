@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Tests.Services
@@ -16,6 +17,7 @@ namespace Tests.Services
     {
         private readonly Guid _testSlotId = Guid.Parse("ab8e46f4-a343-4571-a1a5-14892bccc7f5");
         private readonly Guid _testZoneId = Guid.Parse("dd09a090-b0f6-4369-b24a-656843d227bc");
+        private readonly Guid _testReservationId = Guid.Parse("ff871131-215c-4a2a-8d50-0223108c1b55");
 
         private readonly Mock<IParkingSlotRepository> mockSlotRepository;
 
@@ -173,6 +175,153 @@ namespace Tests.Services
             //Assert
             Assert.False(result);
             mockSlotRepository.Verify(repo => repo.GetAll(), Times.Once);
+        }
+        #endregion
+
+        #region GetAllSlotsByZoneIdForReservation
+        [Fact]
+        public void GivenZoneIdStartTimeAndDuration_WhenGetAllSlotsByZoneIdForReservationCalled_ThenOnlyFreeAndAvailableSlotsAreReturned()
+        {
+            //Arrange
+            var testStartTime = new DateTime(2024, 1, 27, 18, 00, 00);
+            var testDuration = 2;
+
+            var freeSlotsDuringRequestedPeriod = new List<ParkingSlot>()
+            {
+                new ParkingSlot()
+                {
+                        Id = new Guid("93e41f0c-2f07-468a-8547-5f8ee96e71c6"),
+                        IsAvailableForBooking = true,
+                        ParkingZoneId = _testZoneId,
+                        Reservations = new List<Reservation>()
+                        {
+                            new Reservation()
+                            {
+                                Id = _testReservationId,
+                                StartTime = new DateTime(2024, 1, 27, 21, 00, 00),
+                                Duration = 2
+                            }
+                        }
+                },
+                new ParkingSlot()
+                {
+                        Id = new Guid("93e41f0c-2f07-468a-8547-5f8ee96e71c6"),
+                        IsAvailableForBooking = true,
+                        ParkingZoneId = _testZoneId,
+                        Reservations = new List<Reservation>()
+                        {
+                            new Reservation()
+                            {
+                                Id = _testReservationId,
+                                StartTime = new DateTime(2024, 1, 27, 13, 00, 00),
+                                Duration = 5
+                            }
+                        }
+                }
+            };
+
+            var bookedOrNotAvailableSlotsDuringRequestedPeriod = new List<ParkingSlot>()
+            {
+                new ParkingSlot()
+                {
+                        Id = new Guid("93e41f0c-2f07-468a-8547-5f8ee96e71c6"),
+                        IsAvailableForBooking = true,
+                        ParkingZoneId = _testZoneId,
+                        Reservations = new List<Reservation>()
+                        {
+                            new Reservation()
+                            {
+                                Id = _testReservationId,
+                                StartTime = new DateTime(2024, 1, 27, 18, 00, 00),
+                                Duration = 3
+                            }
+                        }
+                },
+                new ParkingSlot()
+                {
+                        Id = new Guid("93e41f0c-2f07-468a-8547-5f8ee96e71c6"),
+                        IsAvailableForBooking = false,
+                        ParkingZoneId = _testZoneId,
+                        Reservations = new List<Reservation>()
+                        {
+                            new Reservation()
+                            {
+                                Id = _testReservationId,
+                                StartTime = new DateTime(2024, 1, 27, 19, 00, 00),
+                                Duration = 1
+                            }
+                        }
+                }
+            };
+
+            var all_slots = freeSlotsDuringRequestedPeriod.Concat(bookedOrNotAvailableSlotsDuringRequestedPeriod);
+
+            mockSlotRepository
+                .Setup(repo => repo.GetAll())
+                .Returns(all_slots);
+
+            //Act
+            var result = service.GetAllSlotsByZoneIdForReservation(_testZoneId, testStartTime, testDuration);
+
+            //Assert
+            Assert.Equal(2, result.Count());
+            Assert.Equal(JsonSerializer.Serialize(freeSlotsDuringRequestedPeriod), JsonSerializer.Serialize(result));
+        }
+        #endregion
+
+        #region IsSlotFree
+        [Fact]
+        public void GivenSlotStartTimeAndDuration_WhenIsSlotFreeCalled_ThenFalseReturned()
+        {
+            //Arrange
+            var testStartTime = new DateTime(2024, 1, 27, 18, 00, 00);
+            var testDuration = 4;
+            var slot = new ParkingSlot()
+            {
+                Id = new Guid("d4b5425b-a731-4f5d-a61c-f9441fc388d5"),
+                Reservations = new List<Reservation>()
+                {
+                    new Reservation()
+                    {
+                        Id = _testReservationId,
+                        StartTime = new DateTime(2024, 1, 27, 16, 00, 00),
+                        Duration = 5
+                    }
+                }
+            };
+
+            //Act
+            var result = service.IsSlotFree(slot, testStartTime, testDuration);
+
+            //Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void GivenSlotStartTimeAndDuration_WhenIsSlotFreeCalled_ThenTrueReturned()
+        {
+            //Arrange
+            var testStartTime = new DateTime(2024, 1, 27, 21, 00, 00);
+            var testDuration = 4;
+            var slot = new ParkingSlot()
+            {
+                Id = new Guid("d4b5425b-a731-4f5d-a61c-f9441fc388d5"),
+                Reservations = new List<Reservation>()
+                {
+                    new Reservation()
+                    {
+                        Id = _testReservationId,
+                        StartTime = new DateTime(2024, 1, 27, 16, 00, 00),
+                        Duration = 5
+                    }
+                }
+            };
+
+            //Act
+            var result = service.IsSlotFree(slot, testStartTime, testDuration);
+
+            //Assert
+            Assert.True(result);
         }
         #endregion
     }
