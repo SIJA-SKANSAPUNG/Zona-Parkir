@@ -37,12 +37,15 @@ namespace Parking_Zone.Services
 
             foreach (var reservation in reservations)
             {
-                if (reservation.StartTime > startTime && startTime.AddHours(duration) <= reservation.StartTime)
-                    return true;
-                if (reservation.StartTime < startTime && reservation.StartTime.AddHours(reservation.Duration) <= startTime)
-                    return true;
+                if (reservation.StartTime > startTime)
+                    if (startTime.AddHours(duration) > reservation.StartTime)
+                        return false;
+
+                if (reservation.StartTime < startTime)
+                    if (reservation.StartTime.AddHours(reservation.Duration) > startTime)
+                        return false;
             }
-            return false;
+            return true;
         }
     }
 }
