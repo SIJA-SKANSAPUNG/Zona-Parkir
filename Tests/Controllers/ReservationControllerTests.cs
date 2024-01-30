@@ -44,7 +44,7 @@ namespace Tests.Controllers
         public void GivenNothing_WhenGetFreeSlotsCalled_ThenZoneServiceCalledOnceAndReturnedViewResultWithViewModel()
         {
             //Arrange
-            var expectedReservationVM = new ReservationVM()
+            var expectedReservationVM = new FreeSlotsVM()
             {
                 ParkingZones = new SelectList(new List<ParkingZone>()
                 {
@@ -70,7 +70,7 @@ namespace Tests.Controllers
         {
             //Arrange
             var testStartTime = new DateTime(2024, 1, 27, 18, 00, 00);
-            var reservationVM = new ReservationVM()
+            var reservationVM = new FreeSlotsVM()
             {
                 StartTime = testStartTime,
                 Duration = 3,
@@ -78,7 +78,7 @@ namespace Tests.Controllers
             };
 
             mockSlotService
-                .Setup(service => service.GetAllSlotsByZoneIdForReservation(_testZoneId, testStartTime, 3));
+                .Setup(service => service.GetFreeByZoneIdAndTimePeriod(_testZoneId, testStartTime, 3));
 
             //Act
             var result = controller.FreeSlots(reservationVM);
@@ -86,7 +86,7 @@ namespace Tests.Controllers
             //Assert
             Assert.IsType<ViewResult>(result);
             Assert.NotNull(result as ViewResult);
-            mockSlotService.Verify(service => service.GetAllSlotsByZoneIdForReservation(_testZoneId, testStartTime, 3), Times.Once);
+            mockSlotService.Verify(service => service.GetFreeByZoneIdAndTimePeriod(_testZoneId, testStartTime, 3), Times.Once);
         }
     }
 }

@@ -180,22 +180,21 @@ namespace Tests.Services
 
         #region GetAllSlotsByZoneIdForReservation
         [Fact]
-        public void GivenZoneIdStartTimeAndDuration_WhenGetAllSlotsByZoneIdForReservationCalled_ThenOnlyFreeAndAvailableSlotsAreReturned()
+        public void GivenZoneIdStartTimeAndDuration_WhenGetFreeByZoneIdAndTimePeriodCalled_ThenOnlyFreeAndAvailableSlotsAreReturned()
         {
             //Arrange
             var testStartTime = new DateTime(2024, 1, 27, 18, 00, 00);
             var testDuration = 2;
 
-            var freeSlotsDuringRequestedPeriod = new List<ParkingSlot>()
+            var freeSlots = new List<ParkingSlot>()
             {
-                new ParkingSlot()
+                new()
                 {
-                        Id = new Guid("93e41f0c-2f07-468a-8547-5f8ee96e71c6"),
                         IsAvailableForBooking = true,
                         ParkingZoneId = _testZoneId,
                         Reservations = new List<Reservation>()
                         {
-                            new Reservation()
+                            new()
                             {
                                 Id = _testReservationId,
                                 StartTime = new DateTime(2024, 1, 27, 21, 00, 00),
@@ -203,14 +202,13 @@ namespace Tests.Services
                             }
                         }
                 },
-                new ParkingSlot()
+                new()
                 {
-                        Id = new Guid("93e41f0c-2f07-468a-8547-5f8ee96e71c6"),
                         IsAvailableForBooking = true,
                         ParkingZoneId = _testZoneId,
                         Reservations = new List<Reservation>()
                         {
-                            new Reservation()
+                            new()
                             {
                                 Id = _testReservationId,
                                 StartTime = new DateTime(2024, 1, 27, 13, 00, 00),
@@ -220,16 +218,15 @@ namespace Tests.Services
                 }
             };
 
-            var bookedOrNotAvailableSlotsDuringRequestedPeriod = new List<ParkingSlot>()
+            var bookedSlots = new List<ParkingSlot>()
             {
-                new ParkingSlot()
+                new()
                 {
-                        Id = new Guid("93e41f0c-2f07-468a-8547-5f8ee96e71c6"),
                         IsAvailableForBooking = true,
                         ParkingZoneId = _testZoneId,
                         Reservations = new List<Reservation>()
                         {
-                            new Reservation()
+                            new()
                             {
                                 Id = _testReservationId,
                                 StartTime = new DateTime(2024, 1, 27, 18, 00, 00),
@@ -237,14 +234,13 @@ namespace Tests.Services
                             }
                         }
                 },
-                new ParkingSlot()
+                new()
                 {
-                        Id = new Guid("93e41f0c-2f07-468a-8547-5f8ee96e71c6"),
                         IsAvailableForBooking = false,
                         ParkingZoneId = _testZoneId,
                         Reservations = new List<Reservation>()
                         {
-                            new Reservation()
+                            new()
                             {
                                 Id = _testReservationId,
                                 StartTime = new DateTime(2024, 1, 27, 19, 00, 00),
@@ -254,18 +250,18 @@ namespace Tests.Services
                 }
             };
 
-            var all_slots = freeSlotsDuringRequestedPeriod.Concat(bookedOrNotAvailableSlotsDuringRequestedPeriod);
+            var all_slots = freeSlots.Concat(bookedSlots);
 
             mockSlotRepository
-                .Setup(repo => repo.GetAll())
+                .Setup(repo => repo.GetAllWithReservations())
                 .Returns(all_slots);
 
             //Act
-            var result = service.GetAllSlotsByZoneIdForReservation(_testZoneId, testStartTime, testDuration);
+            var result = service.GetFreeByZoneIdAndTimePeriod(_testZoneId, testStartTime, testDuration);
 
             //Assert
-            Assert.Equal(2, result.Count());
-            Assert.Equal(JsonSerializer.Serialize(freeSlotsDuringRequestedPeriod), JsonSerializer.Serialize(result));
+            Assert.Equal(JsonSerializer.Serialize(freeSlots), JsonSerializer.Serialize(result));
+            mockSlotRepository.Verify(repo => repo.GetAllWithReservations(), Times.Once);
         }
         #endregion
 
@@ -281,7 +277,7 @@ namespace Tests.Services
                 Id = new Guid("d4b5425b-a731-4f5d-a61c-f9441fc388d5"),
                 Reservations = new List<Reservation>()
                 {
-                    new Reservation()
+                    new()
                     {
                         Id = _testReservationId,
                         StartTime = new DateTime(2024, 1, 27, 16, 00, 00),
@@ -308,7 +304,7 @@ namespace Tests.Services
                 Id = new Guid("d4b5425b-a731-4f5d-a61c-f9441fc388d5"),
                 Reservations = new List<Reservation>()
                 {
-                    new Reservation()
+                    new()
                     {
                         Id = _testReservationId,
                         StartTime = new DateTime(2024, 1, 27, 16, 00, 00),
