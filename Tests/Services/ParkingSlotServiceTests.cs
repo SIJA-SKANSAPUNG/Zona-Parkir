@@ -266,12 +266,8 @@ namespace Tests.Services
         #endregion
 
         #region IsSlotFree
-        [Fact]
-        public void GivenSlotStartTimeAndDuration_WhenIsSlotFreeCalled_ThenFalseReturned()
+        public static IEnumerable<object[]> TestData()
         {
-            //Arrange
-            var testStartTime = new DateTime(2024, 1, 27, 18, 00, 00);
-            var testDuration = 4;
             var slot = new ParkingSlot()
             {
                 Id = new Guid("d4b5425b-a731-4f5d-a61c-f9441fc388d5"),
@@ -279,45 +275,29 @@ namespace Tests.Services
                 {
                     new()
                     {
-                        Id = _testReservationId,
                         StartTime = new DateTime(2024, 1, 27, 16, 00, 00),
-                        Duration = 5
+                        Duration = 2
                     }
                 }
             };
 
-            //Act
-            var result = service.IsSlotFree(slot, testStartTime, testDuration);
-
-            //Assert
-            Assert.False(result);
+            yield return new object[] { slot, new DateTime(2024, 1, 27, 16, 00, 00), 2, false };
+            yield return new object[] { slot, new DateTime(2024, 1, 27, 17, 00, 00), 3, false };
+            yield return new object[] { slot, new DateTime(2024, 1, 27, 18, 00, 00), 2, true };
+            yield return new object[] { slot, new DateTime(2024, 1, 27, 8, 00, 00), 5, true };
         }
 
-        [Fact]
-        public void GivenSlotStartTimeAndDuration_WhenIsSlotFreeCalled_ThenTrueReturned()
+        [Theory]
+        [MemberData(nameof(TestData))]
+        public void GivenSlotWithReservations_WhenIsSlotFreeIsCalled_ThenExpectedResultReturned(ParkingSlot slot, DateTime startTime, int duration, bool expectedResult)
         {
             //Arrange
-            var testStartTime = new DateTime(2024, 1, 27, 21, 00, 00);
-            var testDuration = 4;
-            var slot = new ParkingSlot()
-            {
-                Id = new Guid("d4b5425b-a731-4f5d-a61c-f9441fc388d5"),
-                Reservations = new List<Reservation>()
-                {
-                    new()
-                    {
-                        Id = _testReservationId,
-                        StartTime = new DateTime(2024, 1, 27, 16, 00, 00),
-                        Duration = 5
-                    }
-                }
-            };
 
             //Act
-            var result = service.IsSlotFree(slot, testStartTime, testDuration);
+            var result = service.IsSlotFree(slot, startTime, duration);
 
             //Assert
-            Assert.True(result);
+            Assert.Equal(result, expectedResult);
         }
         #endregion
     }

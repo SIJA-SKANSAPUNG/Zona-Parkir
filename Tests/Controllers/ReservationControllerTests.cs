@@ -6,6 +6,7 @@ using Parking_Zone.Enums;
 using Parking_Zone.Models;
 using Parking_Zone.Services;
 using Parking_Zone.ViewModels;
+using Parking_Zone.ViewModels.ParkingSlot;
 using Parking_Zone.ViewModels.Reservation;
 using System;
 using System.Collections.Generic;
@@ -70,22 +71,41 @@ namespace Tests.Controllers
         {
             //Arrange
             var testStartTime = new DateTime(2024, 1, 27, 18, 00, 00);
-            var reservationVM = new FreeSlotsVM()
+
+            var freeSlots = new List<ParkingSlot>()
+            {
+                new()
+                {
+                    ParkingZoneId = _testZoneId
+                }
+            };
+
+            var freeSlotVM = new FreeSlotsVM()
             {
                 StartTime = testStartTime,
                 Duration = 3,
                 ParkingZoneId = _testZoneId
             };
 
+            var expectedSlotsVM = new FreeSlotsVM()
+            {
+                ParkingZoneId = _testZoneId,
+                StartTime = testStartTime,
+                Duration = 3,
+                ParkingSlots = freeSlots.Select(s => new ParkingSlotListItemVM(s))
+            };
+
             mockSlotService
-                .Setup(service => service.GetFreeByZoneIdAndTimePeriod(_testZoneId, testStartTime, 3));
+                .Setup(service => service.GetFreeByZoneIdAndTimePeriod(_testZoneId, testStartTime, 3))
+                .Returns(freeSlots);
 
             //Act
-            var result = controller.FreeSlots(reservationVM);
+            var result = controller.FreeSlots(freeSlotVM);
 
             //Assert
             Assert.IsType<ViewResult>(result);
             Assert.NotNull(result as ViewResult);
+            Assert.Equal(JsonSerializer.Serialize(expectedSlotsVM), JsonSerializer.Serialize((result as ViewResult).Model));
             mockSlotService.Verify(service => service.GetFreeByZoneIdAndTimePeriod(_testZoneId, testStartTime, 3), Times.Once);
         }
     }

@@ -32,7 +32,7 @@ namespace Parking_Zone.Services
                 .Where(x => x.ParkingZoneId == zoneId && x.IsAvailableForBooking && IsSlotFree(x, startTime, duration));
 
         public bool IsSlotFree(ParkingSlot slot, DateTime startTime, int duration)
-            => slot.Reservations.All(reservation =>
+            => slot.Reservations.Any(reservation =>
                 !(reservation.StartTime <= startTime && startTime < reservation.StartTime.AddHours(reservation.Duration)) &&
                 !(reservation.StartTime > startTime && startTime.AddHours(duration) > reservation.StartTime));
     }
