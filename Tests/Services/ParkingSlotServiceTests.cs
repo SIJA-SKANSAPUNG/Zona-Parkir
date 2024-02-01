@@ -277,6 +277,11 @@ namespace Tests.Services
                     {
                         StartTime = new DateTime(2024, 1, 27, 16, 00, 00),
                         Duration = 2
+                    },
+                    new()
+                    {
+                        StartTime = new DateTime(2024, 1, 27, 21, 00, 00),
+                        Duration = 2
                     }
                 }
             };
