@@ -7,7 +7,7 @@ namespace Parking_Zone.Repositories
     public class Repository<T> : IRepository<T> where T : class
     {
         private readonly ApplicationDbContext _context;
-        private DbSet<T> entities;
+        protected DbSet<T> entities;
         public Repository(ApplicationDbContext context)
         {
             _context = context;

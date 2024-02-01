@@ -12,5 +12,6 @@ namespace Parking_Zone.Models
         [ForeignKey("ParkingZone")]
         public Guid ParkingZoneId { get; set; }
         public virtual ParkingZone ParkingZone { get; set; }
+        public virtual ICollection<Reservation> Reservations { get; set; }
     }
 }

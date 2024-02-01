@@ -6,5 +6,7 @@ namespace Parking_Zone.Services
     {
         public IEnumerable<ParkingSlot> GetByParkingZoneId(Guid parkingZoneId);
         public bool SlotExistsWithThisNumber(int slotNumber, Guid? slotId, Guid parkingZoneId);
+        public IEnumerable<ParkingSlot> GetFreeByZoneIdAndTimePeriod(Guid zoneId, DateTime startTime, int duration);
+        public bool IsSlotFree(ParkingSlot slot, DateTime startTime, int duration);
     }
 }
