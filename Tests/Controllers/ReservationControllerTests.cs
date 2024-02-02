@@ -76,7 +76,7 @@ namespace Tests.Controllers
             {
                 new()
                 {
-                    ParkingZoneId = _testZoneId
+                    ParkingZoneId = _testZoneId,
                 }
             };
 
@@ -92,7 +92,8 @@ namespace Tests.Controllers
                 ParkingZoneId = _testZoneId,
                 StartTime = testStartTime,
                 Duration = 3,
-                ParkingSlots = freeSlots.Select(s => new ParkingSlotListItemVM(s))
+                ParkingSlots = freeSlots.Select(s => new ParkingSlotListItemVM(s)),
+                ParkingZones = new SelectList(new List<ParkingZone>() { }, "Id", "Name")
             };
 
             mockSlotService
