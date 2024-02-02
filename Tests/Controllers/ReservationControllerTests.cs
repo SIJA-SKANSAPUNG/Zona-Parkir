@@ -70,7 +70,7 @@ namespace Tests.Controllers
         public void GivenReservationVMModel_WhenPostFreeSlotsCalled_ThenServiceCalledOnceAndReturnedNotEmptyViewResult()
         {
             //Arrange
-            var testStartTime = new DateTime(2024, 1, 27, 18, 00, 00);
+            string testStartTime = "2024-01-27 18:00:00";
 
             var freeSlots = new List<ParkingSlot>()
             {

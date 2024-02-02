@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Parking_Zone.Models;
 using Parking_Zone.Services;
 using Parking_Zone.ViewModels.ParkingSlot;
 using Parking_Zone.ViewModels.Reservation;
