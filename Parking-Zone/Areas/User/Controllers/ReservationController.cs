@@ -34,6 +34,10 @@ namespace Parking_Zone.Areas.User.Controllers
                 .GetFreeByZoneIdAndTimePeriod(freeSlotsVM.ParkingZoneId, freeSlotsVM.StartTime, freeSlotsVM.Duration)
                 .Select(x => new ParkingSlotListItemVM(x));
 
+            var zones = _zoneService.GetAll();
+
+            freeSlotsVM.ParkingZones = new SelectList(zones, "Id", "Name");
+
             return View(freeSlotsVM);
         }
     }
