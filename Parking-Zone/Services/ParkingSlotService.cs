@@ -49,10 +49,6 @@ namespace Parking_Zone.Services
                 }
             }
             return true;
-
-            //=> !slot.Reservations.Any(reservation =>
-            //    reservation.StartTime <= startTime && startTime < reservation.StartTime.AddHours(reservation.Duration) ||
-            //    reservation.StartTime > startTime && startTime.AddHours(duration) > reservation.StartTime);
         }
     }
 }
