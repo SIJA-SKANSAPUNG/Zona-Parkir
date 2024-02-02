@@ -76,7 +76,7 @@ namespace Tests.Controllers
             {
                 new()
                 {
-                    ParkingZoneId = _testZoneId,
+                    ParkingZoneId = _testZoneId
                 }
             };
 
