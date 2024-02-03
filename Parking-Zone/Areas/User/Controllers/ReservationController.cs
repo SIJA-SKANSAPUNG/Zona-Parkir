@@ -25,6 +25,8 @@ namespace Parking_Zone.Areas.User.Controllers
 
             FreeSlotsVM freeSlotsVM = new FreeSlotsVM(zones);
 
+            ViewBag.Table = false;
+
             return View(freeSlotsVM);
         }
 
@@ -32,7 +34,7 @@ namespace Parking_Zone.Areas.User.Controllers
         public IActionResult FreeSlots(FreeSlotsVM freeSlotsVM)
         {
             freeSlotsVM.ParkingSlots = _slotService
-                .GetFreeByZoneIdAndTimePeriod(freeSlotsVM.ParkingZoneId, freeSlotsVM.StartTime, freeSlotsVM.Duration)
+                .GetFreeByZoneIdAndTimePeriod(freeSlotsVM.ParkingZoneId, DateTime.Parse(freeSlotsVM.StartTime), freeSlotsVM.Duration)
                 .Select(x => new ParkingSlotListItemVM(x));
 
             var zones = _zoneService.GetAll();

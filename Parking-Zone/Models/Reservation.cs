@@ -5,7 +5,7 @@ namespace Parking_Zone.Models
     public class Reservation
     {
         public Guid Id { get; set; }
-        public string StartTime { get; set; }
+        public DateTime StartTime { get; set; }
         public int Duration { get; set; }
         public string VehicleNumber { get; set; }
         [ForeignKey("ParkingSlot")]

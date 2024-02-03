@@ -70,7 +70,7 @@ namespace Tests.Controllers
         public void GivenReservationVMModel_WhenPostFreeSlotsCalled_ThenServiceCalledOnceAndReturnedNotEmptyViewResult()
         {
             //Arrange
-            string testStartTime = "2024-01-27 18:00:00";
+            DateTime testStartTime = new DateTime(2024, 01, 27, 18, 00, 00);
 
             var freeSlots = new List<ParkingSlot>()
             {
@@ -82,7 +82,7 @@ namespace Tests.Controllers
 
             var freeSlotVM = new FreeSlotsVM()
             {
-                StartTime = testStartTime,
+                StartTime = testStartTime.ToString(),
                 Duration = 3,
                 ParkingZoneId = _testZoneId
             };
@@ -90,7 +90,7 @@ namespace Tests.Controllers
             var expectedSlotsVM = new FreeSlotsVM()
             {
                 ParkingZoneId = _testZoneId,
-                StartTime = testStartTime,
+                StartTime = testStartTime.ToString(),
                 Duration = 3,
                 ParkingSlots = freeSlots.Select(s => new ParkingSlotListItemVM(s)),
                 ParkingZones = new SelectList(new List<ParkingZone>() { }, "Id", "Name")
