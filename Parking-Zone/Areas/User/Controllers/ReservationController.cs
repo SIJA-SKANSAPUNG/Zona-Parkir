@@ -25,8 +25,6 @@ namespace Parking_Zone.Areas.User.Controllers
 
             FreeSlotsVM freeSlotsVM = new FreeSlotsVM(zones);
 
-            ViewBag.Table = false;
-
             return View(freeSlotsVM);
         }
 

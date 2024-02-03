@@ -1,6 +1,6 @@
 ﻿@model Parking_Zone.ViewModels.Reservation.FreeSlotsVM
 
-@if (ViewBag.Table == false)
+@if (Model.ParkingSlots is null)
 {
     <div class="row">
         <div class="col-md-4">
