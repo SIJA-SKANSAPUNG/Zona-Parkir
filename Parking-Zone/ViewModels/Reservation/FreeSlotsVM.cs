@@ -16,7 +16,7 @@ namespace Parking_Zone.ViewModels.Reservation
             this.ParkingZones = new SelectList(zones, "Id", "Name");
         }
         [Required]
-        public DateTime StartTime { get; set; }
+        public string StartTime { get; set; }
         [Required]
         public int Duration { get; set; }
         [Required]

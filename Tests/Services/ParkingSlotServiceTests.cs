@@ -183,7 +183,7 @@ namespace Tests.Services
         public void GivenZoneIdStartTimeAndDuration_WhenGetFreeByZoneIdAndTimePeriodCalled_ThenOnlyFreeAndAvailableSlotsAreReturned()
         {
             //Arrange
-            var testStartTime = new DateTime(2024, 1, 27, 18, 00, 00);
+            var testStartTime = new DateTime(2024, 01, 27, 18, 00, 00);
             var testDuration = 2;
 
             var freeSlots = new List<ParkingSlot>()
@@ -197,7 +197,7 @@ namespace Tests.Services
                             new()
                             {
                                 Id = _testReservationId,
-                                StartTime = new DateTime(2024, 1, 27, 21, 00, 00),
+                                StartTime = new DateTime(2024, 01, 27, 21, 00, 00),
                                 Duration = 2
                             }
                         }
@@ -211,7 +211,7 @@ namespace Tests.Services
                             new()
                             {
                                 Id = _testReservationId,
-                                StartTime = new DateTime(2024, 1, 27, 13, 00, 00),
+                                StartTime = new DateTime(2024, 01, 27, 13, 00, 00),
                                 Duration = 5
                             }
                         }
@@ -229,7 +229,7 @@ namespace Tests.Services
                             new()
                             {
                                 Id = _testReservationId,
-                                StartTime = new DateTime(2024, 1, 27, 18, 00, 00),
+                                StartTime = new DateTime(2024, 01, 27, 18, 00, 00),
                                 Duration = 3
                             }
                         }
@@ -243,7 +243,7 @@ namespace Tests.Services
                             new()
                             {
                                 Id = _testReservationId,
-                                StartTime = new DateTime(2024, 1, 27, 19, 00, 00),
+                                StartTime = new DateTime(2024, 01, 27, 19, 00, 00),
                                 Duration = 1
                             }
                         }
@@ -275,12 +275,12 @@ namespace Tests.Services
                 {
                     new()
                     {
-                        StartTime = new DateTime(2024, 1, 27, 16, 00, 00),
+                        StartTime = new DateTime(2024, 01, 27, 16, 00, 00),
                         Duration = 2
                     },
                     new()
                     {
-                        StartTime = new DateTime(2024, 1, 27, 21, 00, 00),
+                        StartTime = new DateTime(2024, 01, 27, 21, 00, 00),
                         Duration = 2
                     }
                 }
