@@ -20,10 +20,11 @@ namespace Tests.Controllers
     public class ReservationControllerTests
     {
         private readonly Guid _testZoneId = Guid.Parse("dd09a090-b0f6-4369-b24a-656843d227bc");
+        private readonly Guid _testSlotId = Guid.Parse("756f4ba1-85cb-4998-997b-bb61ced58071");
 
         private readonly Mock<IParkingZoneService> mockZoneService;
         private readonly Mock<IParkingSlotService> mockSlotService;
-
+        private readonly Mock<IReservationService> mockReservationService;
         private readonly ReservationController controller;
 
         private readonly ParkingZone _testZone = new ParkingZone()
@@ -34,11 +35,28 @@ namespace Tests.Controllers
             Description = "Arzon"
         };
 
+        private readonly ParkingSlot _testSlot = new ParkingSlot()
+        {
+            Id = Guid.Parse("756f4ba1-85cb-4998-997b-bb61ced58071"),
+            Number = 1,
+            ParkingZone = new ParkingZone()
+            {
+                Id = Guid.Parse("dd09a090-b0f6-4369-b24a-656843d227bc"),
+                Name = "Sharafshon",
+                Address = "Andijon",
+                Description = "Arzon"
+            },
+            ParkingZoneId = Guid.Parse("dd09a090-b0f6-4369-b24a-656843d227bc"),
+            Category = SlotCategoryEnum.Business,
+            IsAvailableForBooking = true,
+        };
+
         public ReservationControllerTests()
         {
             mockZoneService = new Mock<IParkingZoneService>();
             mockSlotService = new Mock<IParkingSlotService>();
-            controller = new ReservationController(mockZoneService.Object, mockSlotService.Object);
+            mockReservationService = new Mock<IReservationService>();
+            controller = new ReservationController(mockZoneService.Object, mockSlotService.Object, mockReservationService.Object);
         }
 
         [Fact]
@@ -108,6 +126,72 @@ namespace Tests.Controllers
             Assert.NotNull(result as ViewResult);
             Assert.Equal(JsonSerializer.Serialize(expectedSlotsVM), JsonSerializer.Serialize((result as ViewResult).Model));
             mockSlotService.Verify(service => service.GetFreeByZoneIdAndTimePeriod(_testZoneId, testStartTime, 3), Times.Once);
+        }
+
+        [Fact]
+        public void GivenSlotIdStartTimeAndDuration_WhenGetReserveIsCalled_ThenServiceCalledOnceAndReturnedNotEmptyViewResult()
+        {
+            //Arrange
+            var testStartTime = "2024-01-27 18:00:00";
+            var expectedReserveVM = new ReserveVM(_testSlot, testStartTime, 2);
+
+            mockSlotService
+                .Setup(service => service.GetById(_testSlotId))
+                .Returns(_testSlot);
+
+            //Act
+            var result = controller.Reserve(_testSlotId, testStartTime, 2);
+
+            //Assert
+            Assert.IsType<ViewResult>(result);
+            Assert.Equal(JsonSerializer.Serialize(expectedReserveVM), JsonSerializer.Serialize((result as ViewResult).Model));
+            mockSlotService.Verify(service => service.GetById(_testSlotId), Times.Once);
+        }
+
+        [Fact]
+        public void GivenReserveVM_WhenPostReserveIsCalled_ThenServicesAreCalledThreeTimes()
+        {
+            //Arrange
+            var testStartTime = "2024-01-27 18:00:00";
+            var reserveVM = new ReserveVM(_testSlot, testStartTime, 2);
+            reserveVM.VehicleNumber = "777AAA";
+
+            mockSlotService
+                .Setup(service => service.GetById(_testSlotId))
+                .Returns(_testSlot);
+            mockSlotService
+                .Setup(service => service.IsSlotFree(_testSlot, DateTime.Parse(testStartTime), 2))
+                .Returns(true);
+            mockReservationService
+                .Setup(service => service.Insert(It.IsAny<Reservation>()));
+
+            //Act
+            var result = controller.Reserve(reserveVM);
+
+            //Assert
+            Assert.IsType<ViewResult>(result);
+            mockSlotService.Verify(service => service.GetById(_testSlotId), Times.Once);
+            mockSlotService.Verify(service => service.IsSlotFree(_testSlot, DateTime.Parse(testStartTime), 2), Times.Once);
+            mockReservationService.Verify(service => service.Insert(It.IsAny<Reservation>()), Times.Once);
+        }
+
+        [Fact]
+        public void GivenReserveVMWithNullVehicleNumber_WhenPostReserveIsCalled_ThenViewReturnedModelStateIsInvalid()
+        {
+            //Arrange
+            var testStartTime = "2024-01-27 18:00:00";
+            var reserveVM = new ReserveVM(_testSlot, testStartTime, 2);
+            reserveVM.VehicleNumber = null;
+
+            controller.ModelState.AddModelError("VehicleNumber", "Vehicle Number is Required");
+
+            //Act
+            var result = controller.Reserve(reserveVM);
+
+            //Assert
+            Assert.False(controller.ModelState.IsValid);
+            Assert.IsType<ViewResult>(result);
+            Assert.Equal(JsonSerializer.Serialize(reserveVM), JsonSerializer.Serialize((result as ViewResult).Model));
         }
     }
 }

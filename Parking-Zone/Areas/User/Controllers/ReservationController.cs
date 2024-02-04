@@ -69,7 +69,7 @@ namespace Parking_Zone.Areas.User.Controllers
                     return View(reserveVM);
                 }
             }
-            return BadRequest();
+            return View(reserveVM);
         }
     }
 }
