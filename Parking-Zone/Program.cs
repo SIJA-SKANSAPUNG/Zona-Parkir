@@ -18,6 +18,8 @@ builder.Services.AddScoped<IParkingZoneRepository, ParkingZoneRepository>();
 builder.Services.AddScoped<IParkingZoneService, ParkingZoneService>();
 builder.Services.AddScoped<IParkingSlotRepository, ParkingSlotRepository>();
 builder.Services.AddScoped<IParkingSlotService, ParkingSlotService>();
+builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+builder.Services.AddScoped<IReservationService, ReservationService>();
 
 builder.Services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<ApplicationDbContext>();

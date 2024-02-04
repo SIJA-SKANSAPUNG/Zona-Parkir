@@ -12,11 +12,12 @@ namespace Parking_Zone.Areas.User.Controllers
     {
         private readonly IParkingZoneService _zoneService;
         private readonly IParkingSlotService _slotService;
-
-        public ReservationController(IParkingZoneService zoneService, IParkingSlotService slotService)
+        private readonly IReservationService _reservationService;
+        public ReservationController(IParkingZoneService zoneService, IParkingSlotService slotService, IReservationService reservationService)
         {
             _zoneService = zoneService;
             _slotService = slotService;
+            _reservationService = reservationService;
         }
 
         public IActionResult FreeSlots()
@@ -40,6 +41,35 @@ namespace Parking_Zone.Areas.User.Controllers
             freeSlotsVM.ParkingZones = new SelectList(zones, "Id", "Name");
 
             return View(freeSlotsVM);
+        }
+
+        public IActionResult Reserve(Guid SlotId, string startTime, int duration)
+        {
+            var slot = _slotService.GetById(SlotId);
+
+            var reserveVM = new ReserveVM(slot, startTime, duration);
+
+            return View(reserveVM);
+        }
+
+        [HttpPost]
+        public IActionResult Reserve(ReserveVM reserveVM)
+        {
+            var slot = _slotService.GetById(reserveVM.SlotId);
+
+            if (ModelState.IsValid)
+            {
+                if (_slotService.IsSlotFree(slot, DateTime.Parse(reserveVM.StartTime), reserveVM.Duration))
+                {
+                    var reservation = reserveVM.MapToModel();
+                    _reservationService.Insert(reservation);
+
+                    ViewBag.SuccessMessage = "Reservation created successfully.";
+
+                    return View(reserveVM);
+                }
+            }
+            return BadRequest();
         }
     }
 }
