@@ -1,8 +1,9 @@
 ﻿@model Parking_Zone.ViewModels.Reservation.ReserveVM
 
 <div class="row">
-    <p>@Model.ZoneName , @Model.ZoneAddress</p>
-    <p>Slot Number: @Model.SlotNumber</p>
+    <h2>@Model.ZoneName , @Model.ZoneAddress</h2>
+    <h6>Slot Number: @Model.SlotNumber</h6>
+    <hr />
     <div class="col-md-4">
         <form asp-action="Reserve">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -10,6 +11,7 @@
             <input type="hidden" value="@Model.SlotId" asp-for="SlotId" />
             <input type="hidden" value="@Model.ZoneName" asp-for="ZoneName" />
             <input type="hidden" value="@Model.ZoneAddress" asp-for="ZoneAddress" />
+            <input type="hidden" value="@Model.SlotNumber" asp-for="SlotNumber" />
 
             @if (ViewBag.SuccessMessage != null)
             {
