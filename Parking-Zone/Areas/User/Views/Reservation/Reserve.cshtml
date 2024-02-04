@@ -1,0 +1,51 @@
+﻿@model Parking_Zone.ViewModels.Reservation.ReserveVM
+
+<div class="row">
+    <p>@Model.ZoneName , @Model.ZoneAddress</p>
+    <p>Slot Number: @Model.SlotNumber</p>
+    <div class="col-md-4">
+        <form asp-action="Reserve">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <input type="hidden" value="@Model.SlotId" asp-for="SlotId" />
+            <input type="hidden" value="@Model.SlotNumber" asp-for="SlotNumber" />
+            <input type="hidden" value="@Model.ZoneName" asp-for="ZoneName" />
+            <input type="hidden" value="@Model.ZoneAddress" asp-for="ZoneAddress" />
+
+            @if (ViewBag.SuccessMessage != null)
+            {
+                <div class="alert alert-success alert-dismissible" role="alert">
+                    @ViewBag.SuccessMessage
+                </div>
+            }
+
+            <div class="form-group">
+                <label asp-for="StartTime" class="control-label"></label>
+                <input asp-for="StartTime" class="form-control" />
+                <span asp-validation-for="StartTime" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Duration" class="control-label"></label>
+                <input asp-for="Duration" type="number" class="form-control" />
+                <span asp-validation-for="Duration" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="VehicleNumber" class="control-label"></label>
+                <input asp-for="VehicleNumber" type="text" class="form-control" />
+                <span asp-validation-for="VehicleNumber" class="text-danger"></span>
+            </div>
+            <br />
+            <div class="form-group">
+                <input type="submit" value="Submit" class="btn btn-outline-success" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
