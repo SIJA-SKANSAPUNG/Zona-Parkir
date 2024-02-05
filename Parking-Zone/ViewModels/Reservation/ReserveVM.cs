@@ -1,5 +1,6 @@
 ﻿using Parking_Zone.Enums;
 using System.CodeDom;
+using System.ComponentModel.DataAnnotations;
 
 namespace Parking_Zone.ViewModels.Reservation
 {
@@ -22,8 +23,11 @@ namespace Parking_Zone.ViewModels.Reservation
         public int SlotNumber { get; set; }
         public string ZoneName { get; set; }
         public string ZoneAddress { get; set; }
+        [Required]
         public string StartTime { get; set; }
+        [Required]
         public int Duration { get; set; }
+        [Required]
         public string VehicleNumber { get; set; }
 
         public Models.Reservation MapToModel()

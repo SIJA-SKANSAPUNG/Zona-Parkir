@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Moq;
 using Parking_Zone.Areas.User.Controllers;
@@ -25,6 +26,8 @@ namespace Tests.Controllers
         private readonly Mock<IParkingZoneService> mockZoneService;
         private readonly Mock<IParkingSlotService> mockSlotService;
         private readonly Mock<IReservationService> mockReservationService;
+        private readonly Mock<UserManager<AppUser>> userManager;
+
         private readonly ReservationController controller;
 
         private readonly ParkingZone _testZone = new ParkingZone()
@@ -56,7 +59,8 @@ namespace Tests.Controllers
             mockZoneService = new Mock<IParkingZoneService>();
             mockSlotService = new Mock<IParkingSlotService>();
             mockReservationService = new Mock<IReservationService>();
-            controller = new ReservationController(mockZoneService.Object, mockSlotService.Object, mockReservationService.Object);
+            userManager = new Mock<UserManager<AppUser>>(Mock.Of<IUserStore<AppUser>>(), null, null, null, null, null, null, null, null);
+            controller = new ReservationController(mockZoneService.Object, mockSlotService.Object, mockReservationService.Object, userManager.Object);
         }
 
         [Fact]
@@ -133,7 +137,8 @@ namespace Tests.Controllers
         {
             //Arrange
             var testStartTime = "2024-01-27 18:00:00";
-            var expectedReserveVM = new ReserveVM(_testSlot, testStartTime, 2);
+            var duration = 2;
+            var expectedReserveVM = new ReserveVM(_testSlot, testStartTime, duration);
 
             mockSlotService
                 .Setup(service => service.GetById(_testSlotId))
@@ -182,6 +187,10 @@ namespace Tests.Controllers
             var testStartTime = "2024-01-27 18:00:00";
             var reserveVM = new ReserveVM(_testSlot, testStartTime, 2);
             reserveVM.VehicleNumber = null;
+
+            mockSlotService
+                .Setup(service => service.GetById(_testSlotId))
+                .Returns(_testSlot);
 
             controller.ModelState.AddModelError("VehicleNumber", "Vehicle Number is Required");
 

@@ -11,5 +11,8 @@ namespace Parking_Zone.Models
         [ForeignKey("ParkingSlot")]
         public Guid SlotId { get; set; }
         public virtual ParkingSlot ParkingSlot { get; set; }
+
+        public string AppUserId { get; set; }
+        public virtual AppUser AppUser { get; set; }
     }
 }

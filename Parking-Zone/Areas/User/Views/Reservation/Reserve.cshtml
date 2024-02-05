@@ -9,9 +9,6 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <input type="hidden" value="@Model.SlotId" asp-for="SlotId" />
-            <input type="hidden" value="@Model.ZoneName" asp-for="ZoneName" />
-            <input type="hidden" value="@Model.ZoneAddress" asp-for="ZoneAddress" />
-            <input type="hidden" value="@Model.SlotNumber" asp-for="SlotNumber" />
 
             @if (ViewBag.SuccessMessage != null)
             {
