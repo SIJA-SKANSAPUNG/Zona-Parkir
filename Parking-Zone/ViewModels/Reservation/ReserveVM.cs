@@ -19,6 +19,7 @@ namespace Parking_Zone.ViewModels.Reservation
             ZoneName = slot.ParkingZone.Name;
             SlotNumber = slot.Number;
         }
+        [Required]
         public Guid SlotId { get; set; }
         public int SlotNumber { get; set; }
         public string ZoneName { get; set; }

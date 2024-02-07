@@ -84,8 +84,6 @@ namespace Parking_Zone.Areas.User.Controllers
                 _reservationService.Insert(reservation);
 
                 ViewBag.SuccessMessage = "Reservation created successfully.";
-
-                return View(reserveVM);
             }
             else
             {

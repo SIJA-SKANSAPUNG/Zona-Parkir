@@ -52,6 +52,14 @@ namespace Tests.Controllers
             ParkingZoneId = Guid.Parse("dd09a090-b0f6-4369-b24a-656843d227bc"),
             Category = SlotCategoryEnum.Business,
             IsAvailableForBooking = true,
+            Reservations = new List<Reservation>()
+            {
+                new Reservation()
+                {
+                    StartTime = DateTime.Parse("2024-01-27 18:00:00"),
+                    Duration = 4
+                }
+            }
         };
 
         public ReservationControllerTests()
@@ -63,6 +71,7 @@ namespace Tests.Controllers
             controller = new ReservationController(mockZoneService.Object, mockSlotService.Object, mockReservationService.Object, userManager.Object);
         }
 
+        #region FreeSlots
         [Fact]
         public void GivenNothing_WhenGetFreeSlotsCalled_ThenZoneServiceCalledOnceAndReturnedViewResultWithViewModel()
         {
@@ -131,7 +140,9 @@ namespace Tests.Controllers
             Assert.Equal(JsonSerializer.Serialize(expectedSlotsVM), JsonSerializer.Serialize((result as ViewResult).Model));
             mockSlotService.Verify(service => service.GetFreeByZoneIdAndTimePeriod(_testZoneId, testStartTime, 3), Times.Once);
         }
+        #endregion
 
+        #region Reserve
         [Fact]
         public void GivenSlotIdStartTimeAndDuration_WhenGetReserveIsCalled_ThenServiceCalledOnceAndReturnedNotEmptyViewResult()
         {
@@ -202,5 +213,75 @@ namespace Tests.Controllers
             Assert.IsType<ViewResult>(result);
             Assert.Equal(JsonSerializer.Serialize(reserveVM), JsonSerializer.Serialize((result as ViewResult).Model));
         }
+
+        [Fact]
+        public void GivenIdOfNotExistingSlot_WhenGetReserveIsCalled_ThenReturnedNotFoundResulted()
+        {
+            //Arrange
+            var testStartTime = "2024-01-27 18:00:00";
+            var duration = 2;
+
+            mockSlotService
+                .Setup(service => service.GetById(_testSlotId));
+
+            //Act
+            var result = controller.Reserve(_testSlotId, testStartTime, duration);
+
+            //Assert
+            Assert.IsType<NotFoundResult>(result);
+            mockSlotService.Verify(service => service.GetById(_testSlotId), Times.Once);
+        }
+
+        [Fact]
+        public void GivenReserveVMWithNotExistingSlotId_WhenPostReserveIsCalled_ThenReturnedNotFoundResult()
+        {
+            //Arrange
+            var reserveVM = new ReserveVM()
+            {
+                SlotId = _testSlotId,
+                Duration = 2,
+                StartTime = "2024-01-27 18:00:00"
+            };
+
+            mockSlotService
+                .Setup(service => service.GetById(reserveVM.SlotId));
+
+            //Act
+            var result = controller.Reserve(reserveVM);
+
+            //Assert
+            Assert.IsType<NotFoundResult>(result);
+            mockSlotService.Verify(service => service.GetById(_testSlotId), Times.Once);
+        }
+
+        [Fact]
+        public void GivenReserveVMWithNotFreeSlot_WhenPostReserveIsCalled_ThenReturnedModelStateIsInvalid()
+        {
+            //Arrange
+            var testStartTime = "2024-01-27 18:00:00";
+            var duration = 2;
+            var reserveVM = new ReserveVM()
+            {
+                SlotId = _testSlotId,
+                Duration = 2,
+                StartTime = "2024-01-27 18:00:00"
+            };
+
+            mockSlotService
+                .Setup(service => service.GetById(_testSlotId))
+                .Returns(_testSlot);
+            mockSlotService
+                .Setup(service => service.IsSlotFree(_testSlot, DateTime.Parse(testStartTime), duration))
+                .Returns(false);
+
+            //Act
+            var result = controller.Reserve(reserveVM);
+
+            //Assert
+            Assert.False(controller.ModelState.IsValid);
+            mockSlotService.Verify(service => service.GetById(_testSlotId), Times.Once);
+            mockSlotService.Verify(service => service.IsSlotFree(_testSlot, DateTime.Parse(testStartTime), duration), Times.Once);
+        }
+        #endregion
     }
 }

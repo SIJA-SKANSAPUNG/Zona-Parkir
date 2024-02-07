@@ -8,7 +8,7 @@
         <form asp-action="Reserve">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-            <input type="hidden" value="@Model.SlotId" asp-for="SlotId" />
+            <input type="hidden" asp-for="SlotId" />
 
             @if (ViewBag.SuccessMessage != null)
             {
