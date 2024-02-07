@@ -1,22 +1,30 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Parking_Zone.Models;
 using Parking_Zone.Services;
 using Parking_Zone.ViewModels.ParkingSlot;
 using Parking_Zone.ViewModels.Reservation;
+using System.Security.Claims;
 
 namespace Parking_Zone.Areas.User.Controllers
 {
     [Area("User")]
+    [Authorize]
     public class ReservationController : Controller
     {
         private readonly IParkingZoneService _zoneService;
         private readonly IParkingSlotService _slotService;
+        private readonly IReservationService _reservationService;
 
-        public ReservationController(IParkingZoneService zoneService, IParkingSlotService slotService)
+        public ReservationController(IParkingZoneService zoneService,
+            IParkingSlotService slotService,
+            IReservationService reservationService)
         {
             _zoneService = zoneService;
             _slotService = slotService;
+            _reservationService = reservationService;
         }
 
         public IActionResult FreeSlots()
@@ -40,6 +48,49 @@ namespace Parking_Zone.Areas.User.Controllers
             freeSlotsVM.ParkingZones = new SelectList(zones, "Id", "Name");
 
             return View(freeSlotsVM);
+        }
+
+        public IActionResult Reserve(Guid SlotId, string startTime, int duration)
+        {
+            var slot = _slotService.GetById(SlotId);
+
+            if (slot is null)
+                return NotFound();
+
+            var reserveVM = new ReserveVM(slot, startTime, duration);
+
+            return View(reserveVM);
+        }
+
+        [HttpPost]
+        public IActionResult Reserve(ReserveVM reserveVM)
+        {
+            var slot = _slotService.GetById(reserveVM.SlotId);
+
+            if (slot is null)
+                return NotFound();
+
+            reserveVM.SlotNumber = slot.Number;
+            reserveVM.ZoneAddress = slot.ParkingZone.Address;
+            reserveVM.ZoneName = slot.ParkingZone.Name;
+
+            if (_slotService.IsSlotFree(slot, DateTime.Parse(reserveVM.StartTime), reserveVM.Duration))
+            {
+                var reservation = reserveVM.MapToModel();
+
+                reservation.AppUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                _reservationService.Insert(reservation);
+
+                ViewBag.SuccessMessage = "Reservation created successfully.";
+            }
+            else
+            {
+                ModelState.AddModelError("StartTime", "Choose other time");
+                ModelState.AddModelError("Duration", "This slot has just been booked, try another time");
+            }
+
+            return View(reserveVM);
         }
     }
 }
