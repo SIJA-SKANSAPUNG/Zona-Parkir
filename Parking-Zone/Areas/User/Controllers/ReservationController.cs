@@ -6,6 +6,7 @@ using Parking_Zone.Models;
 using Parking_Zone.Services;
 using Parking_Zone.ViewModels.ParkingSlot;
 using Parking_Zone.ViewModels.Reservation;
+using System.Security.Claims;
 
 namespace Parking_Zone.Areas.User.Controllers
 {
@@ -16,17 +17,14 @@ namespace Parking_Zone.Areas.User.Controllers
         private readonly IParkingZoneService _zoneService;
         private readonly IParkingSlotService _slotService;
         private readonly IReservationService _reservationService;
-        private readonly UserManager<AppUser> _userManager;
 
         public ReservationController(IParkingZoneService zoneService,
             IParkingSlotService slotService,
-            IReservationService reservationService,
-            UserManager<AppUser> userManager)
+            IReservationService reservationService)
         {
             _zoneService = zoneService;
             _slotService = slotService;
             _reservationService = reservationService;
-            _userManager = userManager;
         }
 
         public IActionResult FreeSlots()
@@ -79,7 +77,8 @@ namespace Parking_Zone.Areas.User.Controllers
             if (_slotService.IsSlotFree(slot, DateTime.Parse(reserveVM.StartTime), reserveVM.Duration))
             {
                 var reservation = reserveVM.MapToModel();
-                reservation.AppUserId = _userManager.GetUserId(User);
+
+                reservation.AppUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
                 _reservationService.Insert(reservation);
 

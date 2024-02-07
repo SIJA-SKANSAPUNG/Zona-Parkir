@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Moq;
@@ -12,6 +13,7 @@ using Parking_Zone.ViewModels.Reservation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -26,7 +28,6 @@ namespace Tests.Controllers
         private readonly Mock<IParkingZoneService> mockZoneService;
         private readonly Mock<IParkingSlotService> mockSlotService;
         private readonly Mock<IReservationService> mockReservationService;
-        private readonly Mock<UserManager<AppUser>> userManager;
 
         private readonly ReservationController controller;
 
@@ -67,8 +68,7 @@ namespace Tests.Controllers
             mockZoneService = new Mock<IParkingZoneService>();
             mockSlotService = new Mock<IParkingSlotService>();
             mockReservationService = new Mock<IReservationService>();
-            userManager = new Mock<UserManager<AppUser>>(Mock.Of<IUserStore<AppUser>>(), null, null, null, null, null, null, null, null);
-            controller = new ReservationController(mockZoneService.Object, mockSlotService.Object, mockReservationService.Object, userManager.Object);
+            controller = new ReservationController(mockZoneService.Object, mockSlotService.Object, mockReservationService.Object);
         }
 
         #region FreeSlots
@@ -164,6 +164,17 @@ namespace Tests.Controllers
             mockSlotService.Verify(service => service.GetById(_testSlotId), Times.Once);
         }
 
+        private ClaimsPrincipal CreateMockClaimsPrincipal()
+        {
+            var claims = new List<Claim>()
+            {
+                new(ClaimTypes.NameIdentifier, "AppUserId")
+            };
+            var identity = new ClaimsIdentity(claims);
+
+            return new ClaimsPrincipal(identity);
+        }
+
         [Fact]
         public void GivenReserveVM_WhenPostReserveIsCalled_ThenServicesAreCalledThreeTimes()
         {
@@ -171,6 +182,15 @@ namespace Tests.Controllers
             var testStartTime = "2024-01-27 18:00:00";
             var reserveVM = new ReserveVM(_testSlot, testStartTime, 2);
             reserveVM.VehicleNumber = "777AAA";
+
+            var mockClaimsPrincipal = CreateMockClaimsPrincipal();
+
+            var controllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = mockClaimsPrincipal }
+            };
+
+            controller.ControllerContext = controllerContext;
 
             mockSlotService
                 .Setup(service => service.GetById(_testSlotId))
