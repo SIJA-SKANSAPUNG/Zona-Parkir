@@ -1,0 +1,12 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<AppUser> SignInManager
+@inject UserManager<AppUser> UserManager
+
+<ul class="navbar-nav">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="User" asp-controller="Reservation" asp-action="Index" asp-route-appUserId="@UserManager.GetUserId(User)">My Reservations</a>
+        </li>
+    }
+</ul>
