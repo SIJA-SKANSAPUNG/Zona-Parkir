@@ -92,5 +92,10 @@ namespace Parking_Zone.Areas.User.Controllers
 
             return View(reserveVM);
         }
+
+        public IActionResult Index(string appUserId)
+        {
+            return View();
+        }
     }
 }
