@@ -6,7 +6,7 @@
 }
 else
 {
-    <h1>Your reservations</h1>
+    <h1>My reservations history</h1>
     <table class="table">
         <thead>
             <tr>
@@ -19,28 +19,15 @@ else
         </thead>
 
         <tbody>
-            @foreach(var item in Model)
+            @foreach (var item in Model)
             {
-                if (item.IsActive)
-                {
-                    <tr class="table-success">
-                        <td>@item.StartTime</td>
-                        <td>@item.Duration</td>
-                        <td>@item.ZoneName, @item.ZoneAddress</td>
-                        <td>@item.SlotNumber</td>
-                        <td>@item.VehicleNumber</td>
-                    </tr>
-                }
-                else
-                {
-                    <tr class="table-danger">
-                        <td>@item.StartTime</td>
-                        <td>@item.Duration</td>
-                        <td>@item.ZoneName, @item.ZoneAddress</td>
-                        <td>@item.SlotNumber</td>
-                        <td>@item.VehicleNumber</td>
-                    </tr>
-                }
+                <tr class=@((item.IsActive) ? "table-success" : "table-danger")>
+                    <td>@item.StartTime</td>
+                    <td>@item.Duration</td>
+                    <td>@item.ZoneName, @item.ZoneAddress</td>
+                    <td>@item.SlotNumber</td>
+                    <td>@item.VehicleNumber</td>
+                </tr>
             }
         </tbody>
     </table>

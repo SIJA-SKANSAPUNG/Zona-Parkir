@@ -322,35 +322,50 @@ namespace Tests.Controllers
         #endregion
 
         #region Index
+        private DateTime RoundToSeconds(DateTime dateTime)
+        {
+            return new DateTime(dateTime.Ticks - (dateTime.Ticks % TimeSpan.TicksPerSecond), dateTime.Kind);
+        }
+
         [Fact]
         public void GivenUserId_WhenIndexIsCalled_ThenReservationListItemVMsReturned()
         {
             //Arrange
-            var testUserId = new Guid().ToString();
-            var activeReservation = new Reservation()
-            {
-                StartTime = DateTime.Now.AddHours(-2),
-                Duration = 3,
-                ParkingSlot = _testSlot
-            };
-            var inActiveReservation = new Reservation()
-            {
-                StartTime = DateTime.Now.AddHours(-4),
-                Duration = 1,
-                ParkingSlot = _testSlot
-            };
+            var testUserId = "7d9b25d9-8efc-445e-bbf5-47a1b6cf4fb5";
+            var now = DateTime.Now;
             var reservations = new List<Reservation>()
             {
-                activeReservation, inActiveReservation
+                new()
+                {
+                    StartTime = RoundToSeconds(now.AddHours(-2)),
+                    Duration = 4,
+                    ParkingSlot = _testSlot
+                },
+                new()
+                {
+                    StartTime = RoundToSeconds(now.AddHours(-6)),
+                    Duration = 2,
+                    ParkingSlot = _testSlot
+                }
             };
-            var expectedReservationListItemVMs = new List<ReservationListItemVM>()
+            var expectedReservationVM = new List<ReservationListItemVM>()
             {
-                new(activeReservation),
-                new(inActiveReservation)
+                new(new()
+                {
+                    StartTime = RoundToSeconds(now.AddHours(-2)),
+                    Duration = 4,
+                    ParkingSlot = _testSlot
+                }),
+                new(new()
+                {
+                    StartTime = RoundToSeconds(now.AddHours(-6)),
+                    Duration = 2,
+                    ParkingSlot = _testSlot
+                })
             };
 
             mockReservationService
-                .Setup(service => service.GetByAppUserId(It.IsAny<string>()))
+                .Setup(service => service.GetByAppUserId(testUserId))
                 .Returns(reservations);
 
             //Act
@@ -359,8 +374,8 @@ namespace Tests.Controllers
 
             //Arrange
             Assert.IsType<ViewResult>(result);
-            Assert.Equal(JsonSerializer.Serialize(expectedReservationListItemVMs), JsonSerializer.Serialize((result as ViewResult).Model));
-            mockReservationService.Verify(service => service.GetByAppUserId(It.IsAny<string>()), Times.Once);
+            Assert.Equal(JsonSerializer.Serialize(expectedReservationVM), JsonSerializer.Serialize((result as ViewResult).Model));
+            mockReservationService.Verify(service => service.GetByAppUserId(testUserId), Times.Once);
         }
         #endregion
     }
