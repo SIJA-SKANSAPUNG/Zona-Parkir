@@ -12,7 +12,6 @@
             ZoneName = reservation.ParkingSlot.ParkingZone.Name;
             IsActive = reservation.StartTime < DateTime.Now &&
                        reservation.StartTime.AddHours(reservation.Duration) > DateTime.Now;
-
         }
         public DateTime StartTime { get; set; }
         public int Duration { get; set; }

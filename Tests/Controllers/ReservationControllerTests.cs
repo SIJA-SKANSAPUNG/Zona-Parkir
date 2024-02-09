@@ -332,44 +332,44 @@ namespace Tests.Controllers
         {
             //Arrange
             var testUserId = "7d9b25d9-8efc-445e-bbf5-47a1b6cf4fb5";
-            var now = DateTime.Now;
+
+            var testUser = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+            {
+                    new Claim(ClaimTypes.NameIdentifier, "7d9b25d9-8efc-445e-bbf5-47a1b6cf4fb5")
+            }, "mock"));
+
             var reservations = new List<Reservation>()
             {
                 new()
                 {
-                    StartTime = RoundToSeconds(now.AddHours(-2)),
+                    StartTime = DateTime.Now.AddHours(-2),
                     Duration = 4,
                     ParkingSlot = _testSlot
                 },
                 new()
                 {
-                    StartTime = RoundToSeconds(now.AddHours(-6)),
+                    StartTime = DateTime.Now.AddHours(-6),
                     Duration = 2,
                     ParkingSlot = _testSlot
                 }
             };
             var expectedReservationVM = new List<ReservationListItemVM>()
             {
-                new(new()
-                {
-                    StartTime = RoundToSeconds(now.AddHours(-2)),
-                    Duration = 4,
-                    ParkingSlot = _testSlot
-                }),
-                new(new()
-                {
-                    StartTime = RoundToSeconds(now.AddHours(-6)),
-                    Duration = 2,
-                    ParkingSlot = _testSlot
-                })
+                new(reservations[0]),
+                new(reservations[1])
             };
 
             mockReservationService
                 .Setup(service => service.GetByAppUserId(testUserId))
                 .Returns(reservations);
 
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = testUser }
+            };
+
             //Act
-            var result = controller.Index(testUserId);
+            var result = controller.Index();
 
 
             //Arrange

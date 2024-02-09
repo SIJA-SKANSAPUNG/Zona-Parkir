@@ -5,10 +5,8 @@ namespace Parking_Zone.Services
 {
     public class ReservationService : Service<Reservation>, IReservationService
     {
-        private readonly IReservationRepository _reservationRepository;
         public ReservationService(IReservationRepository repository) : base(repository)
         {
-            _reservationRepository = repository;
         }
 
         public override void Insert(Reservation entity)
@@ -19,7 +17,7 @@ namespace Parking_Zone.Services
 
         public IEnumerable<Reservation> GetByAppUserId(string appUserId)
         {
-            return _reservationRepository.GetAll()
+            return _repository.GetAll()
                 .Where(x => x.AppUserId == appUserId);
         }
     }

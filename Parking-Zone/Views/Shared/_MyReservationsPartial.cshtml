@@ -5,6 +5,6 @@
 @if (SignInManager.IsSignedIn(User))
 {
     <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="User" asp-controller="Reservation" asp-action="Index" asp-route-appUserId="@UserManager.GetUserId(User)">My Reservations</a>
+        <a class="nav-link text-dark" asp-area="User" asp-controller="Reservation" asp-action="Index">My Reservations</a>
     </li>
 }
