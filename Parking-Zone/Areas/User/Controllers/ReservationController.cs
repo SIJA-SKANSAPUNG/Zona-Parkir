@@ -90,7 +90,20 @@ namespace Parking_Zone.Areas.User.Controllers
                 ModelState.AddModelError("Duration", "This slot has just been booked, try another time");
             }
 
-            return View(reserveVM);
+            return RedirectToAction("Index", "Reservation");
+        }
+
+        public IActionResult Index()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var reservations = _reservationService.GetByAppUserId(userId);
+
+            var reservationVMs = reservations
+                .Select(x => new ReservationListItemVM(x))
+                .OrderByDescending(x => x.StartTime);
+
+            return View(reservationVMs);
         }
     }
 }

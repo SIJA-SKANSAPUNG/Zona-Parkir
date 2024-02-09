@@ -14,5 +14,11 @@ namespace Parking_Zone.Services
             entity.Id = Guid.NewGuid();
             base.Insert(entity);
         }
+
+        public IEnumerable<Reservation> GetByAppUserId(string appUserId)
+        {
+            return _repository.GetAll()
+                .Where(x => x.AppUserId == appUserId);
+        }
     }
 }

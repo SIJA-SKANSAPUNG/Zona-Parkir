@@ -205,7 +205,7 @@ namespace Tests.Controllers
             var result = controller.Reserve(reserveVM);
 
             //Assert
-            Assert.IsType<ViewResult>(result);
+            Assert.IsType<RedirectToActionResult>(result);
             mockSlotService.Verify(service => service.GetById(_testSlotId), Times.Once);
             mockSlotService.Verify(service => service.IsSlotFree(_testSlot, DateTime.Parse(testStartTime), 2), Times.Once);
             mockReservationService.Verify(service => service.Insert(It.IsAny<Reservation>()), Times.Once);
@@ -219,6 +219,16 @@ namespace Tests.Controllers
             var reserveVM = new ReserveVM(_testSlot, testStartTime, 2);
             reserveVM.VehicleNumber = null;
 
+            var testUser = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, "apptUserId")
+            }, "mock"));
+
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = testUser }
+            };
+
             mockSlotService
                 .Setup(service => service.GetById(_testSlotId))
                 .Returns(_testSlot);
@@ -230,8 +240,7 @@ namespace Tests.Controllers
 
             //Assert
             Assert.False(controller.ModelState.IsValid);
-            Assert.IsType<ViewResult>(result);
-            Assert.Equal(JsonSerializer.Serialize(reserveVM), JsonSerializer.Serialize((result as ViewResult).Model));
+            Assert.IsType<RedirectToActionResult>(result);
         }
 
         [Fact]
@@ -286,6 +295,10 @@ namespace Tests.Controllers
                 Duration = 2,
                 StartTime = "2024-01-27 18:00:00"
             };
+            var testUser = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+            {
+                    new Claim(ClaimTypes.NameIdentifier, "appUserId")
+            }, "mock"));
 
             mockSlotService
                 .Setup(service => service.GetById(_testSlotId))
@@ -294,6 +307,11 @@ namespace Tests.Controllers
                 .Setup(service => service.IsSlotFree(_testSlot, DateTime.Parse(testStartTime), duration))
                 .Returns(false);
 
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = testUser }
+            };
+
             //Act
             var result = controller.Reserve(reserveVM);
 
@@ -301,6 +319,59 @@ namespace Tests.Controllers
             Assert.False(controller.ModelState.IsValid);
             mockSlotService.Verify(service => service.GetById(_testSlotId), Times.Once);
             mockSlotService.Verify(service => service.IsSlotFree(_testSlot, DateTime.Parse(testStartTime), duration), Times.Once);
+        }
+        #endregion
+
+        #region Index
+        [Fact]
+        public void GivenUserId_WhenIndexIsCalled_ThenReservationListItemVMsReturned()
+        {
+            //Arrange
+            var testUserId = "7d9b25d9-8efc-445e-bbf5-47a1b6cf4fb5";
+
+            var testUser = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+            {
+                    new Claim(ClaimTypes.NameIdentifier, "7d9b25d9-8efc-445e-bbf5-47a1b6cf4fb5")
+            }, "mock"));
+
+            var reservations = new List<Reservation>()
+            {
+                new()
+                {
+                    StartTime = DateTime.Now.AddHours(-2),
+                    Duration = 4,
+                    ParkingSlot = _testSlot
+                },
+                new()
+                {
+                    StartTime = DateTime.Now.AddHours(-6),
+                    Duration = 2,
+                    ParkingSlot = _testSlot
+                }
+            };
+            var expectedReservationVM = new List<ReservationListItemVM>()
+            {
+                new(reservations[0]),
+                new(reservations[1])
+            };
+
+            mockReservationService
+                .Setup(service => service.GetByAppUserId(testUserId))
+                .Returns(reservations);
+
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = testUser }
+            };
+
+            //Act
+            var result = controller.Index();
+
+
+            //Arrange
+            Assert.IsType<ViewResult>(result);
+            Assert.Equal(JsonSerializer.Serialize(expectedReservationVM), JsonSerializer.Serialize((result as ViewResult).Model));
+            mockReservationService.Verify(service => service.GetByAppUserId(testUserId), Times.Once);
         }
         #endregion
     }
