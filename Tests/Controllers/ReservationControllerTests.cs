@@ -311,6 +311,7 @@ namespace Tests.Controllers
             {
                 HttpContext = new DefaultHttpContext { User = testUser }
             };
+
             //Act
             var result = controller.Reserve(reserveVM);
 
@@ -322,11 +323,6 @@ namespace Tests.Controllers
         #endregion
 
         #region Index
-        private DateTime RoundToSeconds(DateTime dateTime)
-        {
-            return new DateTime(dateTime.Ticks - (dateTime.Ticks % TimeSpan.TicksPerSecond), dateTime.Kind);
-        }
-
         [Fact]
         public void GivenUserId_WhenIndexIsCalled_ThenReservationListItemVMsReturned()
         {
