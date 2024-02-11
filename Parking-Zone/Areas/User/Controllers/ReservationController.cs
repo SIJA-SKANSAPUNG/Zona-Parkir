@@ -81,8 +81,6 @@ namespace Parking_Zone.Areas.User.Controllers
                 reservation.AppUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
                 _reservationService.Insert(reservation);
-
-                ViewBag.SuccessMessage = "Reservation created successfully.";
             }
             else
             {

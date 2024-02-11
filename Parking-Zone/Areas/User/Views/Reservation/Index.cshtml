@@ -6,27 +6,28 @@
 }
 else
 {
-    <h1>My reservations history</h1>
+    <h1 class="text-center">My reservations history</h1>
+    <br />
     <table class="table">
         <thead>
             <tr>
-                <th>StartTime</th>
-                <th>Duration</th>
+                <th>@Html.DisplayNameFor(model => model.StartTime)</th>
+                <th>@Html.DisplayNameFor(model => model.Duration)</th>
                 <th>Parking Zone</th>
-                <th>Slot Number</th>
-                <th>Vehicle Number</th>
+                <th>@Html.DisplayNameFor(model => model.SlotNumber)</th>
+                <th>@Html.DisplayNameFor(model => model.VehicleNumber)</th>
             </tr>
         </thead>
 
         <tbody>
             @foreach (var item in Model)
             {
-                <tr class=@((item.IsActive) ? "table-success" : "table-danger")>
-                    <td>@item.StartTime</td>
-                    <td>@item.Duration</td>
-                    <td>@item.ZoneName, @item.ZoneAddress</td>
-                    <td>@item.SlotNumber</td>
-                    <td>@item.VehicleNumber</td>
+                <tr class=@((item.IsActive) ? "table-success" : "")>
+                    <td>@Html.DisplayFor(modelItem => item.StartTime)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Duration)</td>
+                    <td>@Html.DisplayFor(modelItem => item.ZoneName), @Html.DisplayFor(modelItem => item.ZoneAddress)</td>
+                    <td>@Html.DisplayFor(modelItem => item.SlotNumber)</td>
+                    <td>@Html.DisplayFor(modelItem => item.VehicleNumber)</td>
                 </tr>
             }
         </tbody>
