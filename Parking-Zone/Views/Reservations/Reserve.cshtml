@@ -10,13 +10,6 @@
 
             <input type="hidden" asp-for="SlotId" />
 
-            @if (ViewBag.SuccessMessage != null)
-            {
-                <div class="alert alert-success alert-dismissible" role="alert">
-                    @ViewBag.SuccessMessage
-                </div>
-            }
-
             <div class="form-group">
                 <label asp-for="StartTime" class="control-label"></label>
                 <input asp-for="StartTime" class="form-control" />

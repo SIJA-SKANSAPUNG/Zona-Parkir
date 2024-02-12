@@ -64,13 +64,13 @@
                         @Html.DisplayFor(ApplicationModelConventionExtensions => item.Category)
                     </td>
                     <td>
-                        <a class="btn btn-outline-primary" asp-controller="Reservation" asp-action="Reserve" asp-route-slotId="@item.Id" asp-route-startTime="@Model.StartTime" asp-route-duration="@Model.Duration">Select</a>
+                        <a class="btn btn-outline-primary" asp-controller="Reservations" asp-action="Reserve" asp-route-slotId="@item.Id" asp-route-startTime="@Model.StartTime" asp-route-duration="@Model.Duration">Select</a>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
-    <a class="btn btn-primary btn-lg" asp-controller="Reservation" asp-action="FreeSlots">Back</a>
+    <a class="btn btn-primary btn-lg" asp-controller="Reservations" asp-action="FreeSlots">Back</a>
 }
 @section Scripts {
     @{
