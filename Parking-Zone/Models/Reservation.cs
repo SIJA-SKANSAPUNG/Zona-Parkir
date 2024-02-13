@@ -13,5 +13,11 @@ namespace Parking_Zone.Models
         public virtual ParkingSlot ParkingSlot { get; set; }
         public string AppUserId { get; set; }
         public virtual AppUser AppUser { get; set; }
+
+        [NotMapped]
+        public bool IsActive
+        {
+            get => StartTime <= DateTime.Now && DateTime.Now < StartTime.AddHours(Duration);
+        }
     }
 }

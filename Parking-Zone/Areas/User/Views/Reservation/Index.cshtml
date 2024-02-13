@@ -16,6 +16,7 @@ else
                 <th>Parking Zone</th>
                 <th>@Html.DisplayNameFor(model => model.SlotNumber)</th>
                 <th>@Html.DisplayNameFor(model => model.VehicleNumber)</th>
+                <th>Prolong</th>
             </tr>
         </thead>
 
@@ -28,6 +29,9 @@ else
                     <td>@Html.DisplayFor(modelItem => item.ZoneName), @Html.DisplayFor(modelItem => item.ZoneAddress)</td>
                     <td>@Html.DisplayFor(modelItem => item.SlotNumber)</td>
                     <td>@Html.DisplayFor(modelItem => item.VehicleNumber)</td>
+                    <td>
+                        @if (item.IsActive){<a class="btn btn-primary" asp-controller="Reservation" asp-action="Prolong" asp-route-reservationId="@item.Id">Prolong</a>}
+                    </td>
                 </tr>
             }
         </tbody>

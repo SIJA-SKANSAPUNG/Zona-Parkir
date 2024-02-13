@@ -20,5 +20,11 @@ namespace Parking_Zone.Services
             return _repository.GetAll()
                 .Where(x => x.AppUserId == appUserId);
         }
+
+        public void Prolong(Reservation reservation, int newDuration)
+        {
+            reservation.Duration += newDuration;
+            Update(reservation);
+        }
     }
 }
