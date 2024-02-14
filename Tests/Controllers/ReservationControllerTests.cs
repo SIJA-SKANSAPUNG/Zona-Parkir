@@ -269,19 +269,15 @@ namespace Tests.Controllers
         }
 
         [Fact]
-        public void GivenProlongVMWithNotExistingReservation_WhenPostProlongIsCalled_ThenServiceIsCalledOnceReturnedNotFoundResult()
+        public void GivenReservationId_WhenGetProlongIsCalled_ThenServiceIsCalledOnceReturnedNotFoundResult()
         {
-            var prolongVM = new ProlongVM
-            {
-                ReservationId = Guid.NewGuid(),
-                ExtraHours = 1
-            };
+            var reservationId = Guid.NewGuid();
 
             mockReservationService
                 .Setup(service => service.GetById(It.IsAny<Guid>()));
 
             //Act
-            var result = controller.Prolong(prolongVM);
+            var result = controller.Prolong(reservationId);
 
             //Assert
             Assert.IsType<NotFoundResult>(result);
