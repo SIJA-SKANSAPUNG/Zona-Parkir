@@ -121,40 +121,33 @@ namespace Tests.Controllers
         public void GivenReservationId_WhenGetProlongIsCalled_ThenServiceIsCalledOnceAndReturnedProlongVM()
         {
             //Arrange
+            var now = DateTime.Now;
             var reservation = new Reservation()
             {
                 Id = _testReservationId,
                 ParkingSlot = _testSlot,
-                StartTime = DateTime.Now.AddHours(-1),
+                StartTime = now.AddHours(-1),
                 Duration = 3
             };
 
             var prolongVM = new ProlongVM()
             {
                 ReservationId = _testReservationId,
-                NewDuration = 1
+                ExtraHours = 1
             };
 
             var expectedProlongVM = new ProlongVM()
             {
                 ReservationId = _testReservationId,
-                StartTime = DateTime.Now.AddHours(-1).ToString(),
+                StartTime = now.AddHours(-1).ToString(),
                 SlotNumber = _testSlot.Number,
-                EndDateTime = DateTime.Now.AddHours(2).ToString(),
-                ZoneAddress = _testSlot.ParkingZone.Address,
-                OldDuration = 3,
-                IsActive = true
+                EndDateTime = now.AddHours(2).ToString(),
+                ZoneAddress = _testSlot.ParkingZone.Address
             };
 
             mockReservationService
                 .Setup(service => service.GetById(It.IsAny<Guid>()))
                 .Returns(reservation);
-            mockSlotService
-                .Setup(service => service.GetById(It.IsAny<Guid>()))
-                .Returns(_testSlot);
-            mockSlotService
-                .Setup(service => service.IsSlotFree(_testSlot, reservation.StartTime.AddHours(reservation.Duration), prolongVM.NewDuration))
-                .Returns(true);
 
             //Act
             var result = controller.Prolong(_testReservationId);
@@ -209,8 +202,7 @@ namespace Tests.Controllers
             var prolongVM = new ProlongVM()
             {
                 ReservationId = _testReservationId,
-                NewDuration = 2,
-                EndDateTime = DateTime.Now.AddHours(1).ToString()
+                ExtraHours = 2
             };
 
             mockReservationService
@@ -222,7 +214,7 @@ namespace Tests.Controllers
                 .Returns(_testSlot);
 
             mockSlotService
-                .Setup(service => service.IsSlotFree(_testSlot, DateTime.Parse(prolongVM.EndDateTime), prolongVM.NewDuration))
+                .Setup(service => service.IsSlotFree(_testSlot, reservation.StartTime.AddHours(reservation.Duration), prolongVM.ExtraHours))
                 .Returns(false);
 
             //Act
@@ -231,26 +223,27 @@ namespace Tests.Controllers
             //Assert
             Assert.False(controller.ModelState.IsValid);
             mockReservationService.Verify(service => service.GetById(It.IsAny<Guid>()), Times.Once);
-            mockSlotService.Verify(service => service.IsSlotFree(_testSlot, DateTime.Parse(prolongVM.EndDateTime), prolongVM.NewDuration));
+            mockSlotService.Verify(service => service.IsSlotFree(_testSlot, reservation.StartTime.AddHours(reservation.Duration), prolongVM.ExtraHours));
         }
 
         [Fact]
         public void GivenProlongVM_WhenPostProlongIsCalled_ThenServiceIsCalledTwiceAndReturnedRedirectToActionResult()
         {
             //Arrange
+            var testStartTime = DateTime.Now.AddHours(-1);
+
             var reservation = new Reservation()
             {
                 Id = _testReservationId,
                 ParkingSlot = _testSlot,
-                StartTime = DateTime.Now.AddHours(-1),
+                StartTime = testStartTime,
                 Duration = 2
             };
 
             var prolongVM = new ProlongVM()
             {
                 ReservationId = _testReservationId,
-                NewDuration = 2,
-                EndDateTime = DateTime.Now.AddHours(1).ToString()
+                ExtraHours = 1
             };
 
             mockReservationService
@@ -262,7 +255,7 @@ namespace Tests.Controllers
                 .Returns(_testSlot);
 
             mockSlotService
-                .Setup(service => service.IsSlotFree(_testSlot, DateTime.Parse(prolongVM.EndDateTime), prolongVM.NewDuration))
+                .Setup(service => service.IsSlotFree(_testSlot, reservation.StartTime.AddHours(reservation.Duration), prolongVM.ExtraHours))
                 .Returns(true);
 
             //Act
@@ -271,8 +264,28 @@ namespace Tests.Controllers
             //Assert
             Assert.IsType<RedirectToActionResult>(result);
             mockReservationService.Verify(service => service.GetById(It.IsAny<Guid>()), Times.Once);
-            mockReservationService.Verify(service => service.Prolong(reservation, prolongVM.NewDuration), Times.Once);
-            mockSlotService.Verify(service => service.IsSlotFree(_testSlot, DateTime.Parse(prolongVM.EndDateTime), prolongVM.NewDuration));
+            mockReservationService.Verify(service => service.Prolong(reservation, prolongVM.ExtraHours), Times.Once);
+            mockSlotService.Verify(service => service.IsSlotFree(_testSlot, reservation.StartTime.AddHours(reservation.Duration), prolongVM.ExtraHours));
+        }
+
+        [Fact]
+        public void GivenProlongVMWithNotExistingReservation_WhenPostProlongIsCalled_ThenServiceIsCalledOnceReturnedNotFoundResult()
+        {
+            var prolongVM = new ProlongVM
+            {
+                ReservationId = Guid.NewGuid(),
+                ExtraHours = 1
+            };
+
+            mockReservationService
+                .Setup(service => service.GetById(It.IsAny<Guid>()));
+
+            //Act
+            var result = controller.Prolong(prolongVM);
+
+            //Assert
+            Assert.IsType<NotFoundResult>(result);
+            mockReservationService.Verify(service => service.GetById(It.IsAny<Guid>()), Times.Once);
         }
         #endregion
     }

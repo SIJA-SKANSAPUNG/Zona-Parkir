@@ -30,7 +30,10 @@ else
                     <td>@Html.DisplayFor(modelItem => item.SlotNumber)</td>
                     <td>@Html.DisplayFor(modelItem => item.VehicleNumber)</td>
                     <td>
-                        @if (item.IsActive){<a class="btn btn-primary" asp-controller="Reservation" asp-action="Prolong" asp-route-reservationId="@item.Id">Prolong</a>}
+                        @if (item.IsActive)
+                        {
+                            <a class="btn btn-primary" asp-controller="Reservation" asp-action="Prolong" asp-route-reservationId="@item.Id">Prolong</a>
+                        }
                     </td>
                 </tr>
             }

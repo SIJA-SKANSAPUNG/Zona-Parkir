@@ -21,9 +21,9 @@ namespace Parking_Zone.Services
                 .Where(x => x.AppUserId == appUserId);
         }
 
-        public void Prolong(Reservation reservation, int newDuration)
+        public void Prolong(Reservation reservation, int extraHours)
         {
-            reservation.Duration += newDuration;
+            reservation.Duration += extraHours;
             Update(reservation);
         }
     }

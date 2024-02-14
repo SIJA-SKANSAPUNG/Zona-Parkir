@@ -61,21 +61,20 @@ namespace Parking_Zone.Areas.User.Controllers
                 return NotFound();
             }
 
-            if (reservation.StartTime > DateTime.Now ||
-                reservation.StartTime.AddHours(reservation.Duration) < DateTime.Now)
+            if (!reservation.IsActive)
             {
                 ModelState.AddModelError("", "This Slot Not active at the moment");
                 return View(prolongVM);
             }
             if (!_slotService.IsSlotFree(reservation.ParkingSlot, 
-                DateTime.Parse(prolongVM.EndDateTime), 
-                prolongVM.NewDuration))
+                reservation.StartTime.AddHours(reservation.Duration), 
+                prolongVM.ExtraHours))
             {
                 ModelState.AddModelError("NewDuration", "In this time another reservation booked, try another time");
                 return View(prolongVM);
             }
 
-            _reservationService.Prolong(reservation, prolongVM.NewDuration);
+            _reservationService.Prolong(reservation, prolongVM.ExtraHours);
 
             return RedirectToAction("Index", "Reservation", new { area = "User" });
         }
