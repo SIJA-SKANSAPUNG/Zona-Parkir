@@ -70,7 +70,11 @@ namespace Parking_Zone.Areas.User.Controllers
                 reservation.StartTime.AddHours(reservation.Duration), 
                 prolongVM.ExtraHours))
             {
-                ModelState.AddModelError("NewDuration", "In this time another reservation booked, try another time");
+                prolongVM.SlotNumber = reservation.ParkingSlot.Number;
+                prolongVM.StartTime = reservation.StartTime.ToString();
+                prolongVM.EndDateTime = reservation.StartTime.AddHours(reservation.Duration).ToString();
+
+                ModelState.AddModelError("ExtraHours", "In this time another reservation booked, try another time");
                 return View(prolongVM);
             }
 
