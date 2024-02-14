@@ -1,0 +1,25 @@
+﻿@model Parking_Zone.ViewModels.Reservation.ProlongVM
+
+<h2>@Model.ZoneAddress</h2>
+<h6>Slot Number: @Model.SlotNumber</h6>
+<h6>Start Time: @Model.StartTime</h6>
+<h6>End Date Time: @Model.EndDateTime</h6>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Prolong">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="ReservationId"/>
+
+            <div class="form-group">
+                <label asp-for="ExtraHours" class="control-label"></label>
+                <input asp-for="ExtraHours" class="form-control" />
+                <span asp-validation-for="ExtraHours" class="text-danger"></span>
+            </div>
+            <br />
+            <div class="form-group">
+                <input type="submit" value="Prolong" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
