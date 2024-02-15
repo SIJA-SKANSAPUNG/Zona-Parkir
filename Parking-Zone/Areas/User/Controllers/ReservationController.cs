@@ -74,7 +74,9 @@ namespace Parking_Zone.Areas.User.Controllers
 
             if (!ModelState.IsValid)
             {
-                prolongVM = new ProlongVM(reservation);
+                prolongVM.ZoneAddress = reservation.ParkingSlot.ParkingZone.Address;
+                prolongVM.SlotNumber = reservation.ParkingSlot.Number;
+                prolongVM.EndDateTime = reservation.StartTime.AddHours(reservation.Duration).ToString();
                 return View(prolongVM);
             }
 
