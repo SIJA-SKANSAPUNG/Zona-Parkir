@@ -64,17 +64,17 @@ namespace Parking_Zone.Areas.User.Controllers
             if (!reservation.IsActive)
             {
                 ModelState.AddModelError("", "This Slot Not active at the moment");
-                return View(prolongVM);
             }
             if (!_slotService.IsSlotFree(reservation.ParkingSlot, 
                 reservation.StartTime.AddHours(reservation.Duration), 
                 prolongVM.ExtraHours))
             {
-                prolongVM.SlotNumber = reservation.ParkingSlot.Number;
-                prolongVM.StartTime = reservation.StartTime.ToString();
-                prolongVM.EndDateTime = reservation.StartTime.AddHours(reservation.Duration).ToString();
-
                 ModelState.AddModelError("ExtraHours", "In this time another reservation booked, try another time");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                prolongVM = new ProlongVM(reservation);
                 return View(prolongVM);
             }
 
