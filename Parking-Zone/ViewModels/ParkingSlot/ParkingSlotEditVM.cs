@@ -17,7 +17,7 @@ namespace Parking_Zone.ViewModels.ParkingSlot
             this.IsAvailableForBooking = slot.IsAvailableForBooking;
             this.Category = slot.Category;
             this.ParkingZoneName = slot.ParkingZone.Name;
-            this.HasAnyActiveReservation = slot.Reservations.Any(r => r.IsActive == true);
+            this.HasAnyActiveReservation = slot.Reservations.Any(r => r.IsActive);
         }
         public Guid Id { get; set; }
         [Required]
@@ -29,7 +29,7 @@ namespace Parking_Zone.ViewModels.ParkingSlot
         [Required]
         public Guid ParkingZoneId { get; set; }
         public string? ParkingZoneName { get; set; }
-        public bool HasAnyActiveReservation { get; set; } = false;
+        public bool HasAnyActiveReservation { get; set; }
 
         public Models.ParkingSlot MapToModel(Models.ParkingSlot slot)
         {

@@ -26,7 +26,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="Category" class="control-label"></label>
-                @if (Model.HasAnyActiveReservation == true)
+                @if (Model.HasAnyActiveReservation)
                 {
                     <input asp-for="Category" class="form-control" readonly />
                     <p class="text-warning">This slot has an active reservation, So you cannot modify category</p>

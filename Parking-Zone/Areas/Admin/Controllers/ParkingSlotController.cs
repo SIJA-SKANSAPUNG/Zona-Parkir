@@ -113,7 +113,6 @@ namespace Parking_Zone.Areas.Admin.Controllers
             if (parkingSlotEditVM.HasAnyActiveReservation == true && existingSlot.Category != parkingSlotEditVM.Category)
             {
                 ModelState.AddModelError("Category", "Category cannot be changed it is in use");
-                return View(parkingSlotEditVM);
             }
 
             if (ModelState.IsValid)
