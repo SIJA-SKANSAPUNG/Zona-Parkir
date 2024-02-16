@@ -29,6 +29,7 @@
                 @if (Model.HasAnyActiveReservation == true)
                 {
                     <input asp-for="Category" class="form-control" readonly />
+                    <p class="text-warning">This slot has an active reservation, So you cannot modify category</p>
                 }
                 else
                 {
