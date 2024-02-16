@@ -410,7 +410,7 @@ namespace Tests.Controllers
                 Id = _testSlotId,
                 Number = 22,
                 IsAvailableForBooking = true,
-                ParkingZoneName = "Sharafshon",
+                ParkingZoneName = "Sharafshon"
             };
 
             controller.ModelState.AddModelError("Category", "Category is Required");
