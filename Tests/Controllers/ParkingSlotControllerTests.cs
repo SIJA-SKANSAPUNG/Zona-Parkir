@@ -45,6 +45,14 @@ namespace Tests.Controllers
             ParkingZoneId = Guid.Parse("dd09a090-b0f6-4369-b24a-656843d227bc"),
             Category = SlotCategoryEnum.Business,
             IsAvailableForBooking = true,
+            Reservations = new List<Reservation>()
+            {
+                new Reservation()
+                {
+                    StartTime = DateTime.Parse("2024-01-27 18:00:00"),
+                    Duration = 4
+                }
+            }
         };
 
         private readonly ParkingZone _testZone = new ParkingZone()
