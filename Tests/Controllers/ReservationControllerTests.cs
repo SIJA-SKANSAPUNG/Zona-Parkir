@@ -139,7 +139,6 @@ namespace Tests.Controllers
             var expectedProlongVM = new ProlongVM()
             {
                 ReservationId = _testReservationId,
-                StartTime = now.AddHours(-1).ToString(),
                 SlotNumber = _testSlot.Number,
                 EndDateTime = now.AddHours(2).ToString(),
                 ZoneAddress = _testSlot.ParkingZone.Address
