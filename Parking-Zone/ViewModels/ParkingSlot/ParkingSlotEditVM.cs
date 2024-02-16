@@ -17,7 +17,7 @@ namespace Parking_Zone.ViewModels.ParkingSlot
             this.IsAvailableForBooking = slot.IsAvailableForBooking;
             this.Category = slot.Category;
             this.ParkingZoneName = slot.ParkingZone.Name;
-            this.HasAnyActiveReservation = slot.Reservations.Any(slot => slot.IsActive == true);
+            this.HasAnyActiveReservation = slot.Reservations.Any(r => r.IsActive == true);
         }
         public Guid Id { get; set; }
         [Required]
