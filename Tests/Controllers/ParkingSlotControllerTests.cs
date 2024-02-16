@@ -375,7 +375,7 @@ namespace Tests.Controllers
 
             //Assert
             Assert.True(result is NotFoundResult);
-            mockSlotService.Verify(s => s.GetById(_testSlotId), Times.AtLeastOnce);
+            mockSlotService.Verify(s => s.GetById(_testSlotId), Times.Once);
         }
 
         [Fact]
@@ -454,7 +454,7 @@ namespace Tests.Controllers
             Assert.Equal("ParkingSlot", redirectToActionResult.ControllerName);
             Assert.Equal("Index", redirectToActionResult.ActionName);
 
-            mockSlotService.Verify(s => s.GetById(_testSlotId), Times.AtLeastOnce);
+            mockSlotService.Verify(s => s.GetById(_testSlotId), Times.Once);
             mockSlotService.Verify(s => s.Update(It.IsAny<ParkingSlot>()), Times.Once);
         }
 
