@@ -13,5 +13,10 @@ namespace Parking_Zone.Models
         public Guid ParkingZoneId { get; set; }
         public virtual ParkingZone ParkingZone { get; set; }
         public virtual ICollection<Reservation> Reservations { get; set; }
+        [NotMapped]
+        public bool HasAnyActiveReservation
+        {
+            get => Reservations.Any(r => r.IsActive);
+        }
     }
 }

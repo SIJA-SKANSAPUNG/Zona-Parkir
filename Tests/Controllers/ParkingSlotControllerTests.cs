@@ -48,10 +48,6 @@ namespace Tests.Controllers
             Reservations = new List<Reservation>()
             {
                 new Reservation()
-                {
-                    StartTime = DateTime.Parse("2024-01-27 18:00:00"),
-                    Duration = 4
-                }
             }
         };
 
@@ -392,6 +388,10 @@ namespace Tests.Controllers
 
             controller.ModelState.AddModelError("Number", "Number is Required");
 
+            mockSlotService
+                .Setup(service => service.GetById(_testSlotId))
+                .Returns(_testSlot);
+
             //Act
             var result = controller.Edit(_testSlotId, parkingSlotEditVM);
 
@@ -410,10 +410,14 @@ namespace Tests.Controllers
                 Id = _testSlotId,
                 Number = 22,
                 IsAvailableForBooking = true,
-                ParkingZoneName = "Sharafshon"
+                ParkingZoneName = "Sharafshon",
             };
 
             controller.ModelState.AddModelError("Category", "Category is Required");
+
+            mockSlotService
+                .Setup(service => service.GetById(_testSlotId))
+                .Returns(_testSlot);
 
             //Act
             var result = controller.Edit(_testSlotId, parkingSlotEditVM);
@@ -473,6 +477,9 @@ namespace Tests.Controllers
             mockSlotService
                 .Setup(service => service.SlotExistsWithThisNumber(slotVM.Number, _testSlotId, _testZoneId))
                 .Returns(true);
+            mockSlotService
+                .Setup(service => service.GetById(_testSlotId))
+                .Returns(_testSlot);
 
             //Act
             var result = controller.Edit(_testSlotId, slotVM);
