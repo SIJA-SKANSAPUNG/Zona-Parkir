@@ -111,7 +111,11 @@ namespace Parking_Zone.Areas.Admin.Controllers
             if (ModelState.IsValid)
             {
                 var existingSlot = _slotService.GetById(parkingSlotEditVM.Id);
-
+                if (parkingSlotEditVM.HasAnyActiveReservation == true && existingSlot.Category != parkingSlotEditVM.Category)
+                {
+                    ModelState.AddModelError("Category", "Category cannot be changed it is in use");
+                    return View(parkingSlotEditVM);
+                }
                 if (existingSlot == null)
                 {
                     return NotFound();
