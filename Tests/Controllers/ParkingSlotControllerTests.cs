@@ -47,7 +47,7 @@ namespace Tests.Controllers
             IsAvailableForBooking = true,
             Reservations = new List<Reservation>()
             {
-                new Reservation()
+                new()
             }
         };
 
