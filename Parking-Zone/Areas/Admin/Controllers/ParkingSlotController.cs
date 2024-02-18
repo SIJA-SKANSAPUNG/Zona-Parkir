@@ -108,15 +108,20 @@ namespace Parking_Zone.Areas.Admin.Controllers
                 ModelState.AddModelError("Number", "This Slot number already exists");
             }
 
+            var existingSlot = _slotService.GetById(parkingSlotEditVM.Id);
+
+            if (existingSlot == null)
+            {
+                return NotFound();
+            }
+
+            if (existingSlot.HasAnyActiveReservation == true && existingSlot.Category != parkingSlotEditVM.Category)
+            {
+                ModelState.AddModelError("Category", "Category cannot be changed it is in use");
+            }
+
             if (ModelState.IsValid)
             {
-                var existingSlot = _slotService.GetById(parkingSlotEditVM.Id);
-
-                if (existingSlot == null)
-                {
-                    return NotFound();
-                }
-
                 var slotVM = parkingSlotEditVM.MapToModel(existingSlot);
                 _slotService.Update(slotVM);
 

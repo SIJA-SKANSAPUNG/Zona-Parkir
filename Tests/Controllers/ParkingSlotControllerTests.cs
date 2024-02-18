@@ -45,6 +45,10 @@ namespace Tests.Controllers
             ParkingZoneId = Guid.Parse("dd09a090-b0f6-4369-b24a-656843d227bc"),
             Category = SlotCategoryEnum.Business,
             IsAvailableForBooking = true,
+            Reservations = new List<Reservation>()
+            {
+                new()
+            }
         };
 
         private readonly ParkingZone _testZone = new ParkingZone()
@@ -384,6 +388,10 @@ namespace Tests.Controllers
 
             controller.ModelState.AddModelError("Number", "Number is Required");
 
+            mockSlotService
+                .Setup(service => service.GetById(_testSlotId))
+                .Returns(_testSlot);
+
             //Act
             var result = controller.Edit(_testSlotId, parkingSlotEditVM);
 
@@ -406,6 +414,10 @@ namespace Tests.Controllers
             };
 
             controller.ModelState.AddModelError("Category", "Category is Required");
+
+            mockSlotService
+                .Setup(service => service.GetById(_testSlotId))
+                .Returns(_testSlot);
 
             //Act
             var result = controller.Edit(_testSlotId, parkingSlotEditVM);
@@ -465,6 +477,9 @@ namespace Tests.Controllers
             mockSlotService
                 .Setup(service => service.SlotExistsWithThisNumber(slotVM.Number, _testSlotId, _testZoneId))
                 .Returns(true);
+            mockSlotService
+                .Setup(service => service.GetById(_testSlotId))
+                .Returns(_testSlot);
 
             //Act
             var result = controller.Edit(_testSlotId, slotVM);
