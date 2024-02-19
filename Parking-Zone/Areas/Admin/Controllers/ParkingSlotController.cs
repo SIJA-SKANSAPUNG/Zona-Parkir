@@ -164,14 +164,16 @@ namespace Parking_Zone.Areas.Admin.Controllers
         {
             var parkingSlot = _slotService.GetById(id);
 
-            if (parkingSlot != null)
-            {
-                _slotService.Delete(parkingSlot);
-            }
-            else
+            if (parkingSlot == null)
             {
                 return NotFound();
             }
+            if (parkingSlot.HasAnyActiveReservation)
+            {
+                return BadRequest();
+            }
+            _slotService.Delete(parkingSlot);
+
             return RedirectToAction("Index", "ParkingSlot", new { zoneId = parkingZoneId });
         }
     }
