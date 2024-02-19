@@ -16,6 +16,7 @@ namespace Parking_Zone.ViewModels.ParkingSlot
             this.Category = slot.Category;
             this.ParkingZoneName = slot.ParkingZone.Name;
             this.ParkingZoneId = slot.ParkingZoneId;
+            this.HasAnyActiveReservation = slot.HasAnyActiveReservation;
         }
         public Guid Id { get; set; }
         public int Number { get; set; }
@@ -23,5 +24,6 @@ namespace Parking_Zone.ViewModels.ParkingSlot
         public SlotCategoryEnum Category { get; set; }
         public string ParkingZoneName { get; set; }
         public Guid ParkingZoneId { get; set; }
+        public bool HasAnyActiveReservation { get; set; }
     }
 }

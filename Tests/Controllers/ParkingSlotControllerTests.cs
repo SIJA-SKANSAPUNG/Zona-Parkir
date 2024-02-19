@@ -7,6 +7,7 @@ using Parking_Zone.Services;
 using Parking_Zone.ViewModels.ParkingSlot;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -609,6 +610,31 @@ namespace Tests.Controllers
 
             mockSlotService.Verify(s => s.GetById(_testSlotId), Times.Once);
             mockSlotService.Verify(s => s.Delete(It.IsAny<ParkingSlot>()), Times.Once);
+        }
+
+        [Fact]
+        public void GivenIdOfBookedParkingSlotAndZoneId_WhenPostDeleteIsCalled_ThenServiceIsCalledOnceAndReturnedBadRequest()
+        {
+            //Arrange
+            mockSlotService
+                .Setup(service => service.GetById(_testSlotId))
+                .Returns(_testSlot);
+
+            _testSlot.Reservations = new Collection<Reservation>()
+            {
+                new()
+                {
+                    StartTime = DateTime.Now.AddHours(-1),
+                    Duration = 3
+                }
+            };
+
+            //Act
+            var result = controller.DeleteConfirmed(_testSlotId, _testZoneId);
+
+            //Assert
+            Assert.True(result is BadRequestResult);
+            mockSlotService.Verify(service => service.GetById(_testSlotId), Times.Once);
         }
         #endregion
     }

@@ -40,7 +40,15 @@
     <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
         <input type="hidden" asp-for="ParkingZoneId" />
-        <input type="submit" value="Delete" class="btn btn-outline-danger" /> |
+        
+        @if (Model.HasAnyActiveReservation)
+        {
+            <p class="text-warning">This slot has an active reservation right now</p>
+        }
+        else
+        {
+            <input type="submit" value="Delete" class="btn btn-outline-danger" />
+        }
         <a asp-action="Index" asp-route-zoneId="@Model.ParkingZoneId">Back to List</a>
     </form>
 </div>
