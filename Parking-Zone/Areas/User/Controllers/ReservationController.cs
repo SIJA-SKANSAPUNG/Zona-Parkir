@@ -61,7 +61,7 @@ namespace Parking_Zone.Areas.User.Controllers
                 return NotFound();
             }
 
-            if (!reservation.IsActive)
+            if (!reservation.IsOnGoing)
             {
                 ModelState.AddModelError("", "This Slot Not active at the moment");
             }

@@ -16,7 +16,7 @@ namespace Parking_Zone.Models
         [NotMapped]
         public bool HasAnyActiveReservation
         {
-            get => Reservations.Any(r => r.IsActive);
+            get => Reservations.Any(r => r.StartTime.AddHours(r.Duration) > DateTime.Now);
         }
     }
 }
