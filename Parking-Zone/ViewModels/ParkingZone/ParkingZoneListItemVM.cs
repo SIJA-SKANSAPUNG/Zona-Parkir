@@ -16,8 +16,8 @@
             Address = zone.Address;
             DateOfEstablishment = zone.DateOfEstablishment;
             NumberOfAllSlots = zone.ParkingSlots.Count;
-            SlotsInUse = zone.ParkingSlots.Count(s => s.HasAnyActiveReservation);
-            FreeSlots = zone.ParkingSlots.Count(s => s.IsAvailableForBooking);
+            SlotsInUse = zone.ParkingSlots.Where(s => s.Reservations.Any(r => r.IsOnGoing)).Count();
+            FreeSlots = NumberOfAllSlots - SlotsInUse;
         }
     }
 }
