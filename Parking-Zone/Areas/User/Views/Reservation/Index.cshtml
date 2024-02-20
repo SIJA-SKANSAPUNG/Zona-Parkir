@@ -23,14 +23,14 @@ else
         <tbody>
             @foreach (var item in Model)
             {
-                <tr class=@((item.IsActive) ? "table-success" : "")>
+                <tr class=@((item.IsOnGoing) ? "table-success" : "")>
                     <td>@Html.DisplayFor(modelItem => item.StartTime)</td>
                     <td>@Html.DisplayFor(modelItem => item.Duration)</td>
                     <td>@Html.DisplayFor(modelItem => item.ZoneName), @Html.DisplayFor(modelItem => item.ZoneAddress)</td>
                     <td>@Html.DisplayFor(modelItem => item.SlotNumber)</td>
                     <td>@Html.DisplayFor(modelItem => item.VehicleNumber)</td>
                     <td>
-                        @if (item.IsActive)
+                        @if (item.IsOnGoing)
                         {
                             <a class="btn btn-primary" asp-controller="Reservation" asp-action="Prolong" asp-route-reservationId="@item.Id">Prolong</a>
                         }

@@ -15,7 +15,7 @@ namespace Parking_Zone.Models
         public virtual AppUser AppUser { get; set; }
 
         [NotMapped]
-        public bool IsActive
+        public bool IsOnGoing
         {
             get => StartTime <= DateTime.Now && DateTime.Now < StartTime.AddHours(Duration);
         }

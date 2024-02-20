@@ -17,7 +17,7 @@ namespace Parking_Zone.ViewModels.Reservation
             SlotNumber = reservation.ParkingSlot.Number;
             ZoneAddress = reservation.ParkingSlot.ParkingZone.Address;
             ZoneName = reservation.ParkingSlot.ParkingZone.Name;
-            IsActive = reservation.IsActive;
+            IsOnGoing = reservation.IsOnGoing;
         }
         public Guid Id { get; set; }
         [DisplayName("Start Time")]
@@ -32,6 +32,6 @@ namespace Parking_Zone.ViewModels.Reservation
         public string ZoneAddress { get; set; }
         [DisplayName("Zone Name")]
         public string ZoneName { get; set; }
-        public bool IsActive { get; set; }
+        public bool IsOnGoing { get; set; }
     }
 }
