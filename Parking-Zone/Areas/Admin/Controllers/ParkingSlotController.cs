@@ -21,16 +21,6 @@ namespace Parking_Zone.Areas.Admin.Controllers
         {
             var Zone = _zoneService.GetById(zoneId);
 
-            ViewData["parkingZoneName"] = Zone.Name;
-            ViewData["parkingZoneId"] = zoneId;
-
-            return View();
-        }
-        [HttpPost]
-        public IActionResult IndexAJAX(Guid zoneId)
-        {
-            var Zone = _zoneService.GetById(zoneId);
-
             if (Zone is null)
             {
                 return BadRequest();
@@ -40,7 +30,10 @@ namespace Parking_Zone.Areas.Admin.Controllers
 
             var slotVMs = slots.Select(x => new ParkingSlotListItemVM(x)).ToList();
 
-            return Json(slotVMs);
+            ViewData["parkingZoneName"] = Zone.Name;
+            ViewData["parkingZoneId"] = zoneId;
+
+            return View(slotVMs);
         }
 
         // GET: Admin/ParkingSlots/Create

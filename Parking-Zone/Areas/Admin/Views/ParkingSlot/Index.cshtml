@@ -7,29 +7,9 @@
 <h1>Slots for @ViewData["parkingZoneName"]</h1>
 
 <p>
-    <a asp-action="Create" asp-route-zoneId="@ViewData["parkingZoneId"]" class="btn btn-primary">Create New Slot</a>
+    <a asp-asp-controller="ParkingSlot" asp-action="Create" asp-route-zoneId="@ViewData["parkingZoneId"]">Create New Slot for Parking Zone @ViewData["parkingZoneName"]</a>
 </p>
-<style>
-    /* Overriding default table striped colors */
-    .table-striped tbody tr:nth-of-type(odd) {
-        background-color: #f0e8ff; /* Soft lavender color */
-    }
-
-    .availability-true {
-        background-color: #4CAF50; /* Green */
-        color: white;
-        padding: 5px 10px;
-        border-radius: 12px;
-    }
-
-    .availability-false {
-        background-color: #f44336; /* Red */
-        color: white;
-        padding: 5px 10px;
-        border-radius: 12px;
-    }
-</style>
-<table class="table table-striped" id="tablelist">
+<table class="table table-striped">
     <thead>
         <tr>
             <th>
@@ -41,56 +21,28 @@
             <th>
                 @Html.DisplayNameFor(model => model.Category)
             </th>
-            <th>Actions</th>
+            <th></th>
         </tr>
     </thead>
     <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Number)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.IsAvailableForBooking)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Category)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
-
-<script src="~/lib/jquery/dist/jquery.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/2.0.0/css/dataTables.dataTables.css" />
-<script src="https://cdn.datatables.net/2.0.0/js/dataTables.js"></script>
-
-<script type="text/javascript">
-    var js = jQuery.noConflict(true);
-
-    js(document).ready(function () {
-        LoadData();
-    });
-
-    function LoadData() {
-        var zoneId = "@ViewData["parkingZoneId"]";
-        var table_data = [];
-
-        $.ajax({
-            type: 'POST',
-            url: 'ParkingSlot/IndexAJAX',
-            async: false,
-            data: { zoneId: zoneId },
-            success: function(data){
-                $.each(data, function (key, value) {
-
-                    var availabilityClass = value.isAvailableForBooking ? 'availability-true' : 'availability-false';
-                    var availabilityText = value.isAvailableForBooking ? 'Available' : 'Unavailable';
-                    var availabilityIndicator = "<span class='" + availabilityClass + "'>" + availabilityText + "</span>";
-
-                    var edit_btn = "<a href='/Admin/ParkingSlot/Edit/" + value.id + "' class='btn btn-warning btn-edit'>Edit</a>";
-                    var details_btn = "<a href='/Admin/ParkingSlot/Details/" + value.id + "' class='btn btn-success'>Details</a>";
-                    var delete_btn = "<a href='/Admin/ParkingSlot/Delete/" + value.id + "' class='btn btn-danger'>Delete</a>";
-
-                    var actions = edit_btn +" " + details_btn + " " + delete_btn;
-
-                    table_data.push([value.number, availabilityIndicator, value.category == 1 ? 'Standard' : 'Business', actions]);
-                });
-            },
-            error: function (xhr, status, error) {
-                console.error(xhr.responseText);
-            }
-        });
-
-        js('#tablelist').DataTable({
-            data: table_data
-        });
-    }
-</script>
