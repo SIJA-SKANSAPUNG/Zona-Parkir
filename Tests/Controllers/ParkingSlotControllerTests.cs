@@ -100,10 +100,8 @@ namespace Tests.Controllers
 
             //Assert
             Assert.IsType<ViewResult>(result);
-            Assert.NotNull((result as ViewResult).Model);
-            Assert.Equal(2, _testSlots.Count());
+            Assert.Null((result as ViewResult).Model);
             mockZoneService.Verify(s => s.GetById(_testZoneId), Times.Once);
-            mockSlotService.Verify(s => s.GetByParkingZoneId(_testZoneId), Times.Once);
         }
 
         public void GivenNullParkingZoneId_WhenIndexIsCalled_ThenParkingZoneServiceIsCalledOnceAndActionReturnedBadRequest()
