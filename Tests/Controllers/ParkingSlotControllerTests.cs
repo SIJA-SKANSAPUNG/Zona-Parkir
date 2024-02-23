@@ -163,8 +163,7 @@ namespace Tests.Controllers
                 new ParkingSlot()
                 {
                     ParkingZoneId = Guid.Parse("dd09a090-b0f6-4369-b24a-656843d227bc"),
-                    Category = SlotCategoryEnum.Business,
-                    IsAvailableForBooking = true
+                    Category = SlotCategoryEnum.Business
                 },
             };
 
