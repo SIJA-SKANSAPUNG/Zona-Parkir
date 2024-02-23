@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Parking_Zone.Enums;
 using Parking_Zone.Services;
 using Parking_Zone.ViewModels.ParkingSlot;
 using Parking_Zone.ViewModels.ParkingZone;
+using System.Text.Json;
 
 namespace Parking_Zone.Areas.Admin.Controllers
 {
@@ -34,6 +36,27 @@ namespace Parking_Zone.Areas.Admin.Controllers
             ViewData["parkingZoneId"] = zoneId;
 
             return View(slotVMs);
+        }
+
+        [HttpPost]
+        public IActionResult IndexAJAX(string category, bool isFree, string zoneId)
+        {
+            var slots = _slotService.GetByParkingZoneId(Guid.Parse(zoneId));
+
+            if (category == "All")
+            {
+                return Json(slots.Select(x => new ParkingSlotListItemVM(x)).ToList());
+            }
+            else
+            {
+                SlotCategoryEnum parsedCategory = (SlotCategoryEnum)Enum.Parse(typeof(SlotCategoryEnum), category);
+
+                var filteredSlots = slots.Where(s => s.Category == parsedCategory && s.HasAnyActiveReservation == isFree).ToList();
+
+                var filterdSlotVMs = filteredSlots.Select(x => new ParkingSlotListItemVM(x));
+
+                return Json(filterdSlotVMs);
+            }
         }
 
         // GET: Admin/ParkingSlots/Create
