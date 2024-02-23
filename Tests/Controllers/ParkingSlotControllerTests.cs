@@ -149,9 +149,6 @@ namespace Tests.Controllers
             {
                 new ParkingSlot()
                 {
-                    Id = Guid.Parse("ab8e46f4-a343-4571-a1a5-14892bccc7f5"),
-                    Number = 1,
-                    ParkingZone = new ParkingZone() { },
                     ParkingZoneId = Guid.Parse("dd09a090-b0f6-4369-b24a-656843d227bc"),
                     Category = SlotCategoryEnum.Standard,
                     Reservations = new List<Reservation>()
@@ -165,9 +162,6 @@ namespace Tests.Controllers
                 },
                 new ParkingSlot()
                 {
-                    Id = Guid.Parse("ab8e46f4-a343-4571-a1a5-14892bccc7f5"),
-                    Number = 1,
-                    ParkingZone = new ParkingZone() { },
                     ParkingZoneId = Guid.Parse("dd09a090-b0f6-4369-b24a-656843d227bc"),
                     Category = SlotCategoryEnum.Business,
                     IsAvailableForBooking = true
@@ -176,7 +170,6 @@ namespace Tests.Controllers
 
             var filteredSlot = new ParkingSlotListItemVM(new ParkingSlot()
             {
-                Id = Guid.Parse("ab8e46f4-a343-4571-a1a5-14892bccc7f5"),
                 ParkingZoneId = Guid.Parse("dd09a090-b0f6-4369-b24a-656843d227bc"),
                 Category = SlotCategoryEnum.Standard,
                 Reservations = new List<Reservation>()
