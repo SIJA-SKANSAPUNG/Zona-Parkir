@@ -118,7 +118,7 @@ namespace Tests.Controllers
             mockZoneService.Verify(s => s.GetById(Guid.Parse("")), Times.Once);
         }
 
-        public void GivenCategoryAsAllAndIsFreeAndZoneId_WhenIndexAJAXisCalled_ThenReturnedAllSlots()
+        public void GivenCategoryAsAllAndIsFreeAndZoneId_WhenLoadDataisCalled_ThenReturnedAllSlots()
         {
             //Arrange
             var testCategory = "All";
@@ -133,7 +133,7 @@ namespace Tests.Controllers
                 .Returns(_testSlots);
 
             //Act
-            var result = controller.IndexAJAX(testCategory, true, _testZoneId.ToString());
+            var result = controller.LoadData(testCategory, true, _testZoneId.ToString());
 
             //Assert
             Assert.IsType<JsonResult>(result);
@@ -141,7 +141,7 @@ namespace Tests.Controllers
             mockSlotService.Verify(service => service.GetByParkingZoneId(_testZoneId), Times.Once);
         }
 
-        public void GivenStandardCategoryAndIsFreeAsTrueAndZoneId_WhenIndexAJAXisCalled_ThenReturnedAllStandardSlotsWhichHaveActiveReservations()
+        public void GivenStandardCategoryAndIsFreeAsTrueAndZoneId_WhenLoadDataisCalled_ThenReturnedAllStandardSlotsWhichHaveActiveReservations()
         {
             //Arrange
             var testCategory = "Standard";
@@ -194,7 +194,7 @@ namespace Tests.Controllers
                 .Returns(_testSlots);
 
             //Act
-            var result = controller.IndexAJAX(testCategory, true, _testZoneId.ToString());
+            var result = controller.LoadData(testCategory, true, _testZoneId.ToString());
 
             //Assert
             Assert.IsType<JsonResult>(result);
@@ -202,7 +202,7 @@ namespace Tests.Controllers
             mockSlotService.Verify(service => service.GetByParkingZoneId(_testZoneId), Times.Once);
         }
 
-        public void GivenBusinessCategoryAndIsFreeAsFalseAndZoneId_WhenIndexAJAXisCalled_ThenReturnedAllBusinessSlotsWhichTheyDontHaveActiveReservations()
+        public void GivenBusinessCategoryAndIsFreeAsFalseAndZoneId_WhenLoadDataisCalled_ThenReturnedAllBusinessSlotsWhichTheyDontHaveActiveReservations()
         {
             //Arrange
             var testCategory = "Business";
@@ -247,7 +247,7 @@ namespace Tests.Controllers
                 .Returns(_testSlots);
 
             //Act
-            var result = controller.IndexAJAX(testCategory, false, _testZoneId.ToString());
+            var result = controller.LoadData(testCategory, false, _testZoneId.ToString());
 
             //Assert
             Assert.IsType<JsonResult>(result);

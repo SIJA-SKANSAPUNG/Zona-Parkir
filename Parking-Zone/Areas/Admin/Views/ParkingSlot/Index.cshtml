@@ -12,11 +12,6 @@
 <hr />
 
 <style>
-    .custom-container {
-        display: flex;
-        align-items: center;
-    }
-
     .custom-select {
         position: relative;
         margin-right: 20px;
@@ -134,7 +129,7 @@
             var zoneId = '@ViewData["parkingZoneId"]';
 
             $.ajax({
-                url: '@Url.Action("IndexAJAX", "ParkingSlot")',
+                url: '@Url.Action("LoadData", "ParkingSlot")',
                 type: 'POST',
                 dataType: 'json',
                 data: {

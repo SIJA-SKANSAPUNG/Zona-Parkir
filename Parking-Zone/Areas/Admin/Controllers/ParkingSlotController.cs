@@ -21,9 +21,9 @@ namespace Parking_Zone.Areas.Admin.Controllers
 
         public IActionResult Index(Guid zoneId)
         {
-            var Zone = _zoneService.GetById(zoneId);
+            var zone = _zoneService.GetById(zoneId);
 
-            if (Zone is null)
+            if (zone is null)
             {
                 return BadRequest();
             }
@@ -32,14 +32,14 @@ namespace Parking_Zone.Areas.Admin.Controllers
 
             var slotVMs = slots.Select(x => new ParkingSlotListItemVM(x)).ToList();
 
-            ViewData["parkingZoneName"] = Zone.Name;
+            ViewData["parkingZoneName"] = zone.Name;
             ViewData["parkingZoneId"] = zoneId;
 
             return View(slotVMs);
         }
 
         [HttpPost]
-        public IActionResult IndexAJAX(string category, bool isFree, string zoneId)
+        public IActionResult LoadData(string category, bool isFree, string zoneId)
         {
             var slots = _slotService.GetByParkingZoneId(Guid.Parse(zoneId));
 
