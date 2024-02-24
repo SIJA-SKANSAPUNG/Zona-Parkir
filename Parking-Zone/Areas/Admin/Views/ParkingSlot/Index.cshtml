@@ -4,13 +4,6 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Slots for @ViewData["parkingZoneName"]</h1>
-
-<p>
-    <a asp-action="Create" asp-route-zoneId="@ViewData["parkingZoneId"]" class="btn btn-primary">Create New</a>
-</p>
-<hr />
-
 <style>
     .custom-select {
         position: relative;
@@ -57,24 +50,33 @@
         border-radius: 12px;
     }
 </style>
+<div class="d-flex">
+    <div class="container">
 
-<div class="container">
-    <div class="custom-select">
-        <select class="form-select form-select-sm" id="categorySelect" style="margin-bottom: 5px;">
-            <option value="All">All</option>
-            <option value="Standard">Standard</option>
-            <option value="Business">Business</option>
-        </select>
-    </div>
-    <div class="custom-checkbox">
-        <input class="form-check-input" type="checkbox" id="checkboxID" style="margin-bottom: 10px;"/>
-        <label class="form-check-label" for="checkboxID">Display free slots</label>
+        <h1>Filtering Slots</h1>
+        <div class="custom-select">
+            <select class="form-select form-select-sm" id="categorySelect" style="margin-bottom: 5px;">
+                <option value="All">All</option>
+                <option value="Standard">Standard</option>
+                <option value="Business">Business</option>
+            </select>
+        </div>
+        <div class="custom-checkbox">
+            <input class="form-check-input" type="checkbox" id="checkboxID" style="margin-bottom: 10px;" />
+            <label class="form-check-label" for="checkboxID">Display free slots</label>
+        </div>
+
+        <button class="btn btn-primary" type="submit" id="submitButton">Filter</button>
     </div>
 
-    <button class="btn btn-primary" type="submit" id="submitButton">Filter</button>
+    <div class="container" style="margin-left: 530px;">
+        <h1>Slots for @ViewData["parkingZoneName"]</h1>
+        <p>
+            <a asp-action="Create" asp-route-zoneId="@ViewData["parkingZoneId"]" class="btn btn-primary">Create New</a>
+        </p>
+    </div>
 </div>
 <br />
-
 <div id="result">
     <table class="table table-striped">
         <thead>
