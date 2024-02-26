@@ -1,5 +1,8 @@
-﻿using Parking_Zone.Models;
+﻿using NuGet.Protocol;
+using Parking_Zone.Enums;
+using Parking_Zone.Models;
 using Parking_Zone.Repositories;
+using Parking_Zone.ViewModels.ParkingSlot;
 using System.Diagnostics.Eventing.Reader;
 
 namespace Parking_Zone.Services
@@ -35,5 +38,20 @@ namespace Parking_Zone.Services
             => !slot.Reservations.Any(reservation =>
                 reservation.StartTime <= startTime && startTime < reservation.StartTime.AddHours(reservation.Duration) ||
                 reservation.StartTime > startTime && startTime.AddHours(duration) > reservation.StartTime);
+
+        public IEnumerable<ParkingSlot> Filter(FilterSlotVM slot)
+        {
+            var slots = GetByParkingZoneId(slot.ZoneId);
+
+            if (slot.Category == 0)
+            {
+                slots = slots.Where(s => s.HasAnyActiveReservation != slot.IsFree);
+            }
+            else
+            {
+                slots = slots.Where(s => s.Category == slot.Category && s.HasAnyActiveReservation != slot.IsFree);
+            }
+            return slots;
+        }
     }
 }

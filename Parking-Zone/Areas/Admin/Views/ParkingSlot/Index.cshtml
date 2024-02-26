@@ -1,64 +1,19 @@
-﻿@model IEnumerable<Parking_Zone.ViewModels.ParkingSlot.ParkingSlotListItemVM>
+﻿@using Parking_Zone.Enums
+@model IEnumerable<Parking_Zone.ViewModels.ParkingSlot.ParkingSlotListItemVM>
 
 @{
     ViewData["Title"] = "Index";
 }
+<link rel="stylesheet" href="~/css/index.css"/>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-<style>
-    .custom-select {
-        position: relative;
-        margin-right: 20px;
-    }
-
-        .custom-select select {
-            width: 250px;
-            height: 36px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            padding: 5px;
-            background-color: #ffffff;
-            font-size: 16px;
-            color: #495057;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            cursor: pointer;
-        }
-
-    .custom-checkbox input[type="checkbox"] {
-        width: 20px;
-        height: 20px;
-        margin-right: 5px;
-    }
-
-    /* Overriding default table striped colors */
-    .table-striped tbody tr:nth-of-type(odd) {
-        background-color: #f0e8ff; /* Soft lavender color */
-    }
-
-    .availability-true {
-        background-color: #4CAF50; /* Green */
-        color: white;
-        padding: 5px 10px;
-        border-radius: 12px;
-    }
-
-    .availability-false {
-        background-color: #f44336; /* Red */
-        color: white;
-        padding: 5px 10px;
-        border-radius: 12px;
-    }
-</style>
 <div class="d-flex">
     <div class="container">
-
         <h1>Filtering Slots</h1>
         <div class="custom-select">
-            <select class="form-select form-select-sm" id="categorySelect" style="margin-bottom: 5px;">
+            <select class="form-select form-select-sm" asp-items="Html.GetEnumSelectList<SlotCategoryEnum>()" id="categorySelect" style="margin-bottom: 5px;">
                 <option value="All">All</option>
-                <option value="Standard">Standard</option>
-                <option value="Business">Business</option>
             </select>
         </div>
         <div class="custom-checkbox">
@@ -97,79 +52,69 @@
         </thead>
 
         <tbody id="tableBody">
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Number)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.IsAvailableForBooking)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Category)
-                    </td>
-                    <td>
-                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning">Edit</a>
-                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-success">Details</a>
-                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger">Delete</a>
-                    </td>
-                </tr>
-            }
         </tbody>
     </table>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
 <script>
     $(document).ready(function () {
+        SeedTable(@Html.Raw(Json.Serialize(Model)));
+
         $('#submitButton').click(function () {
-            var category = $('#categorySelect').val();
-            var isFree = $('#checkboxID').is(':checked');
-            var zoneId = '@ViewData["parkingZoneId"]';
-
-            $.ajax({
-                url: '@Url.Action("LoadData", "ParkingSlot")',
-                type: 'POST',
-                dataType: 'json',
-                data: {
-                    category: category,
-                    isFree: isFree,
-                    zoneId: zoneId
-                },
-                success: function (data) {
-                    $('#tableBody').empty();
-
-                    $.each(data, function (index, item) {
-
-                        var availabilityClass = item.isAvailableForBooking ? 'availability-true' : 'availability-false';
-                        var availabilityText = item.isAvailableForBooking ? 'Available' : 'Unavailable';
-                        var availabilityIndicator = "<span class='" + availabilityClass + "'>" + availabilityText + "</span>";
-
-                        var category = item.category == 1 ? "Standard" : "Business";
-
-                        var edit_btn = "<a href='/Admin/ParkingSlot/Edit/" + item.id + "' class='btn btn-warning btn-edit'>Edit</a>";
-                        var details_btn = "<a href='/Admin/ParkingSlot/Details/" + item.id + "' class='btn btn-success'>Details</a>";
-                        var delete_btn = "<a href='/Admin/ParkingSlot/Delete/" + item.id + "' class='btn btn-danger'>Delete</a>";
-
-                        var actions = edit_btn + " " + details_btn + " " + delete_btn;
-
-                        var row = '<tr>' +
-                            '<td>' + item.number + '</td>' +
-                            '<td>' + availabilityIndicator + '</td>' +
-                            '<td>' + category + (category == "Business" ? '<i class="bi bi-currency-dollar"></i>' : '') + '</td>' +
-                            '<td>' + actions + '</td>' +
-                            '</tr>';
-
-                        $('#tableBody').append(row);
-                    });
-                },
-                error: function (xhr, status, error) {
-                    console.error(xhr.responseText);
-                }
-            });
+            Filter();
         });
     });
+
+    function Filter(){
+        $('#tableBody').empty();
+
+        var category = $('#categorySelect').val();
+        var isFree = $('#checkboxID').is(':checked');
+        var zoneId = '@ViewData["parkingZoneId"]';
+        var slot = {
+            zoneId: zoneId,
+            category: category,
+            isFree: isFree
+        };
+
+        $.ajax({
+            url: '@Url.Action("LoadData", "ParkingSlot")',
+            type: 'POST',
+            dataType: 'json',
+            data: slot,
+            success: function (data) {
+                SeedTable(data);
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    }
+
+    function SeedTable(data) {
+        $('#tableBody').empty();
+
+        $.each(data, function (index, item) {
+            var availabilityClass = item.isAvailableForBooking ? 'availability-true' : 'availability-false';
+            var availabilityText = item.isAvailableForBooking ? 'Available' : 'Unavailable';
+            var availabilityIndicator = "<span class='" + availabilityClass + "'>" + availabilityText + "</span>";
+
+            var category = item.category == 1 ? "Standard" : "Business";
+
+            var edit_btn = "<a href='/Admin/ParkingSlot/Edit/" + item.id + "' class='btn btn-warning btn-edit'>Edit</a>";
+            var details_btn = "<a href='/Admin/ParkingSlot/Details/" + item.id + "' class='btn btn-success'>Details</a>";
+            var delete_btn = "<a href='/Admin/ParkingSlot/Delete/" + item.id + "' class='btn btn-danger'>Delete</a>";
+
+            var actions = edit_btn + " " + details_btn + " " + delete_btn;
+
+            var row = '<tr>' +
+                '<td>' + item.number + '</td>' +
+                '<td>' + availabilityIndicator + '</td>' +
+                '<td>' + category + (category == "Business" ? '<i class="bi bi-currency-dollar"></i>' : '') + '</td>' +
+                '<td>' + actions + '</td>' +
+                '</tr>';
+
+            $('#tableBody').append(row);
+        });
+    }
 </script>

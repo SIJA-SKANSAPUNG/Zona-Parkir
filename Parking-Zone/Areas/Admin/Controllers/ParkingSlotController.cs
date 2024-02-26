@@ -39,24 +39,17 @@ namespace Parking_Zone.Areas.Admin.Controllers
         }
 
         [HttpPost]
-        public IActionResult LoadData(string category, bool isFree, string zoneId)
+        public IActionResult LoadData(FilterSlotVM slotVM)
         {
-            var slots = _slotService.GetByParkingZoneId(Guid.Parse(zoneId));
+            var zone = _zoneService.GetById(slotVM.ZoneId);
 
-            if (category == "All")
-            {
-                return Json(slots.Select(x => new ParkingSlotListItemVM(x)).ToList());
-            }
-            else
-            {
-                SlotCategoryEnum parsedCategory = (SlotCategoryEnum)Enum.Parse(typeof(SlotCategoryEnum), category);
+            if (zone is null)
+                return BadRequest("Slot Not Found");
 
-                var filteredSlots = slots.Where(s => s.Category == parsedCategory && s.HasAnyActiveReservation == isFree).ToList();
+            var slots = _slotService.Filter(slotVM);
+            var slotVMs = slots.Select(s => new ParkingSlotListItemVM(s)).ToList();
 
-                var filterdSlotVMs = filteredSlots.Select(x => new ParkingSlotListItemVM(x));
-
-                return Json(filterdSlotVMs);
-            }
+            return Json(slotVMs);
         }
 
         // GET: Admin/ParkingSlots/Create

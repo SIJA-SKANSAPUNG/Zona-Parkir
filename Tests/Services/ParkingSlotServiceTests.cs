@@ -4,8 +4,10 @@ using Parking_Zone.Enums;
 using Parking_Zone.Models;
 using Parking_Zone.Repositories;
 using Parking_Zone.Services;
+using Parking_Zone.ViewModels.ParkingSlot;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -303,6 +305,82 @@ namespace Tests.Services
 
             //Assert
             Assert.Equal(result, expectedResult);
+        }
+        #endregion
+
+        #region Filter
+        public void GivenFilterSlotVmWithAllCategory_WhenFilterIsCalled_ThenReturnedFilteredSlotsFilteredByIsFreeProperty()
+        {
+            //Arrange
+            var slotVM = new FilterSlotVM()
+            {
+                ZoneId = _testZoneId,
+                Category = 0,
+                IsFree = true
+            };
+
+            var slots = new List<ParkingSlot>()
+            {
+                _testSlot,
+                new()
+                {
+                    ParkingZoneId = _testZoneId,
+                    Category = SlotCategoryEnum.Business,
+                    Reservations = new Collection<Reservation>()
+                    {
+                        new()
+                        {
+                            StartTime = DateTime.Now.AddHours(-1),
+                            Duration = 2
+                        }
+                    }
+                }
+            };
+            var expectedSlot = new List<ParkingSlot>()
+            {
+                _testSlot
+            };
+
+            //Act
+            var result = service.Filter(slotVM);
+
+            //Assert
+            Assert.Equal(JsonSerializer.Serialize(expectedSlot), JsonSerializer.Serialize(result));
+        }
+
+        public void GivenFilterSlotVmWithStandardCategory_WhenFilterIsCalled_ThenReturnedFilteredSlotsFilteredByIsFreeProperty()
+        {
+            //Arrange
+            var slotVM = new FilterSlotVM()
+            {
+                ZoneId = _testZoneId,
+                Category = 0,
+                IsFree = true
+            };
+
+            var slots = new List<ParkingSlot>()
+            {
+                _testSlot,
+                new()
+                {
+                    ParkingZoneId = _testZoneId,
+                    Category = SlotCategoryEnum.Standard
+                }
+            };
+            var expectedSlot = new List<ParkingSlot>()
+            {
+                new()
+                {
+                    ParkingZoneId = _testZoneId,
+                    Category = SlotCategoryEnum.Standard
+                }
+            };
+
+            //Act
+            var result = service.Filter(slotVM);
+
+            //Assert
+            Assert.Equal(JsonSerializer.Serialize(expectedSlot), JsonSerializer.Serialize(result));
         }
         #endregion
     }

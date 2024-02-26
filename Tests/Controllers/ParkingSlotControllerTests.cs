@@ -117,11 +117,18 @@ namespace Tests.Controllers
             Assert.IsType<BadRequestResult>(result);
             mockZoneService.Verify(s => s.GetById(Guid.Parse("")), Times.Once);
         }
+        #endregion
 
-        public void GivenCategoryAsAllAndIsFreeAndZoneId_WhenLoadDataisCalled_ThenReturnedAllSlots()
+        #region LoadData
+        public void GivenFilterSlotVM_WhenLoadDataisCalled_ThenReturnedAllSlots()
         {
             //Arrange
-            var testCategory = "All";
+            var slotVM = new FilterSlotVM()
+            {
+                ZoneId = _testZoneId,
+                Category = 0,
+                IsFree = true
+            };
             var expectedSlots = new List<ParkingSlotListItemVM>()
             {
                 new(_testSlot),
@@ -133,7 +140,7 @@ namespace Tests.Controllers
                 .Returns(_testSlots);
 
             //Act
-            var result = controller.LoadData(testCategory, true, _testZoneId.ToString());
+            var result = controller.LoadData(slotVM);
 
             //Assert
             Assert.IsType<JsonResult>(result);
@@ -141,110 +148,25 @@ namespace Tests.Controllers
             mockSlotService.Verify(service => service.GetByParkingZoneId(_testZoneId), Times.Once);
         }
 
-        public void GivenStandardCategoryAndIsFreeAsTrueAndZoneId_WhenLoadDataisCalled_ThenReturnedAllStandardSlotsWhichHaveActiveReservations()
+        public void GivenFilterSlotVmWithIdOfNotExistingZone_WhenLoadDataisCalled_ThenServiceIsCalledOnceAndReturnedBadRequest()
         {
             //Arrange
-            var testCategory = "Standard";
-            var _testSlots = new List<ParkingSlot>()
+            var slotVM = new FilterSlotVM()
             {
-                new ParkingSlot()
-                {
-                    ParkingZoneId = Guid.Parse("dd09a090-b0f6-4369-b24a-656843d227bc"),
-                    Category = SlotCategoryEnum.Standard,
-                    Reservations = new List<Reservation>()
-                    {
-                        new()
-                        {
-                            StartTime = DateTime.Now.AddHours(-1),
-                            Duration = 3
-                        }
-                    }
-                },
-                new ParkingSlot()
-                {
-                    ParkingZoneId = Guid.Parse("dd09a090-b0f6-4369-b24a-656843d227bc"),
-                    Category = SlotCategoryEnum.Business
-                },
-            };
-
-            var filteredSlot = new ParkingSlotListItemVM(new ParkingSlot()
-            {
-                ParkingZoneId = Guid.Parse("dd09a090-b0f6-4369-b24a-656843d227bc"),
-                Category = SlotCategoryEnum.Standard,
-                Reservations = new List<Reservation>()
-                    {
-                        new()
-                        {
-                            StartTime = DateTime.Now.AddHours(-1),
-                            Duration = 3
-                        }
-                    }
-            });
-
-            mockSlotService
-                .Setup(service => service.GetByParkingZoneId(_testZoneId))
-                .Returns(_testSlots);
-
-            //Act
-            var result = controller.LoadData(testCategory, true, _testZoneId.ToString());
-
-            //Assert
-            Assert.IsType<JsonResult>(result);
-            Assert.Equal(filteredSlot, (result as ViewResult).Model);
-            mockSlotService.Verify(service => service.GetByParkingZoneId(_testZoneId), Times.Once);
-        }
-
-        public void GivenBusinessCategoryAndIsFreeAsFalseAndZoneId_WhenLoadDataisCalled_ThenReturnedAllBusinessSlotsWhichTheyDontHaveActiveReservations()
-        {
-            //Arrange
-            var testCategory = "Business";
-            var _testSlots = new List<ParkingSlot>()
-            {
-                new ParkingSlot()
-                {
-                    ParkingZoneId = Guid.Parse("dd09a090-b0f6-4369-b24a-656843d227bc"),
-                    Category = SlotCategoryEnum.Standard
-                },
-                new ParkingSlot()
-                {
-                    ParkingZoneId = Guid.Parse("dd09a090-b0f6-4369-b24a-656843d227bc"),
-                    Category = SlotCategoryEnum.Business,
-                    Reservations = new List<Reservation>()
-                    {
-                        new()
-                        {
-                            StartTime = DateTime.Now.AddHours(-1),
-                            Duration = 3
-                        }
-                    }
-                },
-            };
-
-            var filteredSlot = new ParkingSlotListItemVM(new ParkingSlot()
-            {
-                ParkingZoneId = Guid.Parse("dd09a090-b0f6-4369-b24a-656843d227bc"),
+                ZoneId = Guid.Parse("a838031d-52fc-4065-b0c9-de264cbac2dc"),
                 Category = SlotCategoryEnum.Business,
-                Reservations = new List<Reservation>()
-                    {
-                        new()
-                        {
-                            StartTime = DateTime.Now.AddHours(-1),
-                            Duration = 3
-                        }
-                    }
-            });
+                IsFree = true
+            };
 
-            mockSlotService
-                .Setup(service => service.GetByParkingZoneId(_testZoneId))
-                .Returns(_testSlots);
+            mockZoneService
+                .Setup(service => service.GetById(_testZoneId));
 
             //Act
-            var result = controller.LoadData(testCategory, false, _testZoneId.ToString());
+            var result = controller.LoadData(slotVM);
 
             //Assert
-            Assert.IsType<JsonResult>(result);
-            Assert.Equal(filteredSlot, (result as ViewResult).Model);
-            mockSlotService.Verify(service => service.GetByParkingZoneId(_testZoneId), Times.Once);
+            Assert.IsType<BadRequestResult>(result);
+            mockZoneService.Verify(service => service.GetById(_testZoneId), Times.Once);
         }
         #endregion
 
