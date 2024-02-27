@@ -319,8 +319,8 @@ namespace Tests.Services
                 Category = 0,
                 OnlyFree = true
             };
-            var filterSlotQuery = new FilterSlotsQuery(slotVM);
 
+            var filterSlotQuery = new FilterSlotsQuery(slotVM);
             var slots = new List<ParkingSlot>()
             {
                 _testSlot,
@@ -359,8 +359,8 @@ namespace Tests.Services
                 Category = 0,
                 OnlyFree = true
             };
-            var filterSlotsQuery = new FilterSlotsQuery(slotVM);
 
+            var filterSlotsQuery = new FilterSlotsQuery(slotVM);
             var slots = new List<ParkingSlot>()
             {
                 _testSlot,

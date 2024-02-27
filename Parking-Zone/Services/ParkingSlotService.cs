@@ -40,19 +40,19 @@ namespace Parking_Zone.Services
                 reservation.StartTime <= startTime && startTime < reservation.StartTime.AddHours(reservation.Duration) ||
                 reservation.StartTime > startTime && startTime.AddHours(duration) > reservation.StartTime);
 
-        public IEnumerable<ParkingSlot> Filter(FilterSlotsQuery slot)
+        public IEnumerable<ParkingSlot> Filter(FilterSlotsQuery slotVM)
         {
-            var slots = GetByParkingZoneId(slot.ZoneId);
+            var slots = GetByParkingZoneId(slotVM.ZoneId);
 
-            if (slot.Category == 0)
+            if (slotVM.Category == 0)
             {
-                if (slot.OnlyFree)
+                if (slotVM.OnlyFree)
                 {
-                    return slots.Where(s => s.HasAnyActiveReservation != slot.OnlyFree);
+                    return slots.Where(s => s.HasAnyActiveReservation != slotVM.OnlyFree);
                 }
                 return slots;
             }
-            return slots.Where(s => s.Category == slot.Category && s.HasAnyActiveReservation != slot.OnlyFree);
+            return slots.Where(s => s.Category == slotVM.Category && s.HasAnyActiveReservation != slotVM.OnlyFree);
         }
     }
 }
