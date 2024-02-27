@@ -4,6 +4,7 @@ using Parking_Zone.Enums;
 using Parking_Zone.Models;
 using Parking_Zone.Repositories;
 using Parking_Zone.Services;
+using Parking_Zone.Services.Models;
 using Parking_Zone.ViewModels.ParkingSlot;
 using System;
 using System.Collections.Generic;
@@ -316,8 +317,9 @@ namespace Tests.Services
             {
                 ZoneId = _testZoneId,
                 Category = 0,
-                IsFree = true
+                OnlyFree = true
             };
+            var filterSlotQuery = new FilterSlotsQuery(slotVM);
 
             var slots = new List<ParkingSlot>()
             {
@@ -342,7 +344,7 @@ namespace Tests.Services
             };
 
             //Act
-            var result = service.Filter(slotVM);
+            var result = service.Filter(filterSlotQuery);
 
             //Assert
             Assert.Equal(JsonSerializer.Serialize(expectedSlot), JsonSerializer.Serialize(result));
@@ -355,8 +357,9 @@ namespace Tests.Services
             {
                 ZoneId = _testZoneId,
                 Category = 0,
-                IsFree = true
+                OnlyFree = true
             };
+            var filterSlotsQuery = new FilterSlotsQuery(slotVM);
 
             var slots = new List<ParkingSlot>()
             {
@@ -377,7 +380,7 @@ namespace Tests.Services
             };
 
             //Act
-            var result = service.Filter(slotVM);
+            var result = service.Filter(filterSlotsQuery);
 
             //Assert
             Assert.Equal(JsonSerializer.Serialize(expectedSlot), JsonSerializer.Serialize(result));

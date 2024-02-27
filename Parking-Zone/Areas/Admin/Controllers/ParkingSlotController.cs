@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Parking_Zone.Enums;
 using Parking_Zone.Services;
+using Parking_Zone.Services.Models;
 using Parking_Zone.ViewModels.ParkingSlot;
 using Parking_Zone.ViewModels.ParkingZone;
 using System.Text.Json;
@@ -27,15 +28,10 @@ namespace Parking_Zone.Areas.Admin.Controllers
             {
                 return BadRequest();
             }
-
-            var slots = _slotService.GetByParkingZoneId(zoneId);
-
-            var slotVMs = slots.Select(x => new ParkingSlotListItemVM(x)).ToList();
-
             ViewData["parkingZoneName"] = zone.Name;
             ViewData["parkingZoneId"] = zoneId;
 
-            return View(slotVMs);
+            return View();
         }
 
         [HttpPost]
@@ -46,7 +42,8 @@ namespace Parking_Zone.Areas.Admin.Controllers
             if (zone is null)
                 return BadRequest("Slot Not Found");
 
-            var slots = _slotService.Filter(slotVM);
+            var filterSlotsQuery = new FilterSlotsQuery(slotVM);
+            var slots = _slotService.Filter(filterSlotsQuery);
             var slotVMs = slots.Select(s => new ParkingSlotListItemVM(s)).ToList();
 
             return Json(slotVMs);

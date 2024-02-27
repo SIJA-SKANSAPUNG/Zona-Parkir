@@ -58,7 +58,7 @@
 
 <script>
     $(document).ready(function () {
-        SeedTable(@Html.Raw(Json.Serialize(Model)));
+        Filter();
 
         $('#submitButton').click(function () {
             Filter();
@@ -69,12 +69,12 @@
         $('#tableBody').empty();
 
         var category = $('#categorySelect').val();
-        var isFree = $('#checkboxID').is(':checked');
+        var onlyFree = $('#checkboxID').is(':checked');
         var zoneId = '@ViewData["parkingZoneId"]';
         var slot = {
             zoneId: zoneId,
             category: category,
-            isFree: isFree
+            onlyFree: onlyFree
         };
 
         $.ajax({

@@ -100,10 +100,9 @@ namespace Tests.Controllers
 
             //Assert
             Assert.IsType<ViewResult>(result);
-            Assert.NotNull((result as ViewResult).Model);
+            Assert.Null((result as ViewResult).Model);
             Assert.Equal(2, _testSlots.Count());
             mockZoneService.Verify(s => s.GetById(_testZoneId), Times.Once);
-            mockSlotService.Verify(s => s.GetByParkingZoneId(_testZoneId), Times.Once);
         }
 
         public void GivenNullParkingZoneId_WhenIndexIsCalled_ThenParkingZoneServiceIsCalledOnceAndActionReturnedBadRequest()
@@ -127,7 +126,7 @@ namespace Tests.Controllers
             {
                 ZoneId = _testZoneId,
                 Category = 0,
-                IsFree = true
+                OnlyFree = true
             };
             var expectedSlots = new List<ParkingSlotListItemVM>()
             {
@@ -155,7 +154,7 @@ namespace Tests.Controllers
             {
                 ZoneId = Guid.Parse("a838031d-52fc-4065-b0c9-de264cbac2dc"),
                 Category = SlotCategoryEnum.Business,
-                IsFree = true
+                OnlyFree = true
             };
 
             mockZoneService
