@@ -1,0 +1,19 @@
+﻿@model List<string>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>All current cars in the zone</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach(var item in Model)
+        {
+            <tr>
+                <td>@item</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<a asp-controller="ParkingZone" asp-action="Index" class="btn btn-primary">Back to Zones <i class="bi bi-list"></i></a>
