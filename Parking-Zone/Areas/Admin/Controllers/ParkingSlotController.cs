@@ -42,7 +42,12 @@ namespace Parking_Zone.Areas.Admin.Controllers
             if (zone is null)
                 return BadRequest("Zone Not Found");
 
-            var filterSlotsQuery = new FilterSlotsQuery(slotVM);
+            var filterSlotsQuery = new FilterSlotsQuery()
+            {
+                ZoneId = slotVM.ZoneId,
+                OnlyFree = slotVM.OnlyFree,
+                Category = slotVM.Category
+            };
             var slots = _slotService.Filter(filterSlotsQuery);
             var slotVMs = slots.Select(s => new ParkingSlotListItemVM(s)).ToList();
 

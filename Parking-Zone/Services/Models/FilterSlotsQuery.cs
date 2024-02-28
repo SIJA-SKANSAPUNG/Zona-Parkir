@@ -5,12 +5,6 @@ namespace Parking_Zone.Services.Models
 {
     public class FilterSlotsQuery
     {
-        public FilterSlotsQuery(FilterSlotVM slotVM)
-        {
-            ZoneId = slotVM.ZoneId;
-            OnlyFree = slotVM.OnlyFree;
-            Category = slotVM.Category;
-        }
         public Guid ZoneId { get; set; }
         public bool OnlyFree { get; set; }
         public SlotCategoryEnum Category { get; set; }

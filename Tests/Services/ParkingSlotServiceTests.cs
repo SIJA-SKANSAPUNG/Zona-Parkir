@@ -320,7 +320,13 @@ namespace Tests.Services
                 OnlyFree = true
             };
 
-            var filterSlotQuery = new FilterSlotsQuery(slotVM);
+            var filterSlotsQuery = new FilterSlotsQuery()
+            {
+                ZoneId = slotVM.ZoneId,
+                Category = slotVM.Category,
+                OnlyFree = slotVM.OnlyFree
+            };
+
             var slots = new List<ParkingSlot>()
             {
                 _testSlot,
@@ -344,7 +350,7 @@ namespace Tests.Services
             };
 
             //Act
-            var result = service.Filter(filterSlotQuery);
+            var result = service.Filter(filterSlotsQuery);
 
             //Assert
             Assert.Equal(JsonSerializer.Serialize(expectedSlot), JsonSerializer.Serialize(result));
@@ -356,11 +362,16 @@ namespace Tests.Services
             var slotVM = new FilterSlotVM()
             {
                 ZoneId = _testZoneId,
-                Category = 0,
+                Category = SlotCategoryEnum.Standard,
                 OnlyFree = true
             };
 
-            var filterSlotsQuery = new FilterSlotsQuery(slotVM);
+            var filterSlotsQuery = new FilterSlotsQuery()
+            {
+                ZoneId = slotVM.ZoneId,
+                Category = slotVM.Category,
+                OnlyFree = slotVM.OnlyFree
+            };
             var slots = new List<ParkingSlot>()
             {
                 _testSlot,

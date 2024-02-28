@@ -17,8 +17,8 @@
             </select>
         </div>
         <div class="custom-checkbox">
-            <input class="form-check-input" type="checkbox" id="checkboxID" style="margin-bottom: 10px;" />
-            <label class="form-check-label" for="checkboxID">Display free slots</label>
+            <input class="form-check-input" type="checkbox" id="displayOnlyFree" style="margin-bottom: 10px;" />
+            <label class="form-check-label" for="displayOnlyFree">Display free slots</label>
         </div>
 
         <button class="btn btn-primary" type="submit" id="submitButton">Filter</button>
@@ -69,9 +69,9 @@
         $('#tableBody').empty();
 
         var category = $('#categorySelect').val();
-        var onlyFree = $('#checkboxID').is(':checked');
+        var onlyFree = $('#displayOnlyFree').is(':checked');
         var zoneId = '@ViewData["parkingZoneId"]';
-        var slot = {
+        var slotFilterQueryPayload = {
             zoneId: zoneId,
             category: category,
             onlyFree: onlyFree
@@ -81,7 +81,7 @@
             url: '@Url.Action("LoadData", "ParkingSlot")',
             type: 'POST',
             dataType: 'json',
-            data: slot,
+            data: slotFilterQueryPayload,
             success: function (data) {
                 SeedTable(data);
             },
