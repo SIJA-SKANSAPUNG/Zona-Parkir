@@ -44,15 +44,16 @@ namespace Parking_Zone.Services
         {
             var slots = GetByParkingZoneId(slotVM.ZoneId);
 
-            if (slotVM.Category == 0)
+            if (slotVM.OnlyFree)
             {
-                if (slotVM.OnlyFree)
-                {
-                    return slots.Where(s => s.HasAnyActiveReservation != slotVM.OnlyFree);
-                }
-                return slots;
+                slots = slots.Where(s => !s.HasAnyActiveReservation);
             }
-            return slots.Where(s => s.Category == slotVM.Category && s.HasAnyActiveReservation != slotVM.OnlyFree);
+            if (slotVM.Category != 0)
+            {
+                slots = slots.Where(s => s.Category == slotVM.Category);
+            }
+
+            return slots;
         }
     }
 }

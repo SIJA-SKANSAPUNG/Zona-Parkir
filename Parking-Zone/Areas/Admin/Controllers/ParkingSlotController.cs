@@ -40,7 +40,7 @@ namespace Parking_Zone.Areas.Admin.Controllers
             var zone = _zoneService.GetById(slotVM.ZoneId);
 
             if (zone is null)
-                return BadRequest("Slot Not Found");
+                return BadRequest("Zone Not Found");
 
             var filterSlotsQuery = new FilterSlotsQuery(slotVM);
             var slots = _slotService.Filter(filterSlotsQuery);
