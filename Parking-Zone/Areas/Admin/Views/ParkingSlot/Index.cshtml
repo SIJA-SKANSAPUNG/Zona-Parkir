@@ -1,48 +1,120 @@
-﻿@model IEnumerable<Parking_Zone.ViewModels.ParkingSlot.ParkingSlotListItemVM>
+﻿@using Parking_Zone.Enums
+@model IEnumerable<Parking_Zone.ViewModels.ParkingSlot.ParkingSlotListItemVM>
 
 @{
     ViewData["Title"] = "Index";
 }
+<link rel="stylesheet" href="~/css/index.css"/>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-<h1>Slots for @ViewData["parkingZoneName"]</h1>
+<div class="d-flex">
+    <div class="container">
+        <h1>Filtering Slots</h1>
+        <div class="custom-select">
+            <select class="form-select form-select-sm" asp-items="Html.GetEnumSelectList<SlotCategoryEnum>()" id="categorySelect" style="margin-bottom: 5px;">
+                <option value="All">All</option>
+            </select>
+        </div>
+        <div class="custom-checkbox">
+            <input class="form-check-input" type="checkbox" id="displayOnlyFree" style="margin-bottom: 10px;" />
+            <label class="form-check-label" for="displayOnlyFree">Display free slots</label>
+        </div>
 
-<p>
-    <a asp-asp-controller="ParkingSlot" asp-action="Create" asp-route-zoneId="@ViewData["parkingZoneId"]">Create New Slot for Parking Zone @ViewData["parkingZoneName"]</a>
-</p>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Number)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IsAvailableForBooking)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Category)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
+        <button class="btn btn-primary" type="submit" id="submitButton">Filter</button>
+    </div>
+
+    <div class="container" style="margin-left: 530px;">
+        <h1>Slots for @ViewData["parkingZoneName"]</h1>
+        <p>
+            <a asp-action="Create" asp-route-zoneId="@ViewData["parkingZoneId"]" class="btn btn-primary">Create New</a>
+        </p>
+    </div>
+</div>
+<br />
+<div id="result">
+    <table class="table table-striped">
+        <thead>
             <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Number)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.IsAvailableForBooking)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Category)
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                </td>
+                <th>
+                    @Html.DisplayNameFor(model => model.Number)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.IsAvailableForBooking)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Category)
+                </th>
+                <th>
+                    Actions
+                </th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+
+        <tbody id="tableBody">
+        </tbody>
+    </table>
+</div>
+
+<script>
+    $(document).ready(function () {
+        Filter();
+
+        $('#submitButton').click(function () {
+            Filter();
+        });
+    });
+
+    function Filter(){
+        $('#tableBody').empty();
+
+        var category = $('#categorySelect').val();
+        var onlyFree = $('#displayOnlyFree').is(':checked');
+        var zoneId = '@ViewData["parkingZoneId"]';
+        var slotFilterQueryPayload = {
+            zoneId: zoneId,
+            category: category,
+            onlyFree: onlyFree
+        };
+
+        $.ajax({
+            url: '@Url.Action("LoadData", "ParkingSlot")',
+            type: 'POST',
+            dataType: 'json',
+            data: slotFilterQueryPayload,
+            success: function (data) {
+                SeedTable(data);
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    }
+
+    function SeedTable(data) {
+        $('#tableBody').empty();
+
+        $.each(data, function (index, item) {
+            var availabilityClass = item.isAvailableForBooking ? 'availability-true' : 'availability-false';
+            var availabilityText = item.isAvailableForBooking ? 'Available' : 'Unavailable';
+            var availabilityIndicator = "<span class='" + availabilityClass + "'>" + availabilityText + "</span>";
+
+            var category = item.category == 1 ? "Standard" : "Business";
+
+            var edit_btn = "<a href='/Admin/ParkingSlot/Edit/" + item.id + "' class='btn btn-warning btn-edit'>Edit</a>";
+            var details_btn = "<a href='/Admin/ParkingSlot/Details/" + item.id + "' class='btn btn-success'>Details</a>";
+            var delete_btn = "<a href='/Admin/ParkingSlot/Delete/" + item.id + "' class='btn btn-danger'>Delete</a>";
+
+            var actions = edit_btn + " " + details_btn + " " + delete_btn;
+
+            var row = '<tr>' +
+                '<td>' + item.number + '</td>' +
+                '<td>' + availabilityIndicator + '</td>' +
+                '<td>' + category + (category == "Business" ? '<i class="bi bi-currency-dollar"></i>' : '') + '</td>' +
+                '<td>' + actions + '</td>' +
+                '</tr>';
+
+            $('#tableBody').append(row);
+        });
+    }
+</script>

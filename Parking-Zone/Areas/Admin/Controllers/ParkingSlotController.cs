@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Parking_Zone.Enums;
 using Parking_Zone.Services;
+using Parking_Zone.Services.Models;
 using Parking_Zone.ViewModels.ParkingSlot;
 using Parking_Zone.ViewModels.ParkingZone;
+using System.Text.Json;
 
 namespace Parking_Zone.Areas.Admin.Controllers
 {
@@ -19,21 +22,36 @@ namespace Parking_Zone.Areas.Admin.Controllers
 
         public IActionResult Index(Guid zoneId)
         {
-            var Zone = _zoneService.GetById(zoneId);
+            var zone = _zoneService.GetById(zoneId);
 
-            if (Zone is null)
+            if (zone is null)
             {
                 return BadRequest();
             }
-
-            var slots = _slotService.GetByParkingZoneId(zoneId);
-
-            var slotVMs = slots.Select(x => new ParkingSlotListItemVM(x)).ToList();
-
-            ViewData["parkingZoneName"] = Zone.Name;
+            ViewData["parkingZoneName"] = zone.Name;
             ViewData["parkingZoneId"] = zoneId;
 
-            return View(slotVMs);
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult LoadData(FilterSlotVM slotVM)
+        {
+            var zone = _zoneService.GetById(slotVM.ZoneId);
+
+            if (zone is null)
+                return BadRequest("Zone Not Found");
+
+            var filterSlotsQuery = new FilterSlotsQuery()
+            {
+                ZoneId = slotVM.ZoneId,
+                OnlyFree = slotVM.OnlyFree,
+                Category = slotVM.Category
+            };
+            var slots = _slotService.Filter(filterSlotsQuery);
+            var slotVMs = slots.Select(s => new ParkingSlotListItemVM(s)).ToList();
+
+            return Json(slotVMs);
         }
 
         // GET: Admin/ParkingSlots/Create

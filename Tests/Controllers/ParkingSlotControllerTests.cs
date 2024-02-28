@@ -100,10 +100,9 @@ namespace Tests.Controllers
 
             //Assert
             Assert.IsType<ViewResult>(result);
-            Assert.NotNull((result as ViewResult).Model);
+            Assert.Null((result as ViewResult).Model);
             Assert.Equal(2, _testSlots.Count());
             mockZoneService.Verify(s => s.GetById(_testZoneId), Times.Once);
-            mockSlotService.Verify(s => s.GetByParkingZoneId(_testZoneId), Times.Once);
         }
 
         public void GivenNullParkingZoneId_WhenIndexIsCalled_ThenParkingZoneServiceIsCalledOnceAndActionReturnedBadRequest()
@@ -116,6 +115,57 @@ namespace Tests.Controllers
             //Assert
             Assert.IsType<BadRequestResult>(result);
             mockZoneService.Verify(s => s.GetById(Guid.Parse("")), Times.Once);
+        }
+        #endregion
+
+        #region LoadData
+        public void GivenFilterSlotVM_WhenLoadDataisCalled_ThenReturnedAllSlots()
+        {
+            //Arrange
+            var slotVM = new FilterSlotVM()
+            {
+                ZoneId = _testZoneId,
+                Category = 0,
+                OnlyFree = true
+            };
+            var expectedSlots = new List<ParkingSlotListItemVM>()
+            {
+                new(_testSlot),
+                new(_testSlot)
+            };
+
+            mockSlotService
+                .Setup(service => service.GetByParkingZoneId(_testZoneId))
+                .Returns(_testSlots);
+
+            //Act
+            var result = controller.LoadData(slotVM);
+
+            //Assert
+            Assert.IsType<JsonResult>(result);
+            Assert.Equal(expectedSlots, (result as ViewResult).Model);
+            mockSlotService.Verify(service => service.GetByParkingZoneId(_testZoneId), Times.Once);
+        }
+
+        public void GivenFilterSlotVmWithIdOfNotExistingZone_WhenLoadDataisCalled_ThenServiceIsCalledOnceAndReturnedBadRequest()
+        {
+            //Arrange
+            var slotVM = new FilterSlotVM()
+            {
+                ZoneId = Guid.Parse("a838031d-52fc-4065-b0c9-de264cbac2dc"),
+                Category = SlotCategoryEnum.Business,
+                OnlyFree = true
+            };
+
+            mockZoneService
+                .Setup(service => service.GetById(_testZoneId));
+
+            //Act
+            var result = controller.LoadData(slotVM);
+
+            //Assert
+            Assert.IsType<BadRequestResult>(result);
+            mockZoneService.Verify(service => service.GetById(_testZoneId), Times.Once);
         }
         #endregion
 
