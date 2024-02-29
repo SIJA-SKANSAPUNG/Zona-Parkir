@@ -491,7 +491,7 @@ namespace Tests.Controllers
             var controller = new ParkingZoneController(mockService.Object);
 
             //Act
-            var result = controller.GetCurrentCars(_testId);
+            var result = controller.CurrentCars(_testId);
 
             //Assert
             Assert.IsType<NotFoundObjectResult>(result);
@@ -512,13 +512,13 @@ namespace Tests.Controllers
                 .Setup(service => service.GetById(_testId))
                 .Returns(_testParkingZone);
             mockService
-                .Setup(service => service.GetPlateNumbers(_testParkingZone))
+                .Setup(service => service.GetCurrentCarsPlateNumbersByZone(_testParkingZone))
                 .Returns(new List<string>() { "888AAA", "B443LA" });
 
             var controller = new ParkingZoneController(mockService.Object);
 
             //Act
-            var result = controller.GetCurrentCars(_testId);
+            var result = controller.CurrentCars(_testId);
 
             //Assert
             Assert.Equal(JsonSerializer.Serialize(expectedPlateNumbers), JsonSerializer.Serialize((result as ViewResult).Model));

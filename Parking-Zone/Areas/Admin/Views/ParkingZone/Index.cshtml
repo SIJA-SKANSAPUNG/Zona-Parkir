@@ -33,7 +33,7 @@
             <p class="card-text" style="color: #666; font-family: 'Arial', sans-serif;">Slots in Use: @item.SlotsInUse</p>
             <p class="card-text" style="color: #666; font-family: 'Arial', sans-serif;">Free Slots: @item.FreeSlots</p>
             <a asp-controller="ParkingSlot" asp-action="Index" asp-route-zoneId="@item.Id" class="btn btn-primary" style="font-family: 'Quicksand'">Parking Slots <i class="bi bi-list"></i></a>
-            <a asp-controller="ParkingZone" asp-action="GetCurrentCars" asp-route-zoneId="@item.Id" class="btn btn-primary" style="font-family: 'Quicksand'; background-color: #8A2BE2; border-color: #8A2BE2; color: #fff;">Current Cars <i class="bi bi-car-front-fill"></i></a>
+            <a asp-controller="ParkingZone" asp-action="CurrentCars" asp-route-zoneId="@item.Id" class="btn btn-primary" style="font-family: 'Quicksand'; background-color: #8A2BE2; border-color: #8A2BE2; color: #fff;">Current Cars <i class="bi bi-car-front-fill"></i></a>
         </div>
     </div>
     <br />
