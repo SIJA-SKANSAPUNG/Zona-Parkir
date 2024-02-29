@@ -175,15 +175,21 @@ namespace Tests.Services
                             },
                             new()
                             {
-                                StartTime = DateTime.Now.AddHours(-2),
-                                Duration = 3,
-                                VehicleNumber = "B443LA"
-                            },
-                            new()
-                            {
                                 StartTime = DateTime.Now.AddHours(-5),
                                 Duration = 2,
                                 VehicleNumber = "P369UA"
+                            }
+                        }
+                    },
+                    new()
+                    {
+                        Reservations = new List<Reservation>()
+                        {
+                            new()
+                            {
+                                StartTime = DateTime.Now.AddHours(-2),
+                                Duration = 3,
+                                VehicleNumber = "B443LA"
                             }
                         }
                     }
