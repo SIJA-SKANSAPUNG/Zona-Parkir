@@ -159,11 +159,7 @@ namespace Parking_Zone.Areas.Admin.Controllers
             if (zone == null)
                 return NotFound("Parking Zone Not Found");
 
-            var plateNumbers = zone.ParkingSlots
-                .SelectMany(slot => slot.Reservations
-                    .Where(reservation => reservation.IsOnGoing)
-                    .Select(reservation => reservation.VehicleNumber))
-                .ToList();
+            var plateNumbers = _parkingZoneService.GetPlateNumbers(zone);
 
             return View(plateNumbers);
         }

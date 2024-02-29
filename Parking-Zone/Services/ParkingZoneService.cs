@@ -16,5 +16,13 @@ namespace Parking_Zone.Services
             parkingZone.DateOfEstablishment = DateTime.UtcNow;
             base.Insert(parkingZone);
         }
+        public List<string> GetPlateNumbers(ParkingZone zone)
+        {
+            return zone.ParkingSlots
+                .SelectMany(slot => slot.Reservations
+                    .Where(reservation => reservation.IsOnGoing)
+                    .Select(reservation => reservation.VehicleNumber))
+                .ToList();
+        }
     }
 }

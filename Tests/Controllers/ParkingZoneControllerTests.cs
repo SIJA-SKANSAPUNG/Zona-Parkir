@@ -511,6 +511,9 @@ namespace Tests.Controllers
             mockService
                 .Setup(service => service.GetById(_testId))
                 .Returns(_testParkingZone);
+            mockService
+                .Setup(service => service.GetPlateNumbers(_testParkingZone))
+                .Returns(new List<string>() { "888AAA", "B443LA" });
 
             var controller = new ParkingZoneController(mockService.Object);
 
