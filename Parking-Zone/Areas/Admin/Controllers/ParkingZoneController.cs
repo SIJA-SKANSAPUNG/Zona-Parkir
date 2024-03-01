@@ -151,5 +151,17 @@ namespace Parking_Zone.Areas.Admin.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
+        public IActionResult CurrentCars(Guid zoneId)
+        {
+            var zone = _parkingZoneService.GetById(zoneId);
+
+            if (zone == null)
+                return NotFound("Parking Zone Not Found");
+
+            var plateNumbers = _parkingZoneService.GetCurrentCarsPlateNumbersByZone(zone);
+
+            return View(plateNumbers);
+        }
     }
 }

@@ -153,5 +153,62 @@ namespace Tests.Services
             mockRepository.Verify(repo => repo.Save(), Times.Once);
         }
         #endregion
+
+        #region GetCurrentCarsPlateNumbersByZone
+        [Fact]
+        public void GivenZoneModel_WhenGetCurrentCarsPlateNumbersByZoneIsCalled_ThenReturnedPlateNumbersOfOngoingReservations()
+        {
+            //Arrange
+            var _testParkingZone = new ParkingZone()
+            {
+                ParkingSlots = new List<ParkingSlot>
+                {
+                    new()
+                    {
+                        Reservations = new List<Reservation>
+                        {
+                            new()
+                            {
+                                StartTime = DateTime.Now.AddHours(-1),
+                                Duration = 2,
+                                VehicleNumber = "888AAA"
+                            },
+                            new()
+                            {
+                                StartTime = DateTime.Now.AddHours(-5),
+                                Duration = 2,
+                                VehicleNumber = "P369UA"
+                            }
+                        }
+                    },
+                    new()
+                    {
+                        Reservations = new List<Reservation>()
+                        {
+                            new()
+                            {
+                                StartTime = DateTime.Now.AddHours(-2),
+                                Duration = 3,
+                                VehicleNumber = "B443LA"
+                            }
+                        }
+                    }
+                }
+            };
+            var expectedPlateNumbers = new List<string>()
+            {
+                "888AAA", "B443LA"
+            };
+
+            var mockRepository = new Mock<IParkingZoneRepository>();
+            var service = new ParkingZoneService(mockRepository.Object);
+
+            //Act
+            var result = service.GetCurrentCarsPlateNumbersByZone(_testParkingZone);
+
+            //Assert
+            Assert.Equal(JsonSerializer.Serialize(expectedPlateNumbers), JsonSerializer.Serialize(result));
+        }
+        #endregion
     }
 }
