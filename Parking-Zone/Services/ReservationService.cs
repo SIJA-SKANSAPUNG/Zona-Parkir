@@ -28,68 +28,26 @@ namespace Parking_Zone.Services
             Update(reservation);
         }
 
-        public HoursSummaryVM GetStandardAndBusinessHoursByPeriod(string period)
+        public ReservationHoursSummaryVM GetStandardAndBusinessHoursByPeriod(IEnumerable<Reservation> reservations, string period)
         {
-            var hoursSummary = new HoursSummaryVM();
-            var allReservations = _repository.GetAll();
+            var hoursSummary = new ReservationHoursSummaryVM();
+            var targetDate = DateTime.Now;
 
-            if (period == "all_time")
+            var reservationsForPeriod = period switch
             {
-                foreach (var reservation in allReservations)
-                {
-                    if (reservation.ParkingSlot.Category == Enums.SlotCategoryEnum.Standard)
-                        hoursSummary.StandardHours += reservation.Duration;
-                    else
-                        hoursSummary.BusinessHours += reservation.Duration;
-                }
-            }
-            if (period == "last_30_days")
-            {
-                var bookedReservationsLast30Days = allReservations.Where(r => r.StartTime > DateTime.Now.AddDays(-30));
+                "last_30_days" => reservations.Where(r => r.StartTime > targetDate.AddDays(-30)),
+                "last_7_days" => reservations.Where(r => r.StartTime > targetDate.AddDays(-7)),
+                "yesterday" => reservations.Where(r => r.StartTime.Date == targetDate.AddDays(-1).Date),
+                "today" => reservations.Where(r => r.StartTime.Date == targetDate.Date),
+                _=>  reservations
+            };
 
-                foreach (var reservation in bookedReservationsLast30Days)
-                {
-                    if (reservation.ParkingSlot.Category == Enums.SlotCategoryEnum.Standard)
-                        hoursSummary.StandardHours += reservation.Duration;
-                    else
-                        hoursSummary.BusinessHours += reservation.Duration;
-                }
-            }
-            if (period == "last_7_days")
+            foreach (var reservation in reservationsForPeriod)
             {
-                var bookedReservationsLast7Days = allReservations.Where(r => r.StartTime > DateTime.Now.AddDays(-7));
-
-                foreach (var reservation in bookedReservationsLast7Days)
-                {
-                    if (reservation.ParkingSlot.Category == Enums.SlotCategoryEnum.Standard)
-                        hoursSummary.StandardHours += reservation.Duration;
-                    else
-                        hoursSummary.BusinessHours += reservation.Duration;
-                }
-            }
-            if (period == "yesterday")
-            {
-                var bookedReservationsYesterday = allReservations.Where(r => r.StartTime.Date == DateTime.Now.AddDays(-1).Date);
-
-                foreach (var reservation in bookedReservationsYesterday)
-                {
-                    if (reservation.ParkingSlot.Category == Enums.SlotCategoryEnum.Standard)
-                        hoursSummary.StandardHours += reservation.Duration;
-                    else
-                        hoursSummary.BusinessHours += reservation.Duration;
-                }
-            }
-            if (period == "today")
-            {
-                var bookedReservationsToday = allReservations.Where(r => r.StartTime.Date == DateTime.Now.Date);
-
-                foreach (var reservation in bookedReservationsToday)
-                {
-                    if (reservation.ParkingSlot.Category == Enums.SlotCategoryEnum.Standard)
-                        hoursSummary.StandardHours += reservation.Duration;
-                    else
-                        hoursSummary.BusinessHours += reservation.Duration;
-                }
+                if (reservation.ParkingSlot.Category == Enums.SlotCategoryEnum.Standard)
+                    hoursSummary.StandardHours += reservation.Duration;
+                else
+                    hoursSummary.BusinessHours += reservation.Duration;
             }
 
             return hoursSummary;

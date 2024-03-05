@@ -13,7 +13,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Tests.Controllers
+namespace Tests.Controllers.Admin
 {
     public class ParkingZoneControllerTests
     {
@@ -309,7 +309,7 @@ namespace Tests.Controllers
             var parkingZoneEditVM = new ParkingZoneEditVM()
             {
                 Id = _testId,
-                Name =  null,
+                Name = null,
                 Address = "Andijon",
                 Description = "Arzon"
             };
