@@ -102,6 +102,7 @@ namespace Tests.Controllers.Admin
             Assert.NotNull(actualSummaryHours);
             Assert.Equal(expectedSummaryHours.StandardHours, actualSummaryHours.StandardHours);
             Assert.Equal(expectedSummaryHours.BusinessHours, actualSummaryHours.BusinessHours);
+            mockReservationService.Verify(s => s.GetAll(), Times.Once);
         }
 
         [Fact]
@@ -134,6 +135,7 @@ namespace Tests.Controllers.Admin
             Assert.NotNull(actualSummaryHours);
             Assert.Equal(expectedSummaryHours.StandardHours, actualSummaryHours.StandardHours);
             Assert.Equal(expectedSummaryHours.BusinessHours, actualSummaryHours.BusinessHours);
+            mockReservationService.Verify(s => s.GetAll(), Times.Once);
         }
 
         [Fact]
@@ -166,6 +168,7 @@ namespace Tests.Controllers.Admin
             Assert.NotNull(actualSummaryHours);
             Assert.Equal(expectedSummaryHours.StandardHours, actualSummaryHours.StandardHours);
             Assert.Equal(expectedSummaryHours.BusinessHours, actualSummaryHours.BusinessHours);
+            mockReservationService.Verify(s => s.GetAll(), Times.Once);
         }
 
         [Fact]
@@ -198,6 +201,7 @@ namespace Tests.Controllers.Admin
             Assert.NotNull(actualSummaryHours);
             Assert.Equal(expectedSummaryHours.StandardHours, actualSummaryHours.StandardHours);
             Assert.Equal(expectedSummaryHours.BusinessHours, actualSummaryHours.BusinessHours);
+            mockReservationService.Verify(s => s.GetAll(), Times.Once);
         }
 
         [Fact]
@@ -230,6 +234,7 @@ namespace Tests.Controllers.Admin
             Assert.NotNull(actualSummaryHours);
             Assert.Equal(expectedSummaryHours.StandardHours, actualSummaryHours.StandardHours);
             Assert.Equal(expectedSummaryHours.BusinessHours, actualSummaryHours.BusinessHours);
+            mockReservationService.Verify(s => s.GetAll(), Times.Once);
         }
         #endregion
     }
