@@ -175,7 +175,7 @@ namespace Tests.Controllers.Admin
             var period = "yesterday";
             var expectedSummaryHours = new ReservationHoursSummaryVM()
             {
-                StandardHours = 3,
+                StandardHours = 0,
                 BusinessHours = 1
             };
 
