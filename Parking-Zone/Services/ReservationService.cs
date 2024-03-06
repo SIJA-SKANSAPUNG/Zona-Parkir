@@ -29,10 +29,10 @@ namespace Parking_Zone.Services
             Update(reservation);
         }
 
-        public ReservationHoursSummaryVM GetStandardAndBusinessHoursByPeriod(PeriodsEnum period, ParkingZone zone)
+        public ReservationHoursSummary GetStandardAndBusinessHoursByPeriod(PeriodsEnum period, ParkingZone zone)
         {
             var reservations = zone.ParkingSlots.SelectMany(s => s.Reservations);
-            var hoursSummary = new ReservationHoursSummaryVM();
+            var hoursSummary = new ReservationHoursSummary();
             var targetDate = DateTime.Now;
 
             var reservationsForPeriod = period switch

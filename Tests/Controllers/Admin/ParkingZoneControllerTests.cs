@@ -545,7 +545,7 @@ namespace Tests.Controllers.Admin
                 }
             };
 
-            var expectedSummaryHours = new ReservationHoursSummaryVM()
+            var expectedSummaryHours = new ReservationHoursSummary()
             {
                 StandardHours = 11,
                 BusinessHours = 5
@@ -563,7 +563,7 @@ namespace Tests.Controllers.Admin
 
             //Assert
             var jsonResult = Assert.IsType<JsonResult>(result);
-            var actualSummaryHours = jsonResult.Value as ReservationHoursSummaryVM;
+            var actualSummaryHours = jsonResult.Value as ReservationHoursSummary;
 
             Assert.NotNull(actualSummaryHours);
             Assert.Equal(expectedSummaryHours.StandardHours, actualSummaryHours.StandardHours);
@@ -607,7 +607,7 @@ namespace Tests.Controllers.Admin
                 }
             };
 
-            var expectedSummaryHours = new ReservationHoursSummaryVM()
+            var expectedSummaryHours = new ReservationHoursSummary()
             {
                 StandardHours = 0,
                 BusinessHours = 5
@@ -625,7 +625,7 @@ namespace Tests.Controllers.Admin
 
             //Assert
             var jsonResult = Assert.IsType<JsonResult>(result);
-            var actualSummaryHours = jsonResult.Value as ReservationHoursSummaryVM;
+            var actualSummaryHours = jsonResult.Value as ReservationHoursSummary;
 
             Assert.NotNull(actualSummaryHours);
             Assert.Equal(expectedSummaryHours.StandardHours, actualSummaryHours.StandardHours);
@@ -668,7 +668,7 @@ namespace Tests.Controllers.Admin
                     }
                 }
             };
-            var expectedSummaryHours = new ReservationHoursSummaryVM()
+            var expectedSummaryHours = new ReservationHoursSummary()
             {
                 StandardHours = 0,
                 BusinessHours = 5
@@ -686,7 +686,7 @@ namespace Tests.Controllers.Admin
 
             //Assert
             var jsonResult = Assert.IsType<JsonResult>(result);
-            var actualSummaryHours = jsonResult.Value as ReservationHoursSummaryVM;
+            var actualSummaryHours = jsonResult.Value as ReservationHoursSummary;
 
             Assert.NotNull(actualSummaryHours);
             Assert.Equal(expectedSummaryHours.StandardHours, actualSummaryHours.StandardHours);
@@ -729,7 +729,7 @@ namespace Tests.Controllers.Admin
                     }
                 }
             };
-            var expectedSummaryHours = new ReservationHoursSummaryVM()
+            var expectedSummaryHours = new ReservationHoursSummary()
             {
                 StandardHours = 0,
                 BusinessHours = 1
@@ -747,7 +747,7 @@ namespace Tests.Controllers.Admin
 
             //Assert
             var jsonResult = Assert.IsType<JsonResult>(result);
-            var actualSummaryHours = jsonResult.Value as ReservationHoursSummaryVM;
+            var actualSummaryHours = jsonResult.Value as ReservationHoursSummary;
 
             Assert.NotNull(actualSummaryHours);
             Assert.Equal(expectedSummaryHours.StandardHours, actualSummaryHours.StandardHours);
@@ -790,7 +790,7 @@ namespace Tests.Controllers.Admin
                     }
                 }
             };
-            var expectedSummaryHours = new ReservationHoursSummaryVM()
+            var expectedSummaryHours = new ReservationHoursSummary()
             {
                 StandardHours = 0,
                 BusinessHours = 1
@@ -808,7 +808,7 @@ namespace Tests.Controllers.Admin
 
             //Assert
             var jsonResult = Assert.IsType<JsonResult>(result);
-            var actualSummaryHours = jsonResult.Value as ReservationHoursSummaryVM;
+            var actualSummaryHours = jsonResult.Value as ReservationHoursSummary;
 
             Assert.NotNull(actualSummaryHours);
             Assert.Equal(expectedSummaryHours.StandardHours, actualSummaryHours.StandardHours);

@@ -149,7 +149,7 @@ namespace Tests.Services
                 }
             };
 
-            var expextedReservationSummaryHours = new ReservationHoursSummaryVM()
+            var expextedReservationSummaryHours = new ReservationHoursSummary()
             {
                 StandardHours = 11,
                 BusinessHours = 5
