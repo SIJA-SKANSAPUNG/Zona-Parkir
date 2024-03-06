@@ -14,8 +14,7 @@ namespace Parking_Zone.Areas.Admin.Controllers
 
         public IActionResult Index(string period)
         {
-            var reservations = _reservationService.GetAll();
-            var response = _reservationService.GetStandardAndBusinessHoursByPeriod(reservations, period);
+            var response = _reservationService.GetStandardAndBusinessHoursByPeriod(period);
             return Json(response);
         }
     }

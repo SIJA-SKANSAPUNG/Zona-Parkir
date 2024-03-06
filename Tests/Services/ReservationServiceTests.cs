@@ -115,8 +115,12 @@ namespace Tests.Services
                 BusinessHours = 5
             };
 
+            mockReservationRepository
+                .Setup(repo => repo.GetAll())
+                .Returns(testReservations);
+
             //Act
-            var result = service.GetStandardAndBusinessHoursByPeriod(testReservations, period);
+            var result = service.GetStandardAndBusinessHoursByPeriod(period);
 
             //Assert
             Assert.Equal(expextedReservationSummaryHours.StandardHours, result.StandardHours);
@@ -134,8 +138,12 @@ namespace Tests.Services
                 BusinessHours = 5
             };
 
+            mockReservationRepository
+                .Setup(repo => repo.GetAll())
+                .Returns(testReservations);
+
             //Act
-            var result = service.GetStandardAndBusinessHoursByPeriod(testReservations, period);
+            var result = service.GetStandardAndBusinessHoursByPeriod(period);
 
             //Assert
             Assert.Equal(expextedReservationSummaryHours.StandardHours, result.StandardHours);
@@ -153,8 +161,12 @@ namespace Tests.Services
                 BusinessHours = 1
             };
 
+            mockReservationRepository
+                .Setup(repo => repo.GetAll())
+                .Returns(testReservations);
+
             //Act
-            var result = service.GetStandardAndBusinessHoursByPeriod(testReservations, period);
+            var result = service.GetStandardAndBusinessHoursByPeriod(period);
 
             //Assert
             Assert.Equal(expextedReservationSummaryHours.StandardHours, result.StandardHours);
@@ -172,8 +184,12 @@ namespace Tests.Services
                 BusinessHours = 1
             };
 
+            mockReservationRepository
+                .Setup(repo => repo.GetAll())
+                .Returns(testReservations);
+
             //Act
-            var result = service.GetStandardAndBusinessHoursByPeriod(testReservations, period);
+            var result = service.GetStandardAndBusinessHoursByPeriod(period);
 
             //Assert
             Assert.Equal(expextedReservationSummaryHours.StandardHours, result.StandardHours);
@@ -191,8 +207,12 @@ namespace Tests.Services
                 BusinessHours = 0
             };
 
+            mockReservationRepository
+                .Setup(repo => repo.GetAll())
+                .Returns(testReservations);
+
             //Act
-            var result = service.GetStandardAndBusinessHoursByPeriod(testReservations, period);
+            var result = service.GetStandardAndBusinessHoursByPeriod(period);
 
             //Assert
             Assert.Equal(expextedReservationSummaryHours.StandardHours, result.StandardHours);

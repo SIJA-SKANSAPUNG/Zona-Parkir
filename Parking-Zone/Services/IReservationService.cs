@@ -7,6 +7,6 @@ namespace Parking_Zone.Services
     {
         public IEnumerable<Reservation> GetByAppUserId(string appUserId);
         void Prolong(Reservation reservation, int extraHours);
-        public ReservationHoursSummaryVM GetStandardAndBusinessHoursByPeriod(IEnumerable<Reservation> reservations, string period);
+        public ReservationHoursSummaryVM GetStandardAndBusinessHoursByPeriod(string period);
     }
 }

@@ -28,8 +28,9 @@ namespace Parking_Zone.Services
             Update(reservation);
         }
 
-        public ReservationHoursSummaryVM GetStandardAndBusinessHoursByPeriod(IEnumerable<Reservation> reservations, string period)
+        public ReservationHoursSummaryVM GetStandardAndBusinessHoursByPeriod(string period)
         {
+            var reservations = _repository.GetAll();
             var hoursSummary = new ReservationHoursSummaryVM();
             var targetDate = DateTime.Now;
 

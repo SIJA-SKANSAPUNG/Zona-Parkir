@@ -2,6 +2,7 @@
 using Moq;
 using Parking_Zone.Areas.Admin.Controllers;
 using Parking_Zone.Models;
+using Parking_Zone.Repositories;
 using Parking_Zone.Services;
 using Parking_Zone.Services.Models;
 using System;
@@ -17,6 +18,7 @@ namespace Tests.Controllers.Admin
     public class ReservationsControllerTests
     {
         private readonly Mock<IReservationService> mockReservationService;
+        private readonly Mock<IReservationRepository> mockReservationRepository;
         private readonly IEnumerable<Reservation> testReservations = new List<Reservation>()
         {
             new()
@@ -69,6 +71,7 @@ namespace Tests.Controllers.Admin
         public ReservationsControllerTests()
         {
             mockReservationService = new Mock<IReservationService>();
+            mockReservationRepository = new Mock<IReservationRepository>();
         }
 
         #region Index
@@ -85,11 +88,11 @@ namespace Tests.Controllers.Admin
 
             var controller = new ReservationsController(mockReservationService.Object);
 
-            mockReservationService
-                .Setup(s => s.GetAll())
+            mockReservationRepository
+                .Setup(r => r.GetAll())
                 .Returns(testReservations);
             mockReservationService
-                .Setup(s => s.GetStandardAndBusinessHoursByPeriod(testReservations, period))
+                .Setup(s => s.GetStandardAndBusinessHoursByPeriod(period))
                 .Returns(expectedSummaryHours);
 
             //Act
@@ -102,7 +105,7 @@ namespace Tests.Controllers.Admin
             Assert.NotNull(actualSummaryHours);
             Assert.Equal(expectedSummaryHours.StandardHours, actualSummaryHours.StandardHours);
             Assert.Equal(expectedSummaryHours.BusinessHours, actualSummaryHours.BusinessHours);
-            mockReservationService.Verify(s => s.GetAll(), Times.Once);
+            mockReservationService.Verify(s => s.GetStandardAndBusinessHoursByPeriod(period), Times.Once);
         }
 
         [Fact]
@@ -118,11 +121,11 @@ namespace Tests.Controllers.Admin
 
             var controller = new ReservationsController(mockReservationService.Object);
 
-            mockReservationService
-                .Setup(s => s.GetAll())
+            mockReservationRepository
+                .Setup(r => r.GetAll())
                 .Returns(testReservations);
             mockReservationService
-                .Setup(s => s.GetStandardAndBusinessHoursByPeriod(testReservations, period))
+                .Setup(s => s.GetStandardAndBusinessHoursByPeriod(period))
                 .Returns(expectedSummaryHours);
 
             //Act
@@ -135,7 +138,7 @@ namespace Tests.Controllers.Admin
             Assert.NotNull(actualSummaryHours);
             Assert.Equal(expectedSummaryHours.StandardHours, actualSummaryHours.StandardHours);
             Assert.Equal(expectedSummaryHours.BusinessHours, actualSummaryHours.BusinessHours);
-            mockReservationService.Verify(s => s.GetAll(), Times.Once);
+            mockReservationService.Verify(s => s.GetStandardAndBusinessHoursByPeriod(period), Times.Once);
         }
 
         [Fact]
@@ -155,7 +158,7 @@ namespace Tests.Controllers.Admin
                 .Setup(s => s.GetAll())
                 .Returns(testReservations);
             mockReservationService
-                .Setup(s => s.GetStandardAndBusinessHoursByPeriod(testReservations, period))
+                .Setup(s => s.GetStandardAndBusinessHoursByPeriod(period))
                 .Returns(expectedSummaryHours);
 
             //Act
@@ -168,7 +171,7 @@ namespace Tests.Controllers.Admin
             Assert.NotNull(actualSummaryHours);
             Assert.Equal(expectedSummaryHours.StandardHours, actualSummaryHours.StandardHours);
             Assert.Equal(expectedSummaryHours.BusinessHours, actualSummaryHours.BusinessHours);
-            mockReservationService.Verify(s => s.GetAll(), Times.Once);
+            mockReservationService.Verify(s => s.GetStandardAndBusinessHoursByPeriod(period), Times.Once);
         }
 
         [Fact]
@@ -188,7 +191,7 @@ namespace Tests.Controllers.Admin
                 .Setup(s => s.GetAll())
                 .Returns(testReservations);
             mockReservationService
-                .Setup(s => s.GetStandardAndBusinessHoursByPeriod(testReservations, period))
+                .Setup(s => s.GetStandardAndBusinessHoursByPeriod(period))
                 .Returns(expectedSummaryHours);
 
             //Act
@@ -201,7 +204,7 @@ namespace Tests.Controllers.Admin
             Assert.NotNull(actualSummaryHours);
             Assert.Equal(expectedSummaryHours.StandardHours, actualSummaryHours.StandardHours);
             Assert.Equal(expectedSummaryHours.BusinessHours, actualSummaryHours.BusinessHours);
-            mockReservationService.Verify(s => s.GetAll(), Times.Once);
+            mockReservationService.Verify(s => s.GetStandardAndBusinessHoursByPeriod(period), Times.Once);
         }
 
         [Fact]
@@ -221,7 +224,7 @@ namespace Tests.Controllers.Admin
                 .Setup(s => s.GetAll())
                 .Returns(testReservations);
             mockReservationService
-                .Setup(s => s.GetStandardAndBusinessHoursByPeriod(testReservations, period))
+                .Setup(s => s.GetStandardAndBusinessHoursByPeriod(period))
                 .Returns(expectedSummaryHours);
 
             //Act
@@ -234,7 +237,7 @@ namespace Tests.Controllers.Admin
             Assert.NotNull(actualSummaryHours);
             Assert.Equal(expectedSummaryHours.StandardHours, actualSummaryHours.StandardHours);
             Assert.Equal(expectedSummaryHours.BusinessHours, actualSummaryHours.BusinessHours);
-            mockReservationService.Verify(s => s.GetAll(), Times.Once);
+            mockReservationService.Verify(s => s.GetStandardAndBusinessHoursByPeriod(period), Times.Once);
         }
         #endregion
     }
