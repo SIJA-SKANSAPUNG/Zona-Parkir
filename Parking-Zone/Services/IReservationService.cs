@@ -1,4 +1,5 @@
-﻿using Parking_Zone.Models;
+﻿using Parking_Zone.Enums;
+using Parking_Zone.Models;
 using Parking_Zone.Services.Models;
 
 namespace Parking_Zone.Services
@@ -7,6 +8,6 @@ namespace Parking_Zone.Services
     {
         public IEnumerable<Reservation> GetByAppUserId(string appUserId);
         void Prolong(Reservation reservation, int extraHours);
-        public ReservationHoursSummaryVM GetStandardAndBusinessHoursByPeriod(string period);
+        public ReservationHoursSummaryVM GetStandardAndBusinessHoursByPeriod(PeriodsEnum period, ParkingZone zone);
     }
 }

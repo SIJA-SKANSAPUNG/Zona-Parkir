@@ -1,4 +1,5 @@
-﻿@model IEnumerable<Parking_Zone.ViewModels.ParkingZone.ParkingZoneListItemVM>
+﻿@using Parking_Zone.Enums
+@model IEnumerable<Parking_Zone.ViewModels.ParkingZone.ParkingZoneListItemVM>
 
 @{
     ViewData["Title"] = "Index";
@@ -41,17 +42,11 @@
                 <h5 style="margin-right: 400px;">Finance summary</h5>
                 <div class="d-flex">
                     <h5 style="margin-right: 10px;">Period For</h5>
-                    <select id="periodSelect" class="form-select" aria-label="Default select example" style="width: 165px;">
+                    <select asp-items="Html.GetEnumSelectList<PeriodsEnum>()" class="form-select period-select" data-container-id="container-@item.Id" aria-label="Default select example" style="width: 165px;">
                         <option selected disabled>Select</option>
-                        <option value="today">Today</option>
-                        <option value="yesterday">Yesterday</option>
-                        <option value="last_7_days">Last 7 days</option>
-                        <option value="last_30_days">Last 30 days</option>
-                        <option value="all_time">All Time</option>
                     </select>
                 </div>
-
-                <div id="sentencesContainer" style="margin-right: 320px;"></div>
+                <div id="container-@item.Id" class="sentencesContainer" style="margin-right: 320px;"></div>
             </div>
         </div>
     </div>
@@ -61,17 +56,20 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
     $(document).ready(function () {
-        $('#periodSelect').change(function () {
+        $('.period-select').change(function () {
             var selectedPeriod = $(this).val();
+            var containerId = $(this).data('container-id');
+            var sentencesContainer = $('#' + containerId);
+            var zoneId = containerId.slice(10);
 
             $.ajax({
                 type: 'GET',
-                url: '/Reservations/Index',
-                data: { period: selectedPeriod},
-                success: function(response){
-                    $('#sentencesContainer').empty();
-                    $('#sentencesContainer').append('<p>Business hours reserved: ' + response.businessHours + ' hours</p>');
-                    $('#sentencesContainer').append('<p>Standard hours reserved: ' + response.standardHours + ' hours</p>');
+                url: '/Admin/ParkingZone/FinanceSummary',
+                data: { period: selectedPeriod, zoneId: zoneId },
+                success: function (response) {
+                    sentencesContainer.empty();
+                    sentencesContainer.append('<p>Business hours reserved: ' + response.businessHours + ' hours</p>');
+                    sentencesContainer.append('<p>Standard hours reserved: ' + response.standardHours + ' hours</p>');
                 },
                 error: function (xhr, status, error) {
                     console.error(xhr.responseText)

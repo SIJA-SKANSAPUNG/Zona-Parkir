@@ -1,4 +1,5 @@
-﻿using Parking_Zone.Models;
+﻿using Parking_Zone.Enums;
+using Parking_Zone.Models;
 using Parking_Zone.Repositories;
 using Parking_Zone.Services.Models;
 
@@ -28,18 +29,18 @@ namespace Parking_Zone.Services
             Update(reservation);
         }
 
-        public ReservationHoursSummaryVM GetStandardAndBusinessHoursByPeriod(string period)
+        public ReservationHoursSummaryVM GetStandardAndBusinessHoursByPeriod(PeriodsEnum period, ParkingZone zone)
         {
-            var reservations = _repository.GetAll();
+            var reservations = zone.ParkingSlots.SelectMany(s => s.Reservations);
             var hoursSummary = new ReservationHoursSummaryVM();
             var targetDate = DateTime.Now;
 
             var reservationsForPeriod = period switch
             {
-                "last_30_days" => reservations.Where(r => r.StartTime > targetDate.AddDays(-30)),
-                "last_7_days" => reservations.Where(r => r.StartTime > targetDate.AddDays(-7)),
-                "yesterday" => reservations.Where(r => r.StartTime.Date == targetDate.AddDays(-1).Date),
-                "today" => reservations.Where(r => r.StartTime.Date == targetDate.Date),
+                PeriodsEnum.Today => reservations.Where(r => r.StartTime.Date == targetDate.Date),
+                PeriodsEnum.Yesterday => reservations.Where(r => r.StartTime.Date == targetDate.AddDays(-1).Date),
+                PeriodsEnum.Last7Days => reservations.Where(r => r.StartTime >= targetDate.AddDays(-7) && r.StartTime <= targetDate),
+                PeriodsEnum.Last30Days => reservations.Where(r => r.StartTime >= targetDate.AddDays(-30) && r.StartTime <= targetDate),
                 _=>  reservations
             };
 

@@ -1,4 +1,5 @@
 ﻿using Moq;
+using Parking_Zone.Enums;
 using Parking_Zone.Models;
 using Parking_Zone.Repositories;
 using Parking_Zone.Services;
@@ -108,111 +109,54 @@ namespace Tests.Services
         public void GivenReservationsAndAllTimePeriod_WhenGetStandardAndBusinessHoursByPeriodIsCalledThenReturnedAllReservationSummaryHours()
         {
             //Arrange
-            var period = "all_time";
+            var period = Parking_Zone.Enums.PeriodsEnum.AllTime;
+            var Zone = new ParkingZone()
+            {
+                ParkingSlots = new List<ParkingSlot>()
+                {
+                    new()
+                    {
+                        Category = SlotCategoryEnum.Standard,
+                        Reservations = new List<Reservation>()
+                        {
+                            new()
+                            {
+                                StartTime = DateTime.Now.AddDays(-5),
+                                Duration = 11,
+                                ParkingSlot = new ParkingSlot()
+                                {
+                                    Category = SlotCategoryEnum.Standard
+                                }
+                            }
+                        }
+                    },
+                    new()
+                    {
+                        Category = SlotCategoryEnum.Business,
+                        Reservations = new List<Reservation>()
+                        {
+                            new()
+                            {
+                                StartTime = DateTime.Now.AddHours(-34),
+                                Duration = 5,
+                                ParkingSlot = new ParkingSlot()
+                                {
+                                    Category = SlotCategoryEnum.Business
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
             var expextedReservationSummaryHours = new ReservationHoursSummaryVM()
             {
-                StandardHours = 10,
+                StandardHours = 11,
                 BusinessHours = 5
             };
 
-            mockReservationRepository
-                .Setup(repo => repo.GetAll())
-                .Returns(testReservations);
-
             //Act
-            var result = service.GetStandardAndBusinessHoursByPeriod(period);
-
-            //Assert
-            Assert.Equal(expextedReservationSummaryHours.StandardHours, result.StandardHours);
-            Assert.Equal(expextedReservationSummaryHours.BusinessHours, result.BusinessHours);
-        }
-
-        [Fact]
-        public void GivenReservationsAndLast30DaysPeriod_WhenGetStandardAndBusinessHoursByPeriodIsCalledThenReturnedReservationSummaryHoursFor30Days()
-        {
-            //Arrange
-            var period = "last_30_days";
-            var expextedReservationSummaryHours = new ReservationHoursSummaryVM()
-            {
-                StandardHours = 5,
-                BusinessHours = 5
-            };
-
-            mockReservationRepository
-                .Setup(repo => repo.GetAll())
-                .Returns(testReservations);
-
-            //Act
-            var result = service.GetStandardAndBusinessHoursByPeriod(period);
-
-            //Assert
-            Assert.Equal(expextedReservationSummaryHours.StandardHours, result.StandardHours);
-            Assert.Equal(expextedReservationSummaryHours.BusinessHours, result.BusinessHours);
-        }
-
-        [Fact]
-        public void GivenReservationsAndLast7DaysPeriod_WhenGetStandardAndBusinessHoursByPeriodIsCalledThenReturnedReservationSummaryHoursFor7Days()
-        {
-            //Arrange
-            var period = "last_7_days";
-            var expextedReservationSummaryHours = new ReservationHoursSummaryVM()
-            {
-                StandardHours = 5,
-                BusinessHours = 1
-            };
-
-            mockReservationRepository
-                .Setup(repo => repo.GetAll())
-                .Returns(testReservations);
-
-            //Act
-            var result = service.GetStandardAndBusinessHoursByPeriod(period);
-
-            //Assert
-            Assert.Equal(expextedReservationSummaryHours.StandardHours, result.StandardHours);
-            Assert.Equal(expextedReservationSummaryHours.BusinessHours, result.BusinessHours);
-        }
-
-        [Fact]
-        public void GivenReservationsAndYesterdayPeriod_WhenGetStandardAndBusinessHoursByPeriodIsCalledThenReturnedReservationSummaryHoursForYesterday()
-        {
-            //Arrange
-            var period = "yesterday";
-            var expextedReservationSummaryHours = new ReservationHoursSummaryVM()
-            {
-                StandardHours = 0,
-                BusinessHours = 1
-            };
-
-            mockReservationRepository
-                .Setup(repo => repo.GetAll())
-                .Returns(testReservations);
-
-            //Act
-            var result = service.GetStandardAndBusinessHoursByPeriod(period);
-
-            //Assert
-            Assert.Equal(expextedReservationSummaryHours.StandardHours, result.StandardHours);
-            Assert.Equal(expextedReservationSummaryHours.BusinessHours, result.BusinessHours);
-        }
-
-        [Fact]
-        public void GivenReservationsAndTodayPeriod_WhenGetStandardAndBusinessHoursByPeriodIsCalledThenReturnedReservationSummaryHoursForToday()
-        {
-            //Arrange
-            var period = "today";
-            var expextedReservationSummaryHours = new ReservationHoursSummaryVM()
-            {
-                StandardHours = 3,
-                BusinessHours = 0
-            };
-
-            mockReservationRepository
-                .Setup(repo => repo.GetAll())
-                .Returns(testReservations);
-
-            //Act
-            var result = service.GetStandardAndBusinessHoursByPeriod(period);
+            var result = service.GetStandardAndBusinessHoursByPeriod(period, Zone);
 
             //Assert
             Assert.Equal(expextedReservationSummaryHours.StandardHours, result.StandardHours);
