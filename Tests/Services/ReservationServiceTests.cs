@@ -6,6 +6,7 @@ using Parking_Zone.Services;
 using Parking_Zone.Services.Models;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -112,47 +113,13 @@ namespace Tests.Services
             var period = Parking_Zone.Enums.PeriodsEnum.AllTime;
             var Zone = new ParkingZone()
             {
-                ParkingSlots = new List<ParkingSlot>()
-                {
-                    new()
-                    {
-                        Category = SlotCategoryEnum.Standard,
-                        Reservations = new List<Reservation>()
-                        {
-                            new()
-                            {
-                                StartTime = DateTime.Now.AddDays(-5),
-                                Duration = 11,
-                                ParkingSlot = new ParkingSlot()
-                                {
-                                    Category = SlotCategoryEnum.Standard
-                                }
-                            }
-                        }
-                    },
-                    new()
-                    {
-                        Category = SlotCategoryEnum.Business,
-                        Reservations = new List<Reservation>()
-                        {
-                            new()
-                            {
-                                StartTime = DateTime.Now.AddHours(-34),
-                                Duration = 5,
-                                ParkingSlot = new ParkingSlot()
-                                {
-                                    Category = SlotCategoryEnum.Business
-                                }
-                            }
-                        }
-                    }
-                }
+                ParkingSlots = GetTestSlots()
             };
 
             var expextedReservationSummaryHours = new ReservationHoursSummary()
             {
-                StandardHours = 11,
-                BusinessHours = 5
+                StandardHours = 28,
+                BusinessHours = 11
             };
 
             //Act
@@ -161,6 +128,223 @@ namespace Tests.Services
             //Assert
             Assert.Equal(expextedReservationSummaryHours.StandardHours, result.StandardHours);
             Assert.Equal(expextedReservationSummaryHours.BusinessHours, result.BusinessHours);
+        }
+
+        [Fact]
+        public void GivenLast30DaysPeriod_WhenGetStandardAndBusinessHoursByPeriodIsCalled_ThenReturnedSummaryReservationHoursWithin30Days()
+        {
+            var period = PeriodsEnum.Last30Days;
+
+            var Zone = new ParkingZone()
+            {
+                ParkingSlots = GetTestSlots()
+            };
+
+            var expextedReservationSummaryHours = new ReservationHoursSummary()
+            {
+                StandardHours = 24,
+                BusinessHours = 11
+            };
+
+            //Act
+            var result = service.GetStandardAndBusinessHoursByPeriod(period, Zone);
+
+            //Assert
+            Assert.Equal(expextedReservationSummaryHours.StandardHours, result.StandardHours);
+            Assert.Equal(expextedReservationSummaryHours.BusinessHours, result.BusinessHours);
+        }
+
+        [Fact]
+        public void GivenLast7DaysPeriod_WhenGetStandardAndBusinessHoursByPeriodIsCalled_ThenReturnedSummaryReservationHoursWithin7Days()
+        {
+            var period = PeriodsEnum.Last7Days;
+
+            var Zone = new ParkingZone()
+            {
+                ParkingSlots = GetTestSlots()
+            };
+
+            var expextedReservationSummaryHours = new ReservationHoursSummary()
+            {
+                StandardHours = 18,
+                BusinessHours = 11
+            };
+
+            //Act
+            var result = service.GetStandardAndBusinessHoursByPeriod(period, Zone);
+
+            //Assert
+            Assert.Equal(expextedReservationSummaryHours.StandardHours, result.StandardHours);
+            Assert.Equal(expextedReservationSummaryHours.BusinessHours, result.BusinessHours);
+        }
+
+        [Fact]
+        public void GivenYesterdayPeriod_WhenGetStandardAndBusinessHoursByPeriodIsCalled_ThenReturnedSummaryReservationHoursWithinYesterday()
+        {
+            var period = PeriodsEnum.Yesterday;
+
+            var Zone = new ParkingZone()
+            {
+                ParkingSlots = GetTestSlots()
+            };
+
+            var expextedReservationSummaryHours = new ReservationHoursSummary()
+            {
+                StandardHours = 2,
+                BusinessHours = 2
+            };
+
+            //Act
+            var result = service.GetStandardAndBusinessHoursByPeriod(period, Zone);
+
+            //Assert
+            Assert.Equal(expextedReservationSummaryHours.StandardHours, result.StandardHours);
+            Assert.Equal(expextedReservationSummaryHours.BusinessHours, result.BusinessHours);
+        }
+
+        [Fact]
+        public void GivenTodayPeriod_WhenGetStandardAndBusinessHoursByPeriodIsCalled_ThenReturnedSummaryReservationHoursWithinToday()
+        {
+            var period = PeriodsEnum.Today;
+
+            var Zone = new ParkingZone()
+            {
+                ParkingSlots = GetTestSlots()
+            };
+
+            var expextedReservationSummaryHours = new ReservationHoursSummary()
+            {
+                StandardHours = 9,
+                BusinessHours = 9
+            };
+
+            //Act
+            var result = service.GetStandardAndBusinessHoursByPeriod(period, Zone);
+
+            //Assert
+            Assert.Equal(expextedReservationSummaryHours.StandardHours, result.StandardHours);
+            Assert.Equal(expextedReservationSummaryHours.BusinessHours, result.BusinessHours);
+        }
+
+        private Collection<ParkingSlot> GetTestSlots()
+        {
+            var slots = new Collection<ParkingSlot>()
+            {
+                new()
+                {
+                    Category = SlotCategoryEnum.Standard,
+                    Reservations = new Collection<Reservation>()
+                    {
+                        new()
+                        {
+                            StartTime = DateTime.Now.AddDays(-100),
+                            Duration = 4,
+                            ParkingSlot = new ParkingSlot()
+                            {
+                                Category = SlotCategoryEnum.Standard
+                            }
+                        }
+                    }
+                },
+                new()
+                {
+                    Category = SlotCategoryEnum.Standard,
+                    Reservations = new Collection<Reservation>()
+                    {
+                        new()
+                        {
+                            StartTime = DateTime.Now.AddDays(-27),
+                            Duration = 6,
+                            ParkingSlot = new ParkingSlot()
+                            {
+                                Category = SlotCategoryEnum.Standard
+                            }
+                        }
+                    }
+                },
+                new()
+                {
+                    Category = SlotCategoryEnum.Standard,
+                    Reservations = new Collection<Reservation>()
+                    {
+                        new()
+                        {
+                            StartTime = DateTime.Now.AddDays(-3),
+                            Duration = 7,
+                            ParkingSlot = new ParkingSlot()
+                            {
+                                Category = SlotCategoryEnum.Standard
+                            }
+                        }
+                    }
+                },
+                new()
+                {
+                    Category = SlotCategoryEnum.Standard,
+                    Reservations = new Collection<Reservation>()
+                    {
+                        new()
+                        {
+                            StartTime = DateTime.Now.AddDays(-1),
+                            Duration = 2,
+                            ParkingSlot = new ParkingSlot()
+                            {
+                                Category = SlotCategoryEnum.Standard
+                            }
+                        }
+                    }
+                },
+                new()
+                {
+                    Category = SlotCategoryEnum.Business,
+                    Reservations = new Collection<Reservation>()
+                    {
+                        new()
+                        {
+                            StartTime = DateTime.Now.AddDays(-1),
+                            Duration = 2,
+                            ParkingSlot = new ParkingSlot()
+                            {
+                                Category = SlotCategoryEnum.Business
+                            }
+                        }
+                    }
+                },
+                new()
+                {
+                    Category = SlotCategoryEnum.Standard,
+                    Reservations = new Collection<Reservation>()
+                    {
+                        new()
+                        {
+                            StartTime = DateTime.Now,
+                            Duration = 9,
+                            ParkingSlot = new ParkingSlot()
+                            {
+                                Category = SlotCategoryEnum.Standard
+                            }
+                        }
+                    }
+                },
+                new()
+                {
+                    Category = SlotCategoryEnum.Business,
+                    Reservations = new Collection<Reservation>()
+                    {
+                        new()
+                        {
+                            StartTime = DateTime.Now,
+                            Duration = 9,
+                            ParkingSlot = new ParkingSlot()
+                            {
+                                Category = SlotCategoryEnum.Business
+                            }
+                        }
+                    }
+                }
+            };
+
+            return slots;
         }
         #endregion
     }
