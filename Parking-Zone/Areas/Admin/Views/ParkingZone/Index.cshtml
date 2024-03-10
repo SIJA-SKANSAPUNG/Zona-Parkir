@@ -75,7 +75,6 @@
         $('.finance-block select').change(function () {
             var period = $(this).val();
             var zoneId = $(this).parent(".zone-block").attr("id").split("_")[1];
-
             var $this = $(this);
 
             $.ajax({

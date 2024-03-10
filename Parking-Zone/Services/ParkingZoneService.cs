@@ -35,8 +35,8 @@ namespace Parking_Zone.Services
                 .ToDictionary(
                     g => g.Key,
                     g => g.SelectMany(r => r.Reservations
-                                                            .Where(r => r.StartTime >= startInclusive && r.StartTime < endExclusive))
-                                                            .Sum(r => r.Duration));
+                                                         .Where(r => r.StartTime >= startInclusive && r.StartTime < endExclusive))
+                                                         .Sum(r => r.Duration));
 
             //foreach (var reservation in reservationsForPeriod)
             //{
