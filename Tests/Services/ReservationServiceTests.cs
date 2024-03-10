@@ -1,9 +1,12 @@
 ﻿using Moq;
+using Parking_Zone.Enums;
 using Parking_Zone.Models;
 using Parking_Zone.Repositories;
 using Parking_Zone.Services;
+using Parking_Zone.Services.Models;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -16,6 +19,55 @@ namespace Tests.Services
         private readonly string testUserId = "bf6b864c-7d75-4854-9730-7c14bb4732a1";
         private readonly Mock<IReservationRepository> mockReservationRepository;
         private readonly ReservationService service;
+
+        private readonly IEnumerable<Reservation> testReservations = new List<Reservation>()
+        {
+            new()
+            {
+                StartTime = DateTime.Now.AddDays(-44),
+                Duration = 5,
+                ParkingSlot = new ParkingSlot()
+                {
+                    Category = Parking_Zone.Enums.SlotCategoryEnum.Standard
+                }
+            },
+            new()
+            {
+                StartTime = DateTime.Now.AddDays(-27),
+                Duration = 4,
+                ParkingSlot = new ParkingSlot()
+                {
+                    Category = Parking_Zone.Enums.SlotCategoryEnum.Business
+                }
+            },
+            new()
+            {
+                StartTime = DateTime.Now.AddDays(-6),
+                Duration = 2,
+                ParkingSlot = new ParkingSlot()
+                {
+                    Category = Parking_Zone.Enums.SlotCategoryEnum.Standard
+                }
+            },
+            new()
+            {
+                StartTime = DateTime.Now.AddDays(-1),
+                Duration = 1,
+                ParkingSlot = new ParkingSlot()
+                {
+                    Category = Parking_Zone.Enums.SlotCategoryEnum.Business
+                }
+            },
+            new()
+            {
+                StartTime = DateTime.Now.AddHours(-2),
+                Duration = 3,
+                ParkingSlot = new ParkingSlot()
+                {
+                    Category = Parking_Zone.Enums.SlotCategoryEnum.Standard
+                }
+            }
+        };
 
         public ReservationServiceTests()
         {

@@ -13,7 +13,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Tests.Controllers
+namespace Tests.Controllers.Admin
 {
     public class ParkingSlotControllerTests
     {

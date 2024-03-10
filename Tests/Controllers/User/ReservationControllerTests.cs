@@ -18,7 +18,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Tests.Controllers
+namespace Tests.Controllers.User
 {
     public class ReservationControllerTests
     {

@@ -24,5 +24,20 @@ namespace Parking_Zone.Services
                     .Select(reservation => reservation.VehicleNumber))
                 .ToList();
         }
+
+        public ZoneFinanceData GetZoneFinanceDataByPeriod(DateTime startInclusive, DateTime endExclusive, ParkingZone zone)
+        {
+            var zoneFinanceData = new ZoneFinanceData();
+            var slots = zone.ParkingSlots;
+
+            zoneFinanceData.CategoryHours = slots
+                .GroupBy(s => s.Category)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.SelectMany(r => r.Reservations
+                                                         .Where(r => r.StartTime >= startInclusive && r.StartTime < endExclusive))
+                                                         .Sum(r => r.Duration));
+            return zoneFinanceData;
+        }
     }
 }

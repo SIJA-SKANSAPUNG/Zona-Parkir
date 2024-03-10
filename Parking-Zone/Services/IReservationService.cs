@@ -1,4 +1,5 @@
-﻿using Parking_Zone.Models;
+﻿using Parking_Zone.Enums;
+using Parking_Zone.Models;
 
 namespace Parking_Zone.Services
 {

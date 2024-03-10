@@ -1,10 +1,13 @@
 ﻿using Moq;
+using Parking_Zone.Enums;
 using Parking_Zone.Models;
 using Parking_Zone.Repositories;
 using Parking_Zone.Services;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -208,6 +211,210 @@ namespace Tests.Services
 
             //Assert
             Assert.Equal(JsonSerializer.Serialize(expectedPlateNumbers), JsonSerializer.Serialize(result));
+        }
+        #endregion
+
+        #region GetZoneFinanceDataByPeriod
+        [Theory]
+        [MemberData(nameof(GetData), parameters: 5)]
+        public void GivenStartInclusiveEndExclusiveAndZone_WhenGetZoneFinanceDataByPeriodIsCalled_ThenReturnedZoneFinanceData(DateTime startInclusive, DateTime endExclusive, ZoneFinanceData expectedZoneData)
+        {
+            //Arrange
+            var zone = GetTestZone();
+
+            var service = new ParkingZoneService(Mock.Of<IParkingZoneRepository>());
+
+            //Act
+            var result = service.GetZoneFinanceDataByPeriod(startInclusive, endExclusive, zone);
+
+            //Assert
+            Assert.Equal(JsonSerializer.Serialize(expectedZoneData), JsonSerializer.Serialize(result));
+        }
+
+        public static IEnumerable<object[]> GetData(int numTests)
+        {
+            var expectedZoneDataForAll = new ZoneFinanceData()
+            {
+                CategoryHours = new Dictionary<SlotCategoryEnum, int>()
+                {
+                    { SlotCategoryEnum.Standard, 140 },
+                    { SlotCategoryEnum.Business, 140 }
+                }
+            };
+            var expectedZoneDataForMonth = new ZoneFinanceData()
+            {
+                CategoryHours = new Dictionary<SlotCategoryEnum, int>()
+                {
+                    { SlotCategoryEnum.Standard, 40 },
+                    { SlotCategoryEnum.Business, 40 }
+                }
+            };
+            var expectedZoneDataForWeek = new ZoneFinanceData()
+            {
+                CategoryHours = new Dictionary<SlotCategoryEnum, int>()
+                {
+                    { SlotCategoryEnum.Standard, 10 },
+                    { SlotCategoryEnum.Business, 10 }
+                }
+            };
+            var expectedZoneDataForYesterday = new ZoneFinanceData()
+            {
+                CategoryHours = new Dictionary<SlotCategoryEnum, int>()
+                {
+                    { SlotCategoryEnum.Standard, 2 },
+                    { SlotCategoryEnum.Business, 2 }
+                }
+            };
+            var expectedZoneDataForToday = new ZoneFinanceData()
+            {
+                CategoryHours = new Dictionary<SlotCategoryEnum, int>()
+                {
+                    { SlotCategoryEnum.Standard, 1 },
+                    { SlotCategoryEnum.Business, 1 }
+                }
+            };
+
+            var now = DateTime.Now.Date;
+            var allData = new List<object[]>
+            {
+                new object[] { DateTime.MinValue.Date, now.AddDays(1), expectedZoneDataForAll},
+                new object[] { now.AddDays(-29), now.AddDays(1), expectedZoneDataForMonth},
+                new object[] { now.AddDays(-6), now.AddDays(1), expectedZoneDataForWeek},
+                new object[] { now.AddDays(-1), now, expectedZoneDataForYesterday},
+                new object[] { now, now.AddDays(1), expectedZoneDataForToday},
+            };
+
+            return allData;
+        }
+
+        public ParkingZone GetTestZone()
+        {
+            return new ParkingZone()
+            {
+                ParkingSlots = new Collection<ParkingSlot>()
+                    {
+                        new()
+                        {
+                            Category = SlotCategoryEnum.Standard,
+                            Reservations = new Collection<Reservation>()
+                            {
+                               new()
+                               {
+                                  StartTime = DateTime.Now.AddDays(-270),
+                                  Duration = 100
+                               }
+                            }
+                        },
+                        new()
+                        {
+                            Category = SlotCategoryEnum.Business,
+                            Reservations = new Collection<Reservation>()
+                            {
+                                new()
+                                {
+                                    StartTime = DateTime.Now.AddDays(-270),
+                                    Duration = 100
+                                }
+                            }
+                        },
+                        new()
+                        {
+                            Category = SlotCategoryEnum.Standard,
+                            Reservations = new Collection<Reservation>()
+                            {
+                                new()
+                                {
+                                    StartTime = DateTime.Now.AddDays(-27),
+                                    Duration = 30
+                                }
+                            }
+                        },
+                        new()
+                        {
+                            Category = SlotCategoryEnum.Business,
+                            Reservations = new Collection<Reservation>()
+                            {
+                                new()
+                                {
+                                    StartTime = DateTime.Now.AddDays(-27),
+                                    Duration = 30
+                                }
+                            }
+                        },
+                        new()
+                        {
+                            Category = SlotCategoryEnum.Standard,
+                            Reservations = new Collection<Reservation>()
+                            {
+                                new()
+                                {
+                                    StartTime = DateTime.Now.AddDays(-3),
+                                    Duration = 7
+                                }
+                            }
+                        },
+                        new()
+                        {
+                            Category = SlotCategoryEnum.Business,
+                            Reservations = new Collection<Reservation>()
+                            {
+                                new()
+                                {
+                                    StartTime = DateTime.Now.AddDays(-3),
+                                    Duration = 7
+                                }
+                            }
+                        },
+                        new()
+                        {
+                            Category = SlotCategoryEnum.Standard,
+                            Reservations = new Collection<Reservation>()
+                            {
+                                new()
+                                {
+                                    StartTime = DateTime.Now.AddDays(-1),
+                                    Duration = 2
+                                }
+                            }
+                        },
+                        new()
+                        {
+                            Category = SlotCategoryEnum.Business,
+                            Reservations = new Collection<Reservation>()
+                            {
+                                new()
+                                {
+                                    StartTime = DateTime.Now.AddDays(-1),
+                                    Duration = 2
+                                }
+                            }
+                        },
+                        new()
+                        {
+                            Category = SlotCategoryEnum.Standard,
+                            Reservations = new Collection<Reservation>()
+                            {
+                                new()
+                                {
+                                    StartTime = DateTime.Now,
+                                    Duration = 1
+                                }
+                            }
+                        },
+                        new()
+                        {
+                            Category = SlotCategoryEnum.Business,
+                            Reservations = new Collection<Reservation>()
+                            {
+                                new()
+                                {
+                                    StartTime = DateTime.Now,
+                                    Duration = 1
+                                }
+                            }
+                        }
+                    }
+            };
         }
         #endregion
     }
