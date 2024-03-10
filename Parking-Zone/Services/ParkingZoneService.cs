@@ -37,15 +37,6 @@ namespace Parking_Zone.Services
                     g => g.SelectMany(r => r.Reservations
                                                          .Where(r => r.StartTime >= startInclusive && r.StartTime < endExclusive))
                                                          .Sum(r => r.Duration));
-
-            //foreach (var reservation in reservationsForPeriod)
-            //{
-            //    if (reservation.ParkingSlot.Category == Enums.SlotCategoryEnum.Standard)
-            //        hoursSummary.StandardHours += reservation.Duration;
-            //    else
-            //        hoursSummary.BusinessHours += reservation.Duration;
-            //}
-
             return zoneFinanceData;
         }
     }
