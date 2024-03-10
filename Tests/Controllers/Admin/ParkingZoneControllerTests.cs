@@ -6,7 +6,6 @@ using Parking_Zone.Controllers;
 using Parking_Zone.Enums;
 using Parking_Zone.Models;
 using Parking_Zone.Services;
-using Parking_Zone.Services.Models;
 using Parking_Zone.ViewModels.ParkingZone;
 using System;
 using System.Collections.Generic;
@@ -22,15 +21,13 @@ namespace Tests.Controllers.Admin
     public class ParkingZoneControllerTests
     {
         private readonly Guid _testId = Guid.Parse("dd09a090-b0f6-4369-b24a-656843d227bc");
-        private readonly Mock<IReservationService> mockReservationService;
         private readonly Mock<IParkingZoneService> mockZoneService;
         private readonly ParkingZoneController controller;
 
         public ParkingZoneControllerTests()
         {
-            mockReservationService = new Mock<IReservationService>();
             mockZoneService = new Mock<IParkingZoneService>();
-            controller = new ParkingZoneController(mockZoneService.Object, mockReservationService.Object);
+            controller = new ParkingZoneController(mockZoneService.Object);
         }
 
         private readonly ParkingZone _testParkingZone = new ParkingZone()
@@ -132,7 +129,7 @@ namespace Tests.Controllers.Admin
         public void GivenNothing_WhenGetCreateIsCalled_ThenEmptyViewResultIsReturned()
         {
             //Arrange
-            var controller = new ParkingZoneController(mockZoneService.Object, mockReservationService.Object);
+            var controller = new ParkingZoneController(mockZoneService.Object);
 
             //Act
             var result = controller.Create();
@@ -492,18 +489,18 @@ namespace Tests.Controllers.Admin
         }
         #endregion
 
-        #region FinanceSummary
+        #region GetZoneFinanceData
         [Fact]
         public void GivenTimePeriodAndIdOfNotExistingZone_WhenFinanceSummaryIsCalled_ThenServiceIsCalledOnceAndReturnedNotFoundResult()
         {
             //Arrange
-            var period = PeriodsEnum.AllTime;
+            var period = PeriodOptionsEnum.AllTime;
 
             mockZoneService
                 .Setup(s => s.GetById(_testId));
 
             //Act
-            var result = controller.FinanceSummary(period, _testId);
+            var result = controller.GetZoneFinanceData(period, _testId);
 
             //Assert
             Assert.IsType<NotFoundObjectResult>(result);
@@ -511,301 +508,73 @@ namespace Tests.Controllers.Admin
         }
 
         [Fact]
-        public void GivenAllTimePeriod_WhenIndexIsCalled_ThenReturnedNotEmptyViewResult()
+        public void GivenPeriodOptionAndZoneId_WhenGetZoneFinanceDataIsCalled_ThenServicesCalledwiceAndReturnedJsonResult()
         {
             //Arrange
-            var period = PeriodsEnum.AllTime;
-            var Zone = new ParkingZone()
+            var testPeriodOption = PeriodOptionsEnum.Today;
+            var _testStartInclusive = DateTime.Now.Date;
+            var _testEndExclusive = DateTime.Now.Date;
+
+            var zone = new ParkingZone()
             {
-                ParkingSlots = GetTestSlots()
+               ParkingSlots = new Collection<ParkingSlot>()
+               {
+                   new()
+                   {
+                       Category = SlotCategoryEnum.Standard,
+                       Reservations = new Collection<Reservation>()
+                       {
+                           new()
+                           {
+                               StartTime = DateTime.Now.AddHours(-1),
+                               Duration = 33,
+                           }
+                       }
+                   },
+                   new()
+                   {
+                       Category = SlotCategoryEnum.Business,
+                       Reservations = new Collection<Reservation>()
+                       {
+                           new()
+                           {
+                               StartTime = DateTime.Now.AddHours(1),
+                               Duration = 22,
+                           }
+                       }
+                   },
+                   new()
+                   {
+                       Category = SlotCategoryEnum.Business,
+                       Reservations = new Collection<Reservation>()
+                       {
+                           new()
+                           {
+                               StartTime = DateTime.Now.AddHours(-30),
+                               Duration = 11,
+                           }
+                       }
+                   }
+               }
             };
 
-            var expectedSummaryHours = new ReservationHoursSummary()
-            {
-                StandardHours = 28,
-                BusinessHours = 11
-            };
+            var expectedZoneData = new ZoneFinanceData();
 
             mockZoneService
                 .Setup(s => s.GetById(_testId))
-                .Returns(Zone);
-            mockReservationService
-                .Setup(s => s.GetStandardAndBusinessHoursByPeriod(period, Zone))
-                .Returns(expectedSummaryHours);
-
-            //Act
-            var result = controller.FinanceSummary(period, _testId);
-
-            //Assert
-            var jsonResult = Assert.IsType<JsonResult>(result);
-            var actualSummaryHours = jsonResult.Value as ReservationHoursSummary;
-
-            Assert.NotNull(actualSummaryHours);
-            Assert.Equal(expectedSummaryHours.StandardHours, actualSummaryHours.StandardHours);
-            Assert.Equal(expectedSummaryHours.BusinessHours, actualSummaryHours.BusinessHours);
-            mockReservationService.Verify(s => s.GetStandardAndBusinessHoursByPeriod(period, Zone), Times.Once);
-        }
-
-        [Fact]
-        public void GivenLast30DaysPeriod_WhenIndexIsCalled_ThenReturnedReservationSummaryHoursFor30Days()
-        {
-            //Arrange
-            var period = PeriodsEnum.Last30Days;
-            var Zone = new ParkingZone()
-            {
-                ParkingSlots = GetTestSlots()
-            };
-
-            var expectedSummaryHours = new ReservationHoursSummary()
-            {
-                StandardHours = 24,
-                BusinessHours = 11
-            };
-
+                .Returns(zone);
             mockZoneService
-                .Setup(s => s.GetById(_testId))
-                .Returns(Zone);
-            mockReservationService
-                .Setup(s => s.GetStandardAndBusinessHoursByPeriod(period, Zone))
-                .Returns(expectedSummaryHours);
+                .Setup(s => s.GetZoneFinanceDataByPeriod(_testStartInclusive, _testEndExclusive, zone))
+                .Returns(expectedZoneData);
 
             //Act
-            var result = controller.FinanceSummary(period, _testId);
+            var result = controller.GetZoneFinanceData(testPeriodOption, _testId);
 
             //Assert
             var jsonResult = Assert.IsType<JsonResult>(result);
-            var actualSummaryHours = jsonResult.Value as ReservationHoursSummary;
-
-            Assert.NotNull(actualSummaryHours);
-            Assert.Equal(expectedSummaryHours.StandardHours, actualSummaryHours.StandardHours);
-            Assert.Equal(expectedSummaryHours.BusinessHours, actualSummaryHours.BusinessHours);
-            mockReservationService.Verify(s => s.GetStandardAndBusinessHoursByPeriod(period, Zone), Times.Once);
-        }
-
-        [Fact]
-        public void GivenLast7DaysPeriod_WhenIndexIsCalled_ThenReturnedReservationSummaryHoursFor7Days()
-        {
-            //Arrange
-            var period = PeriodsEnum.Last7Days;
-            var Zone = new ParkingZone()
-            {
-                ParkingSlots = GetTestSlots()
-            };
-            var expectedSummaryHours = new ReservationHoursSummary()
-            {
-                StandardHours = 18,
-                BusinessHours = 11
-            };
-
-            mockZoneService
-                .Setup(s => s.GetById(_testId))
-                .Returns(Zone);
-            mockReservationService
-                .Setup(s => s.GetStandardAndBusinessHoursByPeriod(period, Zone))
-                .Returns(expectedSummaryHours);
-
-            //Act
-            var result = controller.FinanceSummary(period, _testId);
-
-            //Assert
-            var jsonResult = Assert.IsType<JsonResult>(result);
-            var actualSummaryHours = jsonResult.Value as ReservationHoursSummary;
-
-            Assert.NotNull(actualSummaryHours);
-            Assert.Equal(expectedSummaryHours.StandardHours, actualSummaryHours.StandardHours);
-            Assert.Equal(expectedSummaryHours.BusinessHours, actualSummaryHours.BusinessHours);
-            mockReservationService.Verify(s => s.GetStandardAndBusinessHoursByPeriod(period, Zone), Times.Once);
-        }
-
-        [Fact]
-        public void GivenYesterdayPeriod_WhenIndexIsCalled_ThenReturnedReservationSummaryHoursForYesterday()
-        {
-            //Arrange
-            var period = PeriodsEnum.Yesterday;
-            var Zone = new ParkingZone()
-            {
-                ParkingSlots = GetTestSlots()
-            };
-            var expectedSummaryHours = new ReservationHoursSummary()
-            {
-                StandardHours = 2,
-                BusinessHours = 2
-            };
-
-            mockZoneService
-                .Setup(s => s.GetById(_testId))
-                .Returns(Zone);
-            mockReservationService
-                .Setup(s => s.GetStandardAndBusinessHoursByPeriod(period, Zone))
-                .Returns(expectedSummaryHours);
-
-            //Act
-            var result = controller.FinanceSummary(period, _testId);
-
-            //Assert
-            var jsonResult = Assert.IsType<JsonResult>(result);
-            var actualSummaryHours = jsonResult.Value as ReservationHoursSummary;
-
-            Assert.NotNull(actualSummaryHours);
-            Assert.Equal(expectedSummaryHours.StandardHours, actualSummaryHours.StandardHours);
-            Assert.Equal(expectedSummaryHours.BusinessHours, actualSummaryHours.BusinessHours);
-            mockReservationService.Verify(s => s.GetStandardAndBusinessHoursByPeriod(period, Zone), Times.Once);
-        }
-
-        [Fact]
-        public void GivenTodayPeriod_WhenIndexIsCalled_ThenReturnedReservationSummaryHoursForToday()
-        {
-            //Arrange
-            var period = PeriodsEnum.Today;
-            var Zone = new ParkingZone()
-            {
-                ParkingSlots = GetTestSlots()
-            };
-            var expectedSummaryHours = new ReservationHoursSummary()
-            {
-                StandardHours = 9,
-                BusinessHours = 9
-            };
-
-            mockZoneService
-                .Setup(s => s.GetById(_testId))
-                .Returns(Zone);
-            mockReservationService
-                .Setup(s => s.GetStandardAndBusinessHoursByPeriod(period, Zone))
-                .Returns(expectedSummaryHours);
-
-            //Act
-            var result = controller.FinanceSummary(period, _testId);
-
-            //Assert
-            var jsonResult = Assert.IsType<JsonResult>(result);
-            var actualSummaryHours = jsonResult.Value as ReservationHoursSummary;
-
-            Assert.NotNull(actualSummaryHours);
-            Assert.Equal(expectedSummaryHours.StandardHours, actualSummaryHours.StandardHours);
-            Assert.Equal(expectedSummaryHours.BusinessHours, actualSummaryHours.BusinessHours);
-            mockReservationService.Verify(s => s.GetStandardAndBusinessHoursByPeriod(period, Zone), Times.Once);
-        }
-
-        private Collection<ParkingSlot> GetTestSlots()
-        {
-            var slots = new Collection<ParkingSlot>()
-            {
-                new()
-                {
-                    Category = SlotCategoryEnum.Standard,
-                    Reservations = new Collection<Reservation>()
-                    {
-                        new()
-                        {
-                            StartTime = DateTime.Now.AddDays(-100),
-                            Duration = 4,
-                            ParkingSlot = new ParkingSlot()
-                            {
-                                Category = SlotCategoryEnum.Standard
-                            }
-                        }
-                    }
-                },
-                new()
-                {
-                    Category = SlotCategoryEnum.Standard,
-                    Reservations = new Collection<Reservation>()
-                    {
-                        new()
-                        {
-                            StartTime = DateTime.Now.AddDays(-27),
-                            Duration = 6,
-                            ParkingSlot = new ParkingSlot()
-                            {
-                                Category = SlotCategoryEnum.Standard
-                            }
-                        }
-                    }
-                },
-                new()
-                {
-                    Category = SlotCategoryEnum.Standard,
-                    Reservations = new Collection<Reservation>()
-                    {
-                        new()
-                        {
-                            StartTime = DateTime.Now.AddDays(-3),
-                            Duration = 7,
-                            ParkingSlot = new ParkingSlot()
-                            {
-                                Category = SlotCategoryEnum.Standard
-                            }
-                        }
-                    }
-                },
-                new()
-                {
-                    Category = SlotCategoryEnum.Standard,
-                    Reservations = new Collection<Reservation>()
-                    {
-                        new()
-                        {
-                            StartTime = DateTime.Now.AddDays(-1),
-                            Duration = 2,
-                            ParkingSlot = new ParkingSlot()
-                            {
-                                Category = SlotCategoryEnum.Standard
-                            }
-                        }
-                    }
-                },
-                new()
-                {
-                    Category = SlotCategoryEnum.Business,
-                    Reservations = new Collection<Reservation>()
-                    {
-                        new()
-                        {
-                            StartTime = DateTime.Now.AddDays(-1),
-                            Duration = 2,
-                            ParkingSlot = new ParkingSlot()
-                            {
-                                Category = SlotCategoryEnum.Business
-                            }
-                        }
-                    }
-                },
-                new()
-                {
-                    Category = SlotCategoryEnum.Standard,
-                    Reservations = new Collection<Reservation>()
-                    {
-                        new()
-                        {
-                            StartTime = DateTime.Now,
-                            Duration = 9,
-                            ParkingSlot = new ParkingSlot()
-                            {
-                                Category = SlotCategoryEnum.Standard
-                            }
-                        }
-                    }
-                },
-                new()
-                {
-                    Category = SlotCategoryEnum.Business,
-                    Reservations = new Collection<Reservation>()
-                    {
-                        new()
-                        {
-                            StartTime = DateTime.Now,
-                            Duration = 9,
-                            ParkingSlot = new ParkingSlot()
-                            {
-                                Category = SlotCategoryEnum.Business
-                            }
-                        }
-                    }
-                }
-            };
-
-            return slots;
+            mockZoneService.Verify(s => s.GetById(_testId), Times.Once);
+            mockZoneService.Verify(s => s.GetZoneFinanceDataByPeriod(_testStartInclusive, _testEndExclusive, zone), Times.Once);
+            Assert.Equal(JsonSerializer.Serialize(expectedZoneData), JsonSerializer.Serialize(jsonResult.Value));
         }
         #endregion
     }

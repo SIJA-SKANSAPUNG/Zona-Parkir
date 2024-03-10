@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Parking_Zone.Data;
 using Parking_Zone.Enums;
+using Parking_Zone.Helpers;
 using Parking_Zone.Models;
 using Parking_Zone.Repositories;
 using Parking_Zone.Services;
@@ -18,11 +19,9 @@ namespace Parking_Zone.Areas.Admin.Controllers
     public class ParkingZoneController : Controller
     {
         private readonly IParkingZoneService _parkingZoneService;
-        private readonly IReservationService _reservationService;
-        public ParkingZoneController(IParkingZoneService parkingZoneService, IReservationService reservationService)
+        public ParkingZoneController(IParkingZoneService parkingZoneService)
         {
             _parkingZoneService = parkingZoneService;
-            _reservationService = reservationService;
         }
 
         // GET: Admin/ParkingZones
@@ -34,15 +33,16 @@ namespace Parking_Zone.Areas.Admin.Controllers
             return View(vms);
         }
 
-        public IActionResult FinanceSummary(PeriodsEnum period, Guid zoneId)
+        public IActionResult GetZoneFinanceData(PeriodOptionsEnum periodOption, Guid zoneId)
         {
             var zone = _parkingZoneService.GetById(zoneId);
 
             if (zone is null)
                 return NotFound("Parking Zone Not Found");
 
-            var response = _reservationService.GetStandardAndBusinessHoursByPeriod(period, zone);
-            return Json(response);
+            var period = ParkingZoneHelper.BuildPeriod(periodOption);
+            var data = _parkingZoneService.GetZoneFinanceDataByPeriod(period.StartInclusive, period.EndExclusive, zone);
+            return Json(data);
         }
 
         // GET: Admin/ParkingZones/Details/5

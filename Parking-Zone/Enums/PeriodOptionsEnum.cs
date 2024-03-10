@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Parking_Zone.Enums
 {
-    public enum PeriodsEnum
+    public enum PeriodOptionsEnum
     {
         Today = 1,
         Yesterday,
