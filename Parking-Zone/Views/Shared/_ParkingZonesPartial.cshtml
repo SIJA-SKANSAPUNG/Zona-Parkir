@@ -2,9 +2,9 @@
 @inject SignInManager<AppUser> SignInManager
 @inject UserManager<AppUser> UserManager
 
-@if (User.IsInRole("User"))
+@if (User.IsInRole("Admin"))
 {
     <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="User" asp-controller="Reservation" asp-action="Index">My Reservations</a>
+        <a class="nav-link text-dark" asp-area="Admin" asp-controller="ParkingZone" asp-action="Index">Parking Zones</a>
     </li>
 }

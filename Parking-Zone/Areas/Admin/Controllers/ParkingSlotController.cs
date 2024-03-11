@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Parking_Zone.Enums;
 using Parking_Zone.Services;
 using Parking_Zone.Services.Models;
@@ -9,6 +10,7 @@ using System.Text.Json;
 namespace Parking_Zone.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "Admin")]
     public class ParkingSlotController : Controller
     {
         private readonly IParkingSlotService _slotService;
