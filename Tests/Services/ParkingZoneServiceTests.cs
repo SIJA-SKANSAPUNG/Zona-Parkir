@@ -215,6 +215,59 @@ namespace Tests.Services
         #endregion
 
         #region GetZoneFinanceDataByPeriod
+        [Fact]
+        public void GivenStartInclusiveEndExclusiveAndZoneWithNotAllCategory_WhenGetZoneFinanceDataByPeriodIsCalled_ThenReturnedZeroForNotExistingCategory()
+        {
+            //Arrange
+            var zone = new ParkingZone()
+            {
+                ParkingSlots = new List<ParkingSlot>()
+                {
+                    new()
+                    {
+                        Category = SlotCategoryEnum.Standard,
+                        Reservations = new Collection<Reservation>()
+                        {
+                            new()
+                            {
+                                StartTime = DateTime.Now.AddDays(-30),
+                                Duration = 10
+                            }
+                        }
+                    },
+                    new()
+                    {
+                        Category = SlotCategoryEnum.Standard,
+                        Reservations = new Collection<Reservation>()
+                        {
+                            new()
+                            {
+                                StartTime = DateTime.Now.AddDays(-20),
+                                Duration = 5
+                            }
+                        }
+                    }
+                }
+            };
+
+            var expectedZoneData = new ZoneFinanceData()
+            {
+                CategoryHours = new Dictionary<SlotCategoryEnum, int>()
+                {
+                    { SlotCategoryEnum.Standard, 15 },
+                    { SlotCategoryEnum.Business, 0 },
+                }
+            };
+
+            var service = new ParkingZoneService(Mock.Of<IParkingZoneRepository>());
+
+            //Act
+            var result = service.GetZoneFinanceDataByPeriod(DateTime.MinValue, DateTime.MaxValue, zone);
+
+            //Assert
+            Assert.Equal(JsonSerializer.Serialize(expectedZoneData), JsonSerializer.Serialize(result));
+        }
+
         [Theory]
         [MemberData(nameof(GetData), parameters: 5)]
         public void GivenStartInclusiveEndExclusiveAndZone_WhenGetZoneFinanceDataByPeriodIsCalled_ThenReturnedZoneFinanceData(DateTime startInclusive, DateTime endExclusive, ZoneFinanceData expectedZoneData)
@@ -292,7 +345,7 @@ namespace Tests.Services
             return new ParkingZone()
             {
                 ParkingSlots = new Collection<ParkingSlot>()
-                    {
+                {
                         new()
                         {
                             Category = SlotCategoryEnum.Standard,
