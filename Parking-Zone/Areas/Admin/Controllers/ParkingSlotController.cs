@@ -21,6 +21,7 @@ namespace Parking_Zone.Areas.Admin.Controllers
             _slotService = slotService;
             _zoneService = zoneService;
         }
+
         public IActionResult Index(Guid zoneId)
         {
             var zone = _zoneService.GetById(zoneId);
