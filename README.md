@@ -1,6 +1,6 @@
 # 🚗 Parking Zone
 
-Welcome to the Parking Zone repository! This application is designed to manage parking spaces efficiently using a web-based interface. Built with ASP.NET Core 8 and MVC architecture, the application ensures a seamless and responsive user experience.
+Open source asp.net mvc project for beginners! This application is designed to manage parking spaces efficiently using a web-based interface. Built with ASP.NET Core 8 and MVC architecture, the application ensures a seamless and responsive user experience.
 
 ## 🌟 Features
 
