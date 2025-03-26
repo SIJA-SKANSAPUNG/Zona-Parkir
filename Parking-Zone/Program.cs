@@ -15,6 +15,7 @@ using Parking_Zone.Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +30,44 @@ builder.Services
     .AddCustomHealthChecks(builder.Configuration)
     .AddCustomMemoryCache()
     .AddCustomSignalR();
+
+// Register CameraService
+builder.Services.AddScoped<ICameraService, CameraService>();
+
+// Add Swagger
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { 
+        Title = "Zona-Parkir API", 
+        Version = "v1",
+        Description = "API for Zona-Parkir parking management system"
+    });
+
+    // Add JWT Authentication
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
 
 // Add JWT Authentication
 builder.Services.AddAuthentication(options =>
@@ -65,6 +104,13 @@ if (!app.Environment.IsDevelopment())
 else
 {
     app.UseDeveloperExceptionPage();
+    // Enable Swagger UI in development
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Zona-Parkir API V1");
+        c.RoutePrefix = "swagger";
+    });
 }
 
 app.UseCustomHttpsRedirection()

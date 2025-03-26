@@ -130,3 +130,44 @@ Open source ASP.NET Core 8 MVC project for parking management system. Designed t
   - [x] Shift Management
   - [x] Operator Tracking
   - [x] Activity Logs
+
+## API Documentation
+
+The API documentation is available through Swagger UI when running the application in development mode. Access it at:
+```
+https://localhost:5001/swagger
+```
+
+### Authentication
+All API endpoints require JWT authentication. To authenticate:
+1. Get a token using POST `/api/auth/login`
+2. Include the token in the Authorization header: `Bearer {token}`
+
+### Available Endpoints
+
+#### Authentication
+- POST `/api/auth/login` - Get JWT token
+- POST `/api/auth/refresh` - Refresh JWT token
+
+#### Gates
+- POST `/api/gates/{gateId}/camera/capture` - Trigger camera capture
+- GET `/api/gates/{gateId}/camera/status` - Check camera operational status
+
+#### Vehicles
+- POST `/api/vehicles/entry` - Record vehicle entry
+- POST `/api/vehicles/exit` - Record vehicle exit
+- GET `/api/vehicles/current` - Get currently parked vehicles
+
+#### Implementation Status
+
+- [x] JWT Authentication
+- [x] API Documentation with Swagger
+- [x] Hardware Integration
+  - [x] Camera Service Implementation
+  - [ ] Printer Service Implementation (Coming Soon)
+- [x] Unit Tests
+  - [x] Authentication Tests
+  - [x] Vehicle Service Tests
+  - [x] Parking Transaction Tests
+- [ ] Integration Tests (In Progress)
+- [ ] End-to-End Tests (Planned)
