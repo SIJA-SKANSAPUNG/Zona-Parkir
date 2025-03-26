@@ -27,7 +27,12 @@ Open source ASP.NET Core 8 MVC project for parking management system. Designed t
 │   ├── ParkingFeeService.cs
 │   ├── ParkingGateService.cs
 │   ├── ParkingNotificationService.cs
-│   └── ParkingTransactionService.cs
+│   ├── ParkingTransactionService.cs
+│   ├── IPCameraService.cs
+│   ├── PrinterService.cs
+│   ├── ScannerService.cs
+│   ├── TicketService.cs
+│   └── WebSocketServer.cs
 ├── ViewModels/
 │   ├── AuthViewModels.cs
 │   ├── DashboardViewModels.cs
@@ -65,6 +70,10 @@ Open source ASP.NET Core 8 MVC project for parking management system. Designed t
 - [x] Transaction Service
 - [ ] Reservation Service
 - [ ] User Service
+- [x] IP Camera Service
+- [x] Printer Service
+- [x] Scanner Service
+- [x] Ticket Service
 
 ### Testing
 - [x] Vehicle Service Tests
@@ -83,6 +92,11 @@ Open source ASP.NET Core 8 MVC project for parking management system. Designed t
 - [ ] Reporting System
 - [ ] Admin Dashboard
 - [ ] Mobile App Integration
+- [x] Hardware Integration
+  - [x] IP Camera Integration
+  - [x] Thermal Printer Support
+  - [x] Barcode Scanner Support
+  - [x] Ticket Management
 
 ## 🌟 Features
 

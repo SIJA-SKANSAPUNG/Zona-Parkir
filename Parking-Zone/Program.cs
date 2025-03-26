@@ -32,6 +32,12 @@ builder.Services.AddScoped<IParkingGateService, ParkingGateService>();
 builder.Services.AddScoped<IParkingTransactionService, ParkingTransactionService>();
 builder.Services.AddScoped<IParkingNotificationService, ParkingNotificationService>();
 
+// Register hardware integration services
+builder.Services.AddScoped<IIPCameraService, IPCameraService>();
+builder.Services.AddScoped<IPrinterService, PrinterService>();
+builder.Services.AddScoped<IScannerService, ScannerService>();
+builder.Services.AddScoped<ITicketService, TicketService>();
+
 builder.Services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddRoles<IdentityRole>()
     .AddRoleManager<RoleManager<IdentityRole>>()
