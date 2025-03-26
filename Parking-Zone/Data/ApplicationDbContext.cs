@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Parking_Zone.Models;
@@ -26,31 +26,105 @@ namespace Parking_Zone.Data
         public DbSet<Shift> Shifts { get; set; }
         public DbSet<ParkingTicket> ParkingTickets { get; set; }
         public DbSet<Settings> Settings { get; set; }
+        public DbSet<CameraSettings> CameraSettings { get; set; } = null!;
+        public DbSet<PrinterConfig> PrinterConfigs { get; set; } = null!;
+        public DbSet<SiteSettings> SiteSettings { get; set; } = null!;
+        public DbSet<VehicleEntry> VehicleEntries { get; set; } = null!;
+        public DbSet<VehicleExit> VehicleExits { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             // Configure relationships for Vehicle
-            modelBuilder.Entity<Vehicle>()
-                .HasMany(v => v.ParkingTransactions)
-                .WithOne(t => t.Vehicle)
-                .HasForeignKey(t => t.VehicleId)
-                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Vehicle>(entity =>
+            {
+                entity.HasMany(v => v.ParkingTransactions)
+                    .WithOne(t => t.Vehicle)
+                    .HasForeignKey(t => t.VehicleId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(v => v.VehicleEntries)
+                    .WithOne(ve => ve.Vehicle)
+                    .HasForeignKey(ve => ve.VehicleId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(v => v.VehicleExits)
+                    .WithOne(vx => vx.Vehicle)
+                    .HasForeignKey(vx => vx.VehicleId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
 
             // Configure relationships for ParkingGate
-            modelBuilder.Entity<ParkingGate>()
-                .HasOne(g => g.ParkingZone)
-                .WithMany()
-                .HasForeignKey(g => g.ParkingZoneId)
-                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<ParkingGate>(entity =>
+            {
+                entity.HasOne(g => g.ParkingZone)
+                    .WithMany()
+                    .HasForeignKey(g => g.ParkingZoneId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.IsActive).HasDefaultValue(true);
+            });
 
             // Configure relationships for ParkingTransaction
-            modelBuilder.Entity<ParkingTransaction>()
-                .HasOne(t => t.ParkingZone)
-                .WithMany()
-                .HasForeignKey(t => t.ParkingZoneId)
-                .OnDelete(DeleteBehavior.Restrict);
+            modelBuilder.Entity<ParkingTransaction>(entity =>
+            {
+                entity.HasOne(t => t.ParkingZone)
+                    .WithMany()
+                    .HasForeignKey(t => t.ParkingZoneId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure CameraSettings
+            modelBuilder.Entity<CameraSettings>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.ProfileName).IsRequired();
+                entity.Property(e => e.LightingCondition).HasDefaultValue("Normal");
+            });
+
+            // Configure PrinterConfig
+            modelBuilder.Entity<PrinterConfig>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired();
+                entity.Property(e => e.Port).IsRequired();
+                entity.Property(e => e.ConnectionType).HasDefaultValue("Serial");
+                entity.Property(e => e.Status).HasDefaultValue("Offline");
+                entity.Property(e => e.IsActive).HasDefaultValue(true);
+                entity.Property(e => e.LastChecked).IsRequired();
+            });
+
+            // Configure SiteSettings
+            modelBuilder.Entity<SiteSettings>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.SiteName).IsRequired();
+                entity.Property(e => e.ThemeColor).HasDefaultValue("#007bff");
+                entity.Property(e => e.ShowLogo).HasDefaultValue(true);
+                entity.Property(e => e.EnableNotifications).HasDefaultValue(true);
+                entity.Property(e => e.LastUpdated).IsRequired();
+                entity.Property(e => e.UpdatedBy).IsRequired();
+            });
+
+            // Configure VehicleEntry
+            modelBuilder.Entity<VehicleEntry>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.EntryTime).IsRequired();
+            });
+
+            // Configure VehicleExit
+            modelBuilder.Entity<VehicleExit>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.ExitTime).IsRequired();
+                entity.HasOne(vx => vx.Transaction)
+                    .WithMany()
+                    .HasForeignKey(vx => vx.TransactionId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
 
             // Seed ParkingZone data
             var mainZone = new ParkingZone
@@ -89,6 +163,20 @@ namespace Parking_Zone.Data
                 }
             );
 
+            // Seed default SiteSettings
+            modelBuilder.Entity<SiteSettings>().HasData(
+                new SiteSettings
+                {
+                    Id = Guid.NewGuid(),
+                    SiteName = "Parking Zone Management System",
+                    ThemeColor = "#007bff",
+                    ShowLogo = true,
+                    EnableNotifications = true,
+                    LastUpdated = DateTime.UtcNow,
+                    UpdatedBy = "system"
+                }
+            );
+
             // Existing seed data
             var adminRole = new IdentityRole { Id = "9a535a8f-dccf-4a1d-a25d-d9c3bb4803de", Name = "Admin", NormalizedName = "ADMIN" };
             var userRole = new IdentityRole { Id = "d47b3c1e-1310-409d-b893-0a662a64c35d", Name = "User", NormalizedName = "USER" };
@@ -99,123 +187,29 @@ namespace Parking_Zone.Data
             );
 
             var hasher = new PasswordHasher<AppUser>();
-
             var adminUser = new AppUser
             {
-                Id = "9a535a8f-dccf-4a1d-a25d-d9c3bb4803de",
-                UserName = "admin@admin.com",
-                NormalizedUserName = "ADMIN@ADMIN.COM",
-                Email = "admin@admin.com",
-                NormalizedEmail = "ADMIN@ADMIN.COM",
+                Id = "c5f10bb4-851e-4e6f-b832-da4c4f73c553",
+                UserName = "admin@parking.com",
+                NormalizedUserName = "ADMIN@PARKING.COM",
+                Email = "admin@parking.com",
+                NormalizedEmail = "ADMIN@PARKING.COM",
                 EmailConfirmed = true,
                 SecurityStamp = Guid.NewGuid().ToString(),
-                ConcurrencyStamp = Guid.NewGuid().ToString(),
-                FullName = "Adminov Admin"
+                FirstName = "System",
+                LastName = "Administrator"
             };
-            adminUser.PasswordHash = hasher.HashPassword(adminUser, "admin123");
+            adminUser.PasswordHash = hasher.HashPassword(adminUser, "Admin@123");
 
-            var userUser = new AppUser
-            {
-                Id = "d47b3c1e-1310-409d-b893-0a662a64c35d",
-                UserName = "user@user.com",
-                NormalizedUserName = "USER@USER.COM",
-                Email = "user@user.com",
-                NormalizedEmail = "USER@USER.COM",
-                EmailConfirmed = true,
-                SecurityStamp = Guid.NewGuid().ToString(),
-                ConcurrencyStamp = Guid.NewGuid().ToString(),
-                FullName = "Userov User"
-            };
-            userUser.PasswordHash = hasher.HashPassword(userUser, "user1234");
-
-            // Add users and roles
-            modelBuilder.Entity<AppUser>().HasData(
-                adminUser,
-                userUser
-            );
+            modelBuilder.Entity<AppUser>().HasData(adminUser);
 
             modelBuilder.Entity<IdentityUserRole<string>>().HasData(
-                new IdentityUserRole<string> { UserId = adminUser.Id, RoleId = adminRole.Id },
-                new IdentityUserRole<string> { UserId = userUser.Id, RoleId = userRole.Id }
+                new IdentityUserRole<string>
+                {
+                    RoleId = adminRole.Id,
+                    UserId = adminUser.Id
+                }
             );
-
-            // Configure relationships for Camera
-            modelBuilder.Entity<Camera>()
-                .HasOne(c => c.Gate)
-                .WithMany(g => g.Cameras)
-                .HasForeignKey(c => c.GateId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            // Configure relationships for Printer
-            modelBuilder.Entity<Printer>()
-                .HasOne(p => p.Gate)
-                .WithMany(g => g.Printers)
-                .HasForeignKey(p => p.GateId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            // Configure relationships for Scanner
-            modelBuilder.Entity<Scanner>()
-                .HasOne(s => s.Gate)
-                .WithMany(g => g.Scanners)
-                .HasForeignKey(s => s.GateId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            // Configure relationships for Operator
-            modelBuilder.Entity<Operator>()
-                .HasOne(o => o.User)
-                .WithOne()
-                .HasForeignKey<Operator>(o => o.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Operator>()
-                .HasMany(o => o.AssignedGates)
-                .WithMany()
-                .UsingEntity(j => j.ToTable("OperatorGates"));
-
-            // Configure relationships for Shift
-            modelBuilder.Entity<Shift>()
-                .HasOne(s => s.Operator)
-                .WithMany(o => o.Shifts)
-                .HasForeignKey(s => s.OperatorId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<Shift>()
-                .HasOne(s => s.Gate)
-                .WithMany()
-                .HasForeignKey(s => s.GateId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Configure relationships for ParkingTicket
-            modelBuilder.Entity<ParkingTicket>()
-                .HasOne(t => t.Transaction)
-                .WithOne()
-                .HasForeignKey<ParkingTicket>(t => t.TransactionId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<ParkingTicket>()
-                .HasOne(t => t.IssuedBy)
-                .WithMany()
-                .HasForeignKey(t => t.IssuedById)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            modelBuilder.Entity<ParkingTicket>()
-                .HasOne(t => t.VoidedBy)
-                .WithMany()
-                .HasForeignKey(t => t.VoidedById)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            modelBuilder.Entity<ParkingTicket>()
-                .HasOne(t => t.Gate)
-                .WithMany()
-                .HasForeignKey(t => t.GateId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Configure relationships for Settings
-            modelBuilder.Entity<Settings>()
-                .HasOne(s => s.UpdatedBy)
-                .WithMany()
-                .HasForeignKey(s => s.UpdatedById)
-                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

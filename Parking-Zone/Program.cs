@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 using Parking_Zone.Data;
+using Parking_Zone.Middleware;
 using Parking_Zone.Models;
 using Parking_Zone.Repositories;
 using Parking_Zone.Services;
@@ -14,6 +15,10 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseLazyLoadingProxies().UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+// Add DbContextFactory
+builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
+    options.UseLazyLoadingProxies().UseNpgsql(connectionString));
 
 // Add SignalR services
 builder.Services.AddSignalR();
@@ -62,6 +67,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.UseRateLimiting();
 
 app.UseAuthorization();
 
