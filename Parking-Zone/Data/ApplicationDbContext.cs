@@ -19,6 +19,13 @@ namespace Parking_Zone.Data
         public DbSet<ParkingGate> ParkingGates { get; set; }
         public DbSet<ParkingTransaction> ParkingTransactions { get; set; }
         public DbSet<FeeConfiguration> FeeConfigurations { get; set; }
+        public DbSet<Camera> Cameras { get; set; }
+        public DbSet<Printer> Printers { get; set; }
+        public DbSet<Scanner> Scanners { get; set; }
+        public DbSet<Operator> Operators { get; set; }
+        public DbSet<Shift> Shifts { get; set; }
+        public DbSet<ParkingTicket> ParkingTickets { get; set; }
+        public DbSet<Settings> Settings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -131,6 +138,84 @@ namespace Parking_Zone.Data
                 new IdentityUserRole<string> { UserId = adminUser.Id, RoleId = adminRole.Id },
                 new IdentityUserRole<string> { UserId = userUser.Id, RoleId = userRole.Id }
             );
+
+            // Configure relationships for Camera
+            modelBuilder.Entity<Camera>()
+                .HasOne(c => c.Gate)
+                .WithMany(g => g.Cameras)
+                .HasForeignKey(c => c.GateId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Configure relationships for Printer
+            modelBuilder.Entity<Printer>()
+                .HasOne(p => p.Gate)
+                .WithMany(g => g.Printers)
+                .HasForeignKey(p => p.GateId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Configure relationships for Scanner
+            modelBuilder.Entity<Scanner>()
+                .HasOne(s => s.Gate)
+                .WithMany(g => g.Scanners)
+                .HasForeignKey(s => s.GateId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Configure relationships for Operator
+            modelBuilder.Entity<Operator>()
+                .HasOne(o => o.User)
+                .WithOne()
+                .HasForeignKey<Operator>(o => o.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Operator>()
+                .HasMany(o => o.AssignedGates)
+                .WithMany()
+                .UsingEntity(j => j.ToTable("OperatorGates"));
+
+            // Configure relationships for Shift
+            modelBuilder.Entity<Shift>()
+                .HasOne(s => s.Operator)
+                .WithMany(o => o.Shifts)
+                .HasForeignKey(s => s.OperatorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Shift>()
+                .HasOne(s => s.Gate)
+                .WithMany()
+                .HasForeignKey(s => s.GateId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure relationships for ParkingTicket
+            modelBuilder.Entity<ParkingTicket>()
+                .HasOne(t => t.Transaction)
+                .WithOne()
+                .HasForeignKey<ParkingTicket>(t => t.TransactionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ParkingTicket>()
+                .HasOne(t => t.IssuedBy)
+                .WithMany()
+                .HasForeignKey(t => t.IssuedById)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ParkingTicket>()
+                .HasOne(t => t.VoidedBy)
+                .WithMany()
+                .HasForeignKey(t => t.VoidedById)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<ParkingTicket>()
+                .HasOne(t => t.Gate)
+                .WithMany()
+                .HasForeignKey(t => t.GateId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Configure relationships for Settings
+            modelBuilder.Entity<Settings>()
+                .HasOne(s => s.UpdatedBy)
+                .WithMany()
+                .HasForeignKey(s => s.UpdatedById)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }
