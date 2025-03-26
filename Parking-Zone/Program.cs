@@ -7,82 +7,74 @@ using Parking_Zone.Middleware;
 using Parking_Zone.Models;
 using Parking_Zone.Repositories;
 using Parking_Zone.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Parking_Zone.Extensions;
+using Parking_Zone.Hubs;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseLazyLoadingProxies().UseNpgsql(connectionString));
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+// Add services to the container using our custom extensions
+builder.Services
+    .AddCustomDbContext(builder.Configuration)
+    .AddCustomIdentity()
+    .AddCustomServices()
+    .AddCustomCors()
+    .AddCustomAuthentication(builder.Configuration)
+    .AddCustomAuthorization()
+    .AddCustomHealthChecks(builder.Configuration)
+    .AddCustomMemoryCache()
+    .AddCustomSignalR();
 
-// Add DbContextFactory
-builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
-    options.UseLazyLoadingProxies().UseNpgsql(connectionString));
+// Add JWT Authentication
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+        ValidAudience = builder.Configuration["JwtSettings:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"]))
+    };
+});
 
-// Add SignalR services
-builder.Services.AddSignalR();
-
-builder.Services.AddScoped<IParkingZoneRepository, ParkingZoneRepository>();
-builder.Services.AddScoped<IParkingZoneService, ParkingZoneService>();
-builder.Services.AddScoped<IParkingSlotRepository, ParkingSlotRepository>();
-builder.Services.AddScoped<IParkingSlotService, ParkingSlotService>();
-builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
-builder.Services.AddScoped<IReservationService, ReservationService>();
-
-// Register new services
-builder.Services.AddScoped<IParkingFeeService, ParkingFeeService>();
-builder.Services.AddScoped<IVehicleService, VehicleService>();
-builder.Services.AddScoped<IParkingGateService, ParkingGateService>();
-builder.Services.AddScoped<IParkingTransactionService, ParkingTransactionService>();
-builder.Services.AddScoped<IParkingNotificationService, ParkingNotificationService>();
-
-// Register hardware integration services
-builder.Services.AddScoped<IIPCameraService, IPCameraService>();
-builder.Services.AddScoped<IPrinterService, PrinterService>();
-builder.Services.AddScoped<IScannerService, ScannerService>();
-builder.Services.AddScoped<ITicketService, TicketService>();
-
-builder.Services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = false)
-    .AddRoles<IdentityRole>()
-    .AddRoleManager<RoleManager<IdentityRole>>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+// Add MVC services
 builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Configure the HTTP request pipeline using our custom extensions
+if (!app.Environment.IsDevelopment())
 {
-    app.UseMigrationsEndPoint();
+    app.UseCustomExceptionHandler();
+    app.UseCustomHsts(app.Environment);
 }
 else
 {
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    app.UseDeveloperExceptionPage();
 }
 
-app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseCustomHttpsRedirection()
+   .UseCustomStaticFiles()
+   .UseCustomRouting()
+   .UseCustomCors()
+   .UseCustomAuthentication()
+   .UseAuthentication()
+   .UseAuthorization();
 
-app.UseRouting();
-
-app.UseRateLimiting();
-
-app.UseAuthorization();
-
-// Add SignalR hub mapping
-app.MapHub<ParkingHub>("/parkingHub");
-
-app.MapControllerRoute(
-    name: "Admin",
-    pattern: "{area:exists}/{controller=ParkingZone}/{action=Index}/{id?}");
-
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
-
-app.MapRazorPages();
+app.UseCustomEndpoints();
 
 app.Run();

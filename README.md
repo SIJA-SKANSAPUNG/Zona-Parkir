@@ -10,23 +10,14 @@ Open source ASP.NET Core 8 MVC project for parking management system. Designed t
 │   │   ├── AuthApiController.cs
 │   │   ├── GatesApiController.cs
 │   │   ├── TransactionsApiController.cs
-│   │   ├── VehiclesApiController.cs
-│   │   ├── AuthController.cs
-│   │   ├── DashboardController.cs
-│   │   ├── EntryGateController.cs
-│   │   ├── ExitGateController.cs
-│   │   ├── GateController.cs
-│   │   ├── GateOperationsController.cs
-│   │   ├── HistoryController.cs
-│   │   ├── HomeController.cs
-│   │   ├── ParkingTransactionController.cs
-│   │   ├── RatesController.cs
-│   │   ├── ReportingController.cs
-│   │   ├── ReportsController.cs
-│   │   ├── ReservationsController.cs
-│   │   ├── SettingsController.cs
-│   │   ├── SiteSettingsController.cs
-│   │   └── TicketController.cs
+│   │   └── VehiclesApiController.cs
+│   ├── RatesController.cs
+│   ├── TicketController.cs
+│   ├── SettingsController.cs
+│   ├── SiteSettingsController.cs
+│   ├── CameraController.cs
+│   ├── OperatorsController.cs
+│   ├── ShiftsController.cs
 │   └── ...
 ├── Extensions/
 │   ├── ApplicationBuilderExtensions.cs
@@ -135,3 +126,7 @@ Open source ASP.NET Core 8 MVC project for parking management system. Designed t
   - [x] Gate Control
   - [x] Transaction Processing
   - [x] Hardware Integration
+- [x] Operator Management
+  - [x] Shift Management
+  - [x] Operator Tracking
+  - [x] Activity Logs
