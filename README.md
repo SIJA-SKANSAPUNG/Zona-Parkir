@@ -5,39 +5,46 @@ Open source ASP.NET Core 8 MVC project for parking management system. Designed t
 ## 📁 Project Structure
 
 ```
-Parking-Zone/
-├── Parking-Zone/
-│   ├── Data/
-│   │   ├── ApplicationDbContext.cs
-│   │   └── Migrations/
-│   ├── Models/
-│   │   ├── FeeConfiguration.cs
-│   │   ├── ParkingGate.cs
-│   │   ├── ParkingTransaction.cs
-│   │   ├── ParkingZone.cs
-│   │   └── Vehicle.cs
-│   ├── Services/
-│   │   ├── IParkingFeeService.cs
-│   │   ├── IVehicleService.cs
-│   │   ├── ParkingFeeService.cs
-│   │   └── VehicleService.cs
-│   ├── ViewModels/
-│   │   ├── AuthViewModels.cs
-│   │   ├── DashboardViewModels.cs
-│   │   └── GateViewModels.cs
-│   └── Views/
-│       ├── Auth/
-│       │   └── Login.cshtml
-│       ├── Dashboard/
-│       │   └── Index.cshtml
-│       └── Shared/
-│           ├── _Layout.cshtml
-│           ├── _LoginPartial.cshtml
-│           └── _ValidationScriptsPartial.cshtml
-├── Parking-Zone.Tests/
-│   ├── ParkingFeeServiceTests.cs
-│   └── VehicleServiceTests.cs
-└── Tests/
+├── Controllers/
+│   ├── Api/
+│   │   ├── GatesApiController.cs
+│   │   ├── TransactionsApiController.cs
+│   │   └── VehiclesApiController.cs
+│   └── ...
+├── Models/
+│   ├── ApplicationUser.cs
+│   ├── FeeConfiguration.cs
+│   ├── ParkingGate.cs
+│   ├── ParkingTransaction.cs
+│   ├── ParkingZone.cs
+│   └── Vehicle.cs
+├── Services/
+│   ├── IParkingFeeService.cs
+│   ├── IParkingGateService.cs
+│   ├── IParkingNotificationService.cs
+│   ├── IParkingTransactionService.cs
+│   ├── IUserService.cs
+│   ├── ParkingFeeService.cs
+│   ├── ParkingGateService.cs
+│   ├── ParkingNotificationService.cs
+│   └── ParkingTransactionService.cs
+├── ViewModels/
+│   ├── AuthViewModels.cs
+│   ├── DashboardViewModels.cs
+│   ├── GateViewModels.cs
+│   ├── HistoryViewModel.cs
+│   └── ParkingRateViewModel.cs
+├── Views/
+│   ├── Auth/
+│   │   └── Login.cshtml
+│   ├── Dashboard/
+│   │   └── Index.cshtml
+│   └── Shared/
+│       ├── _Layout.cshtml
+│       ├── _LoginPartial.cshtml
+│       └── _ValidationScriptsPartial.cshtml
+└── Hubs/
+    └── ParkingHub.cs
 ```
 
 ## ✅ Progress Checklist
