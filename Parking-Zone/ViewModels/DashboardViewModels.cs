@@ -1,0 +1,86 @@
+using System;
+using System.Collections.Generic;
+
+namespace Parking_Zone.ViewModels
+{
+    public class DashboardParkingActivity
+    {
+        public string VehicleType { get; set; } = string.Empty;
+        public string LicensePlate { get; set; } = string.Empty;
+        public string PlateNumber { get; set; } = string.Empty;
+        public DateTime Timestamp { get; set; }
+        public string ActionType { get; set; } = string.Empty;
+        public decimal Fee { get; set; }
+        public decimal Cost { get; set; }
+        public string ParkingType { get; set; } = string.Empty;
+        public string VehicleNumber { get; set; } = string.Empty;
+        public DateTime? LastActivity { get; set; }
+        public DateTime? EntryTime { get; set; }
+        public DateTime? ExitTime { get; set; }
+    }
+
+    public class OccupancyData
+    {
+        public string Hour { get; set; } = string.Empty;
+        public int Count { get; set; }
+        public double OccupancyPercentage { get; set; }
+    }
+
+    public class VehicleDistributionData
+    {
+        public string Type { get; set; } = string.Empty;
+        public string VehicleType { get; set; } = string.Empty;
+        public int Count { get; set; }
+    }
+
+    public class OccupancyDataComparer : IEqualityComparer<OccupancyData>
+    {
+        public bool Equals(OccupancyData? x, OccupancyData? y)
+        {
+            if (x is null && y is null) return true;
+            if (x is null || y is null) return false;
+            return x.Hour == y.Hour;
+        }
+
+        public int GetHashCode(OccupancyData obj)
+        {
+            return obj.Hour.GetHashCode();
+        }
+    }
+
+    public class DashboardViewModel
+    {
+        // Parking Space Information
+        public int TotalParkingSpaces { get; set; }
+        public int AvailableParkingSpaces { get; set; }
+        public int OccupiedParkingSpaces { get; set; }
+        public double OccupancyRate { get; set; }
+
+        // Properties referenced in views
+        public int TotalSpaces => TotalParkingSpaces;
+        public int AvailableSpaces => AvailableParkingSpaces;
+
+        // Transaction Information
+        public int TotalTransactionsToday { get; set; }
+        public int ActiveTransactions { get; set; }
+        public decimal DailyRevenue { get; set; }
+        public decimal WeeklyRevenue { get; set; }
+        public decimal MonthlyRevenue { get; set; }
+
+        // Activity Lists
+        public List<DashboardParkingActivity> RecentEntries { get; set; } = new();
+        public List<DashboardParkingActivity> RecentExits { get; set; } = new();
+        public List<DashboardParkingActivity> RecentActivity { get; set; } = new();
+
+        // Analytics
+        public List<OccupancyData> HourlyOccupancy { get; set; } = new();
+        public List<VehicleDistributionData> VehicleDistribution { get; set; } = new();
+
+        // Pagination
+        public bool HasPreviousPage { get; set; }
+        public bool HasNextPage { get; set; }
+        public int CurrentPage { get; set; }
+        public int PageSize { get; set; }
+        public int TotalPages { get; set; }
+    }
+} 

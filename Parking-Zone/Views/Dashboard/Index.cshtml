@@ -148,10 +148,64 @@
             </div>
         </div>
     </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <h6>Real-Time Parking Monitoring</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5>Gate Status</h5>
+                            <ul id="gate-status-list" class="list-group">
+                                @foreach (var gate in Model.Gates)
+                                {
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Gate @gate.Id
+                                        <span id="gate-@gate.Id" class="badge @(gate.IsOpen ? "bg-success" : "bg-danger")">
+                                            @(gate.IsOpen ? "Open" : "Closed")
+                                        </span>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h5>Vehicle Entries</h5>
+                            <ul id="vehicle-entry-list" class="list-group">
+                                <!-- Real-time vehicle entry list will be populated by SignalR -->
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h5>Vehicle Exits</h5>
+                            <ul id="vehicle-exit-list" class="list-group">
+                                <!-- Real-time vehicle exit list will be populated by SignalR -->
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h5>Parking Occupancy</h5>
+                            <div class="progress">
+                                <div id="parking-occupancy" class="progress-bar" role="progressbar" 
+                                     style="width: @(Model.OccupancyRate)%;" aria-valuenow="@Model.OccupancyRate" 
+                                     aria-valuemin="0" aria-valuemax="100">
+                                    @Model.OccupancyRate%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="~/lib/signalr/signalr.js"></script>
+    <script src="~/js/parkingHub.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // Hourly Occupancy Chart
@@ -232,4 +286,4 @@
             });
         });
     </script>
-} 
+}

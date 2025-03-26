@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.SignalR;
-using Parking_Zone.Models;
-using System;
 using System.Threading.Tasks;
 
 namespace Parking_Zone.Hubs
@@ -15,6 +13,27 @@ namespace Parking_Zone.Hubs
         public async Task LeaveParkingZone(string parkingZoneId)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, parkingZoneId);
+        }
+
+        public override async Task OnConnectedAsync()
+        {
+            // Optional: Log connection or perform any setup
+            await base.OnConnectedAsync();
+        }
+
+        public async Task SendGateStatus(string gateId, bool isOpen)
+        {
+            await Clients.All.SendAsync("ReceiveGateStatus", gateId, isOpen);
+        }
+
+        public async Task SendVehicleEntry(string plateNumber)
+        {
+            await Clients.All.SendAsync("ReceiveVehicleEntry", plateNumber);
+        }
+
+        public async Task SendVehicleExit(string plateNumber)
+        {
+            await Clients.All.SendAsync("ReceiveVehicleExit", plateNumber);
         }
     }
 

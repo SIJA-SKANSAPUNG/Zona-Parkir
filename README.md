@@ -21,7 +21,19 @@ Parking-Zone/
 │   │   ├── IVehicleService.cs
 │   │   ├── ParkingFeeService.cs
 │   │   └── VehicleService.cs
+│   ├── ViewModels/
+│   │   ├── AuthViewModels.cs
+│   │   ├── DashboardViewModels.cs
+│   │   └── GateViewModels.cs
 │   └── Views/
+│       ├── Auth/
+│       │   └── Login.cshtml
+│       ├── Dashboard/
+│       │   └── Index.cshtml
+│       └── Shared/
+│           ├── _Layout.cshtml
+│           ├── _LoginPartial.cshtml
+│           └── _ValidationScriptsPartial.cshtml
 ├── Parking-Zone.Tests/
 │   ├── ParkingFeeServiceTests.cs
 │   └── VehicleServiceTests.cs
@@ -56,15 +68,14 @@ Parking-Zone/
 - [ ] Integration Tests
 
 ### Features
-- [ ] User Authentication
-- [ ] User Authorization
-- [ ] Parking Spot Reservation
-- [x] Real-time Parking Availability
-- [ ] Payment Integration
+- [x] User Authentication (via Identity with Login view)
+- [x] Real-time Monitoring (via SignalR)
+- [x] Vehicle Entry/Exit Management
+- [x] Parking Fee Calculation
+- [x] Gate Control System
 - [ ] Reporting System
-- [x] Gate Management: Control and monitor parking gates via API
-- [x] Transaction Management: Handle parking transactions with fee calculation
-- [x] Real-time Monitoring: SignalR-based live updates for parking events
+- [ ] Admin Dashboard
+- [ ] Mobile App Integration
 
 ## 🌟 Features
 
