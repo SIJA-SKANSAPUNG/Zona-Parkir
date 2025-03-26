@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 using Parking_Zone.Data;
 using Parking_Zone.Models;
 using Parking_Zone.Repositories;
@@ -11,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseLazyLoadingProxies().UseSqlServer(connectionString));
+    options.UseLazyLoadingProxies().UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddScoped<IParkingZoneRepository, ParkingZoneRepository>();
@@ -20,6 +21,10 @@ builder.Services.AddScoped<IParkingSlotRepository, ParkingSlotRepository>();
 builder.Services.AddScoped<IParkingSlotService, ParkingSlotService>();
 builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
+
+// Register new services
+builder.Services.AddScoped<IParkingFeeService, ParkingFeeService>();
+builder.Services.AddScoped<IVehicleService, VehicleService>();
 
 builder.Services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddRoles<IdentityRole>()

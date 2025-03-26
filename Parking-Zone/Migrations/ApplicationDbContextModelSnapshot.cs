@@ -2,13 +2,13 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Parking_Zone.Data;
 
 #nullable disable
 
-namespace Parking_Zone.Data.Migrations
+namespace Parking_Zone.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -17,59 +17,51 @@ namespace Parking_Zone.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.1")
+                .HasAnnotation("ProductVersion", "8.0.2")
                 .HasAnnotation("Proxies:ChangeTracking", false)
                 .HasAnnotation("Proxies:CheckEquality", false)
                 .HasAnnotation("Proxies:LazyLoading", true)
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasMaxLength(13)
-                        .HasColumnType("nvarchar(13)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.Property<string>("NormalizedName")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedName")
                         .IsUnique()
-                        .HasDatabaseName("RoleNameIndex")
-                        .HasFilter("[NormalizedName] IS NOT NULL");
+                        .HasDatabaseName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasDiscriminator<string>("Discriminator").HasValue("IdentityRole");
-
-                    b.UseTphMappingStrategy();
 
                     b.HasData(
                         new
                         {
                             Id = "9a535a8f-dccf-4a1d-a25d-d9c3bb4803de",
-                            Name = "Admin"
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
                         },
                         new
                         {
                             Id = "d47b3c1e-1310-409d-b893-0a662a64c35d",
-                            Name = "User"
+                            Name = "User",
+                            NormalizedName = "USER"
                         });
                 });
 
@@ -77,19 +69,19 @@ namespace Parking_Zone.Data.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("RoleId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -102,19 +94,19 @@ namespace Parking_Zone.Data.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -127,18 +119,18 @@ namespace Parking_Zone.Data.Migrations
                 {
                     b.Property<string>("LoginProvider")
                         .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("character varying(128)");
 
                     b.Property<string>("ProviderKey")
                         .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("character varying(128)");
 
                     b.Property<string>("ProviderDisplayName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
@@ -150,10 +142,10 @@ namespace Parking_Zone.Data.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("RoleId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.HasKey("UserId", "RoleId");
 
@@ -177,18 +169,18 @@ namespace Parking_Zone.Data.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<string>("LoginProvider")
                         .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("character varying(128)");
 
                     b.Property<string>("Name")
                         .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("character varying(128)");
 
                     b.Property<string>("Value")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
@@ -198,58 +190,58 @@ namespace Parking_Zone.Data.Migrations
             modelBuilder.Entity("Parking_Zone.Models.AppUser", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<int>("AccessFailedCount")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("datetimeoffset");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.Property<string>("NormalizedUserName")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.Property<string>("PasswordHash")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("SecurityStamp")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("character varying(256)");
 
                     b.HasKey("Id");
 
@@ -258,8 +250,7 @@ namespace Parking_Zone.Data.Migrations
 
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
-                        .HasDatabaseName("UserNameIndex")
-                        .HasFilter("[NormalizedUserName] IS NOT NULL");
+                        .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
 
@@ -268,14 +259,16 @@ namespace Parking_Zone.Data.Migrations
                         {
                             Id = "9a535a8f-dccf-4a1d-a25d-d9c3bb4803de",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "edf8cd4d-3f5c-46c3-8b45-9c7f97e5251b",
+                            ConcurrencyStamp = "272f163f-764d-4a23-9c87-a4272f67dc10",
                             Email = "admin@admin.com",
-                            EmailConfirmed = false,
+                            EmailConfirmed = true,
                             FullName = "Adminov Admin",
                             LockoutEnabled = false,
-                            PasswordHash = "AQAAAAIAAYagAAAAEDxdKV4C8C+KzXjOFGcNoZgIAUa17djBkCSX0TjofBxiVpZWb9FLmAgJzkDLknfRXw==",
+                            NormalizedEmail = "ADMIN@ADMIN.COM",
+                            NormalizedUserName = "ADMIN@ADMIN.COM",
+                            PasswordHash = "AQAAAAIAAYagAAAAEE/yQ2wB1xkj0J8h4Vt9Wp/8RcF4yHlBZqXmh3uWpPp2I+gX3FFtU0SzAh4FrfhXsA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "509a15ed-d7f2-4c6b-9d57-0b109378c427",
+                            SecurityStamp = "298f6a0b-4ff7-41f7-8e97-be973430f38b",
                             TwoFactorEnabled = false,
                             UserName = "admin@admin.com"
                         },
@@ -283,36 +276,71 @@ namespace Parking_Zone.Data.Migrations
                         {
                             Id = "d47b3c1e-1310-409d-b893-0a662a64c35d",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "c00e0504-27e0-483f-bf7e-5c3dbbb08e75",
+                            ConcurrencyStamp = "cddc1bf2-222f-4da4-b32b-f506a3f1f825",
                             Email = "user@user.com",
-                            EmailConfirmed = false,
+                            EmailConfirmed = true,
                             FullName = "Userov User",
                             LockoutEnabled = false,
-                            PasswordHash = "AQAAAAIAAYagAAAAELr9q4B05ZubG0qajBQxk/HPHMaHTtv0QDKIhqI1pnlsLw1BAnEPCWTcjmuQUAEHkw==",
+                            NormalizedEmail = "USER@USER.COM",
+                            NormalizedUserName = "USER@USER.COM",
+                            PasswordHash = "AQAAAAIAAYagAAAAEDLfXW/rNJjKaFUydf2/Rfo5m1OFLfftrtvSXxEW3wFbSjQgFmqBKZd/bhrvpnw8Sg==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "f2e704f6-b695-4878-8cf7-93da070f5160",
+                            SecurityStamp = "667a81b8-1ef7-4436-9c06-ec355854dc3e",
                             TwoFactorEnabled = false,
                             UserName = "user@user.com"
                         });
+                });
+
+            modelBuilder.Entity("Parking_Zone.Models.ParkingGate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DeviceId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsOnline")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsOpen")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("LastActivity")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ParkingZoneId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParkingZoneId");
+
+                    b.ToTable("ParkingGates");
                 });
 
             modelBuilder.Entity("Parking_Zone.Models.ParkingSlot", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Category")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<bool>("IsAvailableForBooking")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<int>("Number")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<Guid>("ParkingZoneId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -321,26 +349,74 @@ namespace Parking_Zone.Data.Migrations
                     b.ToTable("ParkingSlots");
                 });
 
+            modelBuilder.Entity("Parking_Zone.Models.ParkingTransaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTime>("EntryTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ExitTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid?>("OperatorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("OperatorName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ParkingZoneId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ReceiptNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("VehicleId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParkingZoneId");
+
+                    b.HasIndex("VehicleId");
+
+                    b.ToTable("ParkingTransactions");
+                });
+
             modelBuilder.Entity("Parking_Zone.Models.ParkingZone", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Address")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("DateOfEstablishment")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -351,24 +427,24 @@ namespace Parking_Zone.Data.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("AppUserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("text");
 
                     b.Property<int>("Duration")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.Property<Guid>("SlotId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("StartTime")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("VehicleNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -379,34 +455,50 @@ namespace Parking_Zone.Data.Migrations
                     b.ToTable("Reservations");
                 });
 
-            modelBuilder.Entity("Parking_Zone.Models.UserRole", b =>
+            modelBuilder.Entity("Parking_Zone.Models.Vehicle", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uuid");
 
-                    b.Property<string>("AppUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<DateTime>("EntryTime")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("RoleId")
+                    b.Property<DateTime?>("ExitTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("FeeAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<bool>("IsInside")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("boolean");
+
+                    b.Property<byte[]>("PhotoEntry")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("bytea");
+
+                    b.Property<byte[]>("PhotoExit")
+                        .IsRequired()
+                        .HasColumnType("bytea");
+
+                    b.Property<string>("PlateNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TicketBarcode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("VehicleType")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AppUserId");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("UserRoles");
-                });
-
-            modelBuilder.Entity("Parking_Zone.Models.Role", b =>
-                {
-                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityRole");
-
-                    b.HasDiscriminator().HasValue("Role");
+                    b.ToTable("Vehicles");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -460,6 +552,17 @@ namespace Parking_Zone.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Parking_Zone.Models.ParkingGate", b =>
+                {
+                    b.HasOne("Parking_Zone.Models.ParkingZone", "ParkingZone")
+                        .WithMany()
+                        .HasForeignKey("ParkingZoneId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ParkingZone");
+                });
+
             modelBuilder.Entity("Parking_Zone.Models.ParkingSlot", b =>
                 {
                     b.HasOne("Parking_Zone.Models.ParkingZone", "ParkingZone")
@@ -469,6 +572,25 @@ namespace Parking_Zone.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("ParkingZone");
+                });
+
+            modelBuilder.Entity("Parking_Zone.Models.ParkingTransaction", b =>
+                {
+                    b.HasOne("Parking_Zone.Models.ParkingZone", "ParkingZone")
+                        .WithMany()
+                        .HasForeignKey("ParkingZoneId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Parking_Zone.Models.Vehicle", "Vehicle")
+                        .WithMany("ParkingTransactions")
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ParkingZone");
+
+                    b.Navigation("Vehicle");
                 });
 
             modelBuilder.Entity("Parking_Zone.Models.Reservation", b =>
@@ -490,25 +612,6 @@ namespace Parking_Zone.Data.Migrations
                     b.Navigation("ParkingSlot");
                 });
 
-            modelBuilder.Entity("Parking_Zone.Models.UserRole", b =>
-                {
-                    b.HasOne("Parking_Zone.Models.AppUser", "AppUser")
-                        .WithMany()
-                        .HasForeignKey("AppUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Parking_Zone.Models.Role", "Role")
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AppUser");
-
-                    b.Navigation("Role");
-                });
-
             modelBuilder.Entity("Parking_Zone.Models.ParkingSlot", b =>
                 {
                     b.Navigation("Reservations");
@@ -517,6 +620,11 @@ namespace Parking_Zone.Data.Migrations
             modelBuilder.Entity("Parking_Zone.Models.ParkingZone", b =>
                 {
                     b.Navigation("ParkingSlots");
+                });
+
+            modelBuilder.Entity("Parking_Zone.Models.Vehicle", b =>
+                {
+                    b.Navigation("ParkingTransactions");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,29 +1,40 @@
 # 🚗 Parking Zone
 
-Open source asp.net mvc project for beginners and learners! This application is designed to manage parking spaces efficiently using a web-based interface. Built with ASP.NET Core 8 and MVC architecture, the application ensures a seamless and responsive user experience.
+Open source ASP.NET Core 8 MVC project for parking management system. Designed to provide an efficient and user-friendly parking reservation experience.
 
 ## 🌟 Features
 
-- **Booking System:** Reserve a parking spot ahead of time.
+- **Booking System:** Reserve parking spots ahead of time
+- **User Management:** Simple user authentication and authorization
+- **Entity Framework Core:** Robust data management with SQL Server backend
 
 ## 🛠 Technologies Used
 
-- **ASP.NET Core 8**: For building the backend services and APIs.
-- **MVC**: Model-View-Controller architecture to separate concerns and boost maintainability.
-- **JavaScript & jQuery**: Enhance the frontend interactivity via AJAX for seamless server communication.
-- **CSS & Bootstrap**: For responsive and modern web styling.
-- **Entity Framework Core**: For data access and management using SQL Server as the database backend.
-- **Unit tests XUnit**: Tests for actions and services
-- 
-## 🚀 Getting Started
+- **Framework:** ASP.NET Core 8
+- **Architecture:** Model-View-Controller (MVC)
+- **Database:** SQL Server with Entity Framework Core
+- **Frontend:** JavaScript, jQuery, Bootstrap
+- **Testing:** XUnit for unit testing
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+## 🚀 Getting Started
 
 ### Prerequisites
 
-What things you need to install the software and how to install them:
-
-```bash
 - .NET 8 SDK
 - SQL Server
 - Visual Studio 2022 or later
+
+### Installation
+
+1. Clone the repository
+2. Configure database connection string
+3. Run database migrations
+4. Build and run the application
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read our contributing guidelines before getting started.
+
+## 📄 License
+
+This project is open-source. Please check the LICENSE file for details.
