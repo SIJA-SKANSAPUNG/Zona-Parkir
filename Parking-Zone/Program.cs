@@ -15,6 +15,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseLazyLoadingProxies().UseNpgsql(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
+// Add SignalR services
+builder.Services.AddSignalR();
+
 builder.Services.AddScoped<IParkingZoneRepository, ParkingZoneRepository>();
 builder.Services.AddScoped<IParkingZoneService, ParkingZoneService>();
 builder.Services.AddScoped<IParkingSlotRepository, ParkingSlotRepository>();
@@ -25,6 +28,9 @@ builder.Services.AddScoped<IReservationService, ReservationService>();
 // Register new services
 builder.Services.AddScoped<IParkingFeeService, ParkingFeeService>();
 builder.Services.AddScoped<IVehicleService, VehicleService>();
+builder.Services.AddScoped<IParkingGateService, ParkingGateService>();
+builder.Services.AddScoped<IParkingTransactionService, ParkingTransactionService>();
+builder.Services.AddScoped<IParkingNotificationService, ParkingNotificationService>();
 
 builder.Services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddRoles<IdentityRole>()
@@ -52,6 +58,9 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
+
+// Add SignalR hub mapping
+app.MapHub<ParkingHub>("/parkingHub");
 
 app.MapControllerRoute(
     name: "Admin",
