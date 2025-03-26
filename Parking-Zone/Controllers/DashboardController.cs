@@ -2,13 +2,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using ParkIRC.Web.Data;
-using ParkIRC.Web.Models;
-using ParkIRC.Web.Services;
-using ParkIRC.Models;
+using Parking_Zone.Models;
+using Parking_Zone.Services;
+using Parking_Zone.Models;
 using System.Threading.Tasks;
 using System.Linq;
 
-namespace ParkIRC.Web.Controllers
+namespace Parking_Zone.Controllers
 {
     [Authorize]
     public class DashboardController : Controller

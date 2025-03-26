@@ -5,7 +5,7 @@ using ParkIRC.Data.Models;
 using ParkIRC.Data.Services;
 using System.Threading.Tasks;
 
-namespace ParkIRC.Web.Controllers
+namespace Parking_Zone.Controllers
 {
     [Authorize]
     public class RatesController : Controller

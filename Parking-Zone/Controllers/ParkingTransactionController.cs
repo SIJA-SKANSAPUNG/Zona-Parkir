@@ -2,14 +2,17 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ParkIRC.Web.Data;
-using ParkIRC.Web.Models;
-using ParkIRC.Web.Services;
+using Parking_Zone.Models;
+using Parking_Zone.Services;
 using System.Threading.Tasks;
 using ParkIRC.Web.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
+using Parking_Zone.Extensions;
+using System;
+using System.Collections.Generic;
 
-namespace ParkIRC.Web.Controllers
+namespace Parking_Zone.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -19,17 +22,23 @@ namespace ParkIRC.Web.Controllers
         private readonly IHubContext<ParkingHub> _parkingHubContext;
         private readonly IParkingService _parkingService;
         private readonly ILogger<ParkingTransactionController> _logger;
+        private readonly IParkingTransactionService _transactionService;
+        private readonly IParkingFeeService _feeService;
 
         public ParkingTransactionController(
             ApplicationDbContext context,
             IHubContext<ParkingHub> parkingHubContext,
             IParkingService parkingService,
-            ILogger<ParkingTransactionController> logger)
+            ILogger<ParkingTransactionController> logger,
+            IParkingTransactionService transactionService,
+            IParkingFeeService feeService)
         {
             _context = context;
             _parkingHubContext = parkingHubContext;
             _parkingService = parkingService;
             _logger = logger;
+            _transactionService = transactionService;
+            _feeService = feeService;
         }
 
         // POST: api/ParkingTransaction/entry
@@ -154,6 +163,80 @@ namespace ParkIRC.Web.Controllers
                 _logger.LogError(ex, "Error occurred during vehicle exit");
                 return StatusCode(500, new { Success = false, Message = $"Error: {ex.Message}" });
             }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Index(DateTime? startDate = null, DateTime? endDate = null)
+        {
+            startDate ??= DateTime.Now.StartOfDay();
+            endDate ??= DateTime.Now.EndOfDay();
+
+            var transactions = await _transactionService.GetTransactionsAsync(startDate.Value, endDate.Value);
+            return View(transactions);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Details(string id)
+        {
+            if (!id.IsValidGuid())
+            {
+                _logger.LogWarning("Invalid transaction ID format: {Id}", id);
+                return BadRequest("Invalid transaction ID format");
+            }
+
+            var transaction = await _transactionService.GetTransactionByIdAsync(Guid.Parse(id));
+            if (transaction == null)
+                return NotFound();
+
+            // Format license plate
+            transaction.VehicleLicensePlate = transaction.VehicleLicensePlate.FormatLicensePlate();
+
+            // Calculate duration
+            transaction.Duration = transaction.EntryTime.CalculateParkingDuration(transaction.ExitTime);
+
+            return View(transaction);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin,Supervisor")]
+        public async Task<IActionResult> UpdateFee(string id, decimal newFee)
+        {
+            if (!id.IsValidGuid())
+            {
+                _logger.LogWarning("Invalid transaction ID format: {Id}", id);
+                return BadRequest("Invalid transaction ID format");
+            }
+
+            try
+            {
+                await _transactionService.UpdateTransactionFeeAsync(Guid.Parse(id), newFee);
+                _logger.LogUserAction(User.GetUserId(), "Update Fee", $"Updated fee for transaction {id} to {newFee}");
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating transaction fee");
+                return StatusCode(500, "An error occurred while updating the fee");
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Receipt(string id)
+        {
+            if (!id.IsValidGuid())
+                return BadRequest("Invalid transaction ID format");
+
+            var transaction = await _transactionService.GetTransactionByIdAsync(Guid.Parse(id));
+            if (transaction == null)
+                return NotFound();
+
+            // Format data for receipt
+            transaction.VehicleLicensePlate = transaction.VehicleLicensePlate.FormatLicensePlate();
+            transaction.Duration = transaction.EntryTime.CalculateParkingDuration(transaction.ExitTime);
+            transaction.EntryTimeFormatted = transaction.EntryTime.ToTimeZoneString();
+            transaction.ExitTimeFormatted = transaction.ExitTime?.ToTimeZoneString();
+
+            return View(transaction);
         }
 
         public class VehicleExitRequest

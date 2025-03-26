@@ -7,26 +7,27 @@ using System.Security.Claims;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
-using ParkIRC.Models;
-using ParkIRC.Web.ViewModels;
-using ParkIRC.Services;
+using Parking_Zone.Models;
+using Parking_Zone.ViewModels;
+using Parking_Zone.Services;
 using System.Text.Encodings.Web;
 using System.Linq;
 using System.Net;
+using Parking_Zone.Extensions;
 
-namespace ParkIRC.Controllers
+namespace Parking_Zone.Controllers
 {
     public class AuthController : Controller
     {
-        private readonly UserManager<Operator> _userManager;
-        private readonly SignInManager<Operator> _signInManager;
+        private readonly UserManager<AppUser> _userManager;
+        private readonly SignInManager<AppUser> _signInManager;
         private readonly ILogger<AuthController> _logger;
         private readonly IEmailService _emailService;
         private readonly IEmailTemplateService _emailTemplateService;
 
         public AuthController(
-            UserManager<Operator> userManager,
-            SignInManager<Operator> signInManager,
+            UserManager<AppUser> userManager,
+            SignInManager<AppUser> signInManager,
             ILogger<AuthController> logger,
             IEmailService emailService,
             IEmailTemplateService emailTemplateService)
@@ -57,30 +58,34 @@ namespace ParkIRC.Controllers
         {
             ViewData["ReturnUrl"] = returnUrl;
             
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
+                return View(model);
+
+            if (!model.Email.IsValidEmail())
             {
-                var result = await _signInManager.PasswordSignInAsync(
-                    model.Email, 
-                    model.Password, 
-                    model.RememberMe, 
-                    lockoutOnFailure: true);
-                
-                if (result.Succeeded)
-                {
-                    _logger.LogInformation("User {Email} logged in successfully.", model.Email);
-                    return RedirectToLocal(returnUrl);
-                }
-                
-                if (result.IsLockedOut)
-                {
-                    _logger.LogWarning("User account locked out: {Email}", model.Email);
-                    ModelState.AddModelError(string.Empty, "Account locked out. Please try again later.");
-                    return View(model);
-                }
-                
-                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                ModelState.AddModelError(string.Empty, "Invalid email format.");
+                return View(model);
             }
-            
+
+            var result = await _signInManager.PasswordSignInAsync(
+                model.Email,
+                model.Password,
+                model.RememberMe,
+                lockoutOnFailure: true);
+
+            if (result.Succeeded)
+            {
+                _logger.LogUserAction(User.GetUserId(), "Login", "User logged in successfully");
+                return RedirectToLocal(returnUrl);
+            }
+
+            if (result.IsLockedOut)
+            {
+                _logger.LogSecurityEvent(model.Email, "Account Lockout", "Multiple failed login attempts");
+                return View("Lockout");
+            }
+
+            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             return View(model);
         }
 
@@ -135,8 +140,8 @@ namespace ParkIRC.Controllers
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
-            _logger.LogInformation("User logged out");
-            return RedirectToAction("Login", "Auth");
+            _logger.LogUserAction(User.GetUserId(), "Logout", "User logged out");
+            return RedirectToAction(nameof(HomeController.Index), "Home");
         }
 
         [HttpGet]

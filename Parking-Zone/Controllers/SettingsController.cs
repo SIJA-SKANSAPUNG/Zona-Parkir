@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using System.Linq;
 using System;
 using ParkIRC.Web.Data;
-using ParkIRC.Web.Models;
+using Parking_Zone.Models;
 
-namespace ParkIRC.Web.Controllers
+namespace Parking_Zone.Controllers
 {
     public class SettingsController : Controller
     {

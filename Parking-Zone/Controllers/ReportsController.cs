@@ -2,13 +2,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ParkIRC.Web.Data;
-using ParkIRC.Web.Models;
-using ParkIRC.Web.Services;
+using Parking_Zone.Models;
+using Parking_Zone.Services;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using ParkIRC.Models;
+using Parking_Zone.Models;
 
-namespace ParkIRC.Web.Controllers
+namespace Parking_Zone.Controllers
 {
     [Authorize]
     public class ReportsController : Controller

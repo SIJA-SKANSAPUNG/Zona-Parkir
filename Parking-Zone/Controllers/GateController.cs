@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ParkIRC.Web.Data;
-using ParkIRC.Web.Models;
-using ParkIRC.Web.Services;
+using Parking_Zone.Models;
+using Parking_Zone.Services;
 using System;
 using System.IO;
 using QRCoder;
@@ -13,8 +13,9 @@ using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using System.Linq;
 using System.Threading.Tasks;
+using Parking_Zone.Extensions;
 
-namespace ParkIRC.Web.Controllers
+namespace Parking_Zone.Controllers
 {
     [Authorize]
     public class GateController : Controller
@@ -23,17 +24,20 @@ namespace ParkIRC.Web.Controllers
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly ILogger<GateController> _logger;
         private readonly IPrinterService _printerService;
+        private readonly IParkingGateService _gateService;
 
         public GateController(
             ApplicationDbContext context,
             IWebHostEnvironment webHostEnvironment,
             ILogger<GateController> logger,
-            IPrinterService printerService)
+            IPrinterService printerService,
+            IParkingGateService gateService)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
             _logger = logger;
             _printerService = printerService;
+            _gateService = gateService;
         }
 
         // GET: Gate/Entry
@@ -404,6 +408,91 @@ namespace ParkIRC.Web.Controllers
                 _logger.LogError(ex, "Error opening gate");
                 throw;
             }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var gates = await _gateService.GetAllGatesAsync();
+            return View(gates);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Details(string id)
+        {
+            var gate = await _gateService.GetGateByIdAsync(id);
+            if (gate == null)
+                return NotFound();
+
+            return View(gate);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> OpenGate(string id)
+        {
+            var gate = await _gateService.GetGateByIdAsync(id);
+            if (gate == null)
+                return NotFound();
+
+            try
+            {
+                await _gateService.OpenGateAsync(id);
+                _logger.LogGateOperation(id, "Open", "Success");
+                _logger.LogUserAction(User.GetUserId(), "Open Gate", $"Gate {id} opened successfully");
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogSystemError(ex, $"Error opening gate {id}");
+                return StatusCode(500, "An error occurred while opening the gate");
+            }
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CloseGate(string id)
+        {
+            var gate = await _gateService.GetGateByIdAsync(id);
+            if (gate == null)
+                return NotFound();
+
+            try
+            {
+                await _gateService.CloseGateAsync(id);
+                _logger.LogGateOperation(id, "Close", "Success");
+                _logger.LogUserAction(User.GetUserId(), "Close Gate", $"Gate {id} closed successfully");
+                return RedirectToAction(nameof(Details), new { id });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogSystemError(ex, $"Error closing gate {id}");
+                return StatusCode(500, "An error occurred while closing the gate");
+            }
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Status(string id)
+        {
+            if (!HttpContext.IsAjaxRequest())
+                return BadRequest();
+
+            var gate = await _gateService.GetGateByIdAsync(id);
+            if (gate == null)
+                return NotFound();
+
+            var status = new
+            {
+                gate.Id,
+                gate.Name,
+                gate.Status,
+                gate.LastUpdated,
+                UserIp = HttpContext.GetIpAddress(),
+                RequestTime = DateTime.Now.ToTimeZoneString()
+            };
+
+            return Json(status);
         }
     }
 }

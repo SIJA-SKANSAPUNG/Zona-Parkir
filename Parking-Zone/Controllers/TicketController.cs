@@ -2,14 +2,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ParkIRC.Data;
-using ParkIRC.Models;
+using Parking_Zone.Models;
 using ParkIRC.Web.Data;
-using ParkIRC.Web.Models;
-using ParkIRC.Web.Services;
+using Parking_Zone.Models;
+using Parking_Zone.Services;
 using System;
 using System.Threading.Tasks;
 
-namespace ParkIRC.Web.Controllers
+namespace Parking_Zone.Controllers
 {
     [Authorize]
     public class TicketController : Controller

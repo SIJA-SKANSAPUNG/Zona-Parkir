@@ -7,7 +7,7 @@ using ParkIRC.Data.Services;
 using ParkIRC.Data.Hub;
 using System.Threading.Tasks;
 
-namespace ParkIRC.Web.Controllers
+namespace Parking_Zone.Controllers
 {
     [Authorize(Roles = "Admin,Operator")]
     public class EntryGateController : Controller
