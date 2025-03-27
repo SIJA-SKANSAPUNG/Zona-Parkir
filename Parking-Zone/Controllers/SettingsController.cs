@@ -3,8 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using System.Linq;
 using System;
-using ParkIRC.Web.Data;
+using Parking_Zone.Data;
 using Parking_Zone.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 
 namespace Parking_Zone.Controllers
 {

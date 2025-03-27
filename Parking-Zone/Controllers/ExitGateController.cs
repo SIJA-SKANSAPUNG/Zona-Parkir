@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ParkIRC.Web.Data;
-using ParkIRC.Data.Models;
-using ParkIRC.Data.Services;
-using ParkIRC.Data.Hub;
+using Parking_Zone.Data;
+using Parking_Zone.Models;
+using Parking_Zone.Services;
+using Parking_Zone.Hubs;
 using Microsoft.AspNetCore.SignalR;
 using System;
 using System.Threading.Tasks;
@@ -17,17 +17,17 @@ namespace Parking_Zone.Controllers
     public class ExitGateController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly IHubContext<ParkingHub> _hubContext;
-        private readonly PrintService _printService;
+        private readonly IHubContext<ParkingHub> _parkingHub;
+        private readonly IPrinterService _printerService;
 
         public ExitGateController(
             ApplicationDbContext context,
-            IHubContext<ParkingHub> hubContext,
-            PrintService printService)
+            IHubContext<ParkingHub> parkingHub,
+            IPrinterService printerService)
         {
             _context = context;
-            _hubContext = hubContext;
-            _printService = printService;
+            _parkingHub = parkingHub;
+            _printerService = printerService;
         }
 
         // GET: /ExitGate
@@ -134,17 +134,17 @@ namespace Parking_Zone.Controllers
                 await _context.SaveChangesAsync();
 
                 // Kirim notifikasi melalui SignalR
-                await _hubContext.Clients.All.SendAsync("ReceiveVehicleExit", transaction);
+                await _parkingHub.Clients.All.SendAsync("ReceiveVehicleExit", transaction);
                 
                 if (transaction.ParkingSpace != null)
                 {
-                    await _hubContext.Clients.All.SendAsync("ReceiveSpaceUpdate", transaction.ParkingSpace);
+                    await _parkingHub.Clients.All.SendAsync("ReceiveSpaceUpdate", transaction.ParkingSpace);
                 }
                 
                 // Print receipt jika diminta
                 if (request.PrintReceipt)
                 {
-                    await _hubContext.Clients.All.SendAsync("PrintReceipt", new
+                    await _parkingHub.Clients.All.SendAsync("PrintReceipt", new
                     {
                         plateNumber = request.PlateNumber,
                         vehicleType = transaction.Vehicle.Type,
@@ -158,7 +158,7 @@ namespace Parking_Zone.Controllers
                 }
                 
                 // Buka palang keluar
-                await _hubContext.Clients.All.SendAsync("OpenExitGate", request.GateId);
+                await _parkingHub.Clients.All.SendAsync("OpenExitGate", request.GateId);
 
                 TempData["SuccessMessage"] = "Kendaraan berhasil keluar area parkir";
                 return RedirectToAction(nameof(Operator), new { gateId = request.GateId });
@@ -177,10 +177,10 @@ namespace Parking_Zone.Controllers
             try
             {
                 // Kirim notifikasi ke semua klien bahwa tombol keluar ditekan
-                await _hubContext.Clients.All.SendAsync("ExitButtonPressed", gateId);
+                await _parkingHub.Clients.All.SendAsync("ExitButtonPressed", gateId);
                 
                 // Kirim perintah ke kamera untuk mengambil gambar
-                await _hubContext.Clients.All.SendAsync("TriggerCamera", gateId);
+                await _parkingHub.Clients.All.SendAsync("TriggerCamera", gateId);
                 
                 return Ok(new { success = true, message = "Push button processed" });
             }
@@ -278,7 +278,7 @@ namespace Parking_Zone.Controllers
                 }
 
                 // Kirim perintah untuk mencetak receipt
-                await _hubContext.Clients.All.SendAsync("PrintReceipt", new
+                await _parkingHub.Clients.All.SendAsync("PrintReceipt", new
                 {
                     plateNumber = exit.Vehicle?.PlateNumber,
                     vehicleType = exit.Vehicle?.Type,

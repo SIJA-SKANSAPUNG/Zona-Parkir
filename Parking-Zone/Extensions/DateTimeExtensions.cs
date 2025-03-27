@@ -76,25 +76,34 @@ namespace Parking_Zone.Extensions
             return $"{(int)timeSpan.TotalSeconds}s";
         }
 
-        public static decimal CalculateParkingDuration(this DateTime entryTime, DateTime? exitTime = null)
+        public static DateTime? Date(this DateTime? dateTime)
         {
-            var exit = exitTime ?? DateTime.Now;
-            var duration = exit - entryTime;
-            return (decimal)Math.Ceiling(duration.TotalHours);
+            return dateTime?.Date;
         }
 
-        public static string ToTimeZoneString(this DateTime dateTime, string timeZoneId = "Asia/Jakarta")
+        public static TimeSpan CalculateParkingDuration(this DateTime entryTime, DateTime? exitTime = null)
         {
-            try
+            exitTime ??= DateTime.Now;
+            return exitTime.Value - entryTime;
+        }
+
+        public static string ToTimeZoneString(this DateTime dateTime, string timeZoneId = "SE Asia Standard Time")
+        {
+            try 
             {
-                var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-                var convertedTime = TimeZoneInfo.ConvertTime(dateTime, timeZone);
-                return convertedTime.ToString("yyyy-MM-dd HH:mm:ss");
+                TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+                DateTime convertedTime = TimeZoneInfo.ConvertTime(dateTime, timeZone);
+                return convertedTime.ToString("yyyy-MM-dd HH:mm:ss zzz");
             }
             catch
             {
                 return dateTime.ToString("yyyy-MM-dd HH:mm:ss");
             }
+        }
+
+        public static DateTime? ToLocalTime(this DateTime? dateTime)
+        {
+            return dateTime.HasValue ? dateTime.Value.ToLocalTime() : null;
         }
     }
 } 

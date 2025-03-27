@@ -1,18 +1,16 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ParkIRC.Web.Data;
+using Parking_Zone.Data;
 using Parking_Zone.Models;
 using Parking_Zone.Services;
+using Parking_Zone.ViewModels;
 using System;
-using System.IO;
-using QRCoder;
-using System.Drawing;
-using System.Drawing.Imaging;
-using Microsoft.Extensions.Logging;
-using System.Security.Claims;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using QRCoder;
+using System.Drawing;
 using Parking_Zone.Extensions;
 
 namespace Parking_Zone.Controllers
@@ -229,32 +227,69 @@ namespace Parking_Zone.Controllers
                 _context.Journals.Add(journal);
                 await _context.SaveChangesAsync();
 
-                // Create parking transaction
+                // Find transaction
                 var transaction = await _context.ParkingTransactions
-                    .FirstOrDefaultAsync(t => t.VehicleId == vehicle.Id && t.Status == "Active");
+                    .Include(t => t.Vehicle)
+                    .FirstOrDefaultAsync(t => t.TransactionNumber == ticket.TicketNumber);
+
                 if (transaction == null)
                 {
-                    return BadRequest(new { error = "Parking transaction not found" });
+                    return NotFound(new { error = "Transaksi tidak ditemukan" });
                 }
+
+                // Calculate parking duration and fee
+                var duration = DateTime.Now - transaction.EntryTime;
+                var parkingFee = await CalculateParkingFee(duration, vehicle.VehicleType);
+
+                // Update transaction
+                transaction.ExitTime = DateTime.Now;
+                transaction.Duration = duration;
+                transaction.ParkingFee = parkingFee;
+                transaction.Status = "Completed";
+                transaction.ExitOperatorId = User.GetOperatorId();
+
+                // Update ticket
+                ticket.IsUsed = true;
+
+                // Update vehicle
+                vehicle.IsParked = false;
+                vehicle.ExitTime = DateTime.Now;
+
+                // Update parking space
+                var parkingSpace = await _context.ParkingSpaces
+                    .FirstOrDefaultAsync(ps => ps.Id == transaction.ParkingSpaceId);
+                
+                if (parkingSpace != null)
+                {
+                    parkingSpace.IsOccupied = false;
+                    parkingSpace.LastVacatedTime = DateTime.Now;
+                }
+
+                // Save changes
+                await _context.SaveChangesAsync();
 
                 // Print receipt
-                bool printSuccess = await _printerService.PrintReceipt(transaction);
-                if (!printSuccess)
+                bool receiptPrinted = await _printerService.PrintExitReceipt(new ExitReceiptViewModel
                 {
-                    _logger.LogWarning("Failed to print receipt for transaction {TransactionNumber}", transaction.TransactionNumber);
-                }
+                    LicensePlate = transaction.VehicleLicensePlate,
+                    VehicleType = transaction.VehicleType,
+                    EntryTime = transaction.EntryTime,
+                    ExitTime = transaction.ExitTime ?? DateTime.Now,
+                    Duration = duration,
+                    ParkingFee = parkingFee,
+                    TicketNumber = ticket.TicketNumber
+                });
 
-                // Open the gate
-                await OpenGateAsync();
+                // Open gate
+                await _gateService.OpenGateAsync(Guid.Parse(Request.Form["gateId"]));
 
-                return Ok(new
+                return Json(new
                 {
-                    message = "Kendaraan berhasil keluar" + (!printSuccess ? " (Gagal mencetak struk)" : ""),
-                    vehicleNumber = vehicle.VehicleNumber,
-                    entryTime = vehicle.EntryTime,
-                    exitTime = vehicle.ExitTime,
-                    duration = (vehicle.ExitTime - vehicle.EntryTime)?.ToString(@"hh\:mm"),
-                    printStatus = printSuccess
+                    success = true,
+                    message = "Kendaraan berhasil keluar" + (!receiptPrinted ? " (Gagal mencetak kwitansi)" : ""),
+                    licensePlate = transaction.VehicleLicensePlate,
+                    parkingFee = parkingFee,
+                    receiptPrinted = receiptPrinted
                 });
             }
             catch (Exception ex)
@@ -410,15 +445,74 @@ namespace Parking_Zone.Controllers
             }
         }
 
+        private async Task<decimal> CalculateParkingFee(TimeSpan duration, string vehicleType)
+        {
+            // Implement parking fee calculation logic here
+            // For demonstration purposes, a simple calculation is used
+            var hours = duration.TotalHours;
+            var feePerHour = vehicleType == "Car" ? 5.00m : 10.00m;
+            return (decimal)hours * feePerHour;
+        }
+
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var gates = await _gateService.GetAllGatesAsync();
+            var gates = new GatesViewModel
+            {
+                EntryGates = await _context.EntryGates
+                    .Select(g => new GateOperationalViewModel
+                    {
+                        GateId = g.Id.ToString(),
+                        OperatorName = g.Name,
+                        Status = g.Status,
+                        IsCameraActive = g.IsActive,
+                        LastSync = g.LastActivity ?? DateTime.Now,
+                        RecentEntries = g.Transactions
+                            .Where(t => t.EntryTime.Date == DateTime.Today)
+                            .Select(t => new VehicleEntry
+                            {
+                                LicensePlate = t.LicensePlate,
+                                VehicleType = t.VehicleType,
+                                EntryTime = t.EntryTime,
+                                TicketNumber = t.TicketNumber,
+                                GateId = g.Id.ToString(),
+                                OperatorId = t.OperatorId.ToString()
+                            })
+                            .ToList()
+                    })
+                    .ToListAsync(),
+
+                ExitGates = await _context.ExitGates
+                    .Select(g => new GateExitOperationalViewModel
+                    {
+                        GateId = g.Id.ToString(),
+                        OperatorName = g.Name,
+                        Status = g.Status,
+                        IsCameraActive = g.IsActive,
+                        LastSync = g.LastActivity ?? DateTime.Now,
+                        RecentExits = g.Transactions
+                            .Where(t => t.ExitTime.HasValue && t.ExitTime.Value.Date == DateTime.Today)
+                            .Select(t => new VehicleExit
+                            {
+                                LicensePlate = t.LicensePlate,
+                                VehicleType = t.VehicleType,
+                                EntryTime = t.EntryTime,
+                                ExitTime = t.ExitTime.Value,
+                                Fee = t.ParkingFee ?? 0,
+                                TicketNumber = t.TicketNumber,
+                                GateId = g.Id.ToString(),
+                                OperatorId = t.OperatorId.ToString()
+                            })
+                            .ToList()
+                    })
+                    .ToListAsync()
+            };
+
             return View(gates);
         }
 
         [HttpGet]
-        public async Task<IActionResult> Details(string id)
+        public async Task<IActionResult> Details(Guid id)
         {
             var gate = await _gateService.GetGateByIdAsync(id);
             if (gate == null)
@@ -429,7 +523,7 @@ namespace Parking_Zone.Controllers
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> OpenGate(string id)
+        public async Task<IActionResult> OpenGate(Guid id)
         {
             var gate = await _gateService.GetGateByIdAsync(id);
             if (gate == null)
@@ -438,20 +532,19 @@ namespace Parking_Zone.Controllers
             try
             {
                 await _gateService.OpenGateAsync(id);
-                _logger.LogGateOperation(id, "Open", "Success");
-                _logger.LogUserAction(User.GetUserId(), "Open Gate", $"Gate {id} opened successfully");
+                _logger.LogInformation($"Gate {id} opened successfully");
                 return RedirectToAction(nameof(Details), new { id });
             }
             catch (Exception ex)
             {
-                _logger.LogSystemError(ex, $"Error opening gate {id}");
+                _logger.LogError(ex, $"Error opening gate {id}");
                 return StatusCode(500, "An error occurred while opening the gate");
             }
         }
 
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> CloseGate(string id)
+        public async Task<IActionResult> CloseGate(Guid id)
         {
             var gate = await _gateService.GetGateByIdAsync(id);
             if (gate == null)
@@ -460,13 +553,12 @@ namespace Parking_Zone.Controllers
             try
             {
                 await _gateService.CloseGateAsync(id);
-                _logger.LogGateOperation(id, "Close", "Success");
-                _logger.LogUserAction(User.GetUserId(), "Close Gate", $"Gate {id} closed successfully");
+                _logger.LogInformation($"Gate {id} closed successfully");
                 return RedirectToAction(nameof(Details), new { id });
             }
             catch (Exception ex)
             {
-                _logger.LogSystemError(ex, $"Error closing gate {id}");
+                _logger.LogError(ex, $"Error closing gate {id}");
                 return StatusCode(500, "An error occurred while closing the gate");
             }
         }
@@ -478,7 +570,7 @@ namespace Parking_Zone.Controllers
             if (!HttpContext.IsAjaxRequest())
                 return BadRequest();
 
-            var gate = await _gateService.GetGateByIdAsync(id);
+            var gate = await _gateService.GetGateByIdAsync(Guid.Parse(id));
             if (gate == null)
                 return NotFound();
 
@@ -493,6 +585,63 @@ namespace Parking_Zone.Controllers
             };
 
             return Json(status);
+        }
+
+        // LOG: Gate Operation
+        [HttpPost]
+        public async Task<IActionResult> LogOperation([FromBody] GateOperationViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var operation = new GateOperation
+            {
+                OperationType = model.OperationType,
+                Status = model.Status,
+                Details = model.Details,
+                Timestamp = DateTime.Now,
+                OperatorId = model.OperatorId,
+                OperatorName = model.OperatorName
+            };
+
+            if (model.GateType == "Entry" && model.GateId.HasValue)
+            {
+                operation.EntryGateId = model.GateId;
+            }
+            else if (model.GateType == "Exit" && model.GateId.HasValue)
+            {
+                operation.ExitGateId = model.GateId;
+            }
+            
+            if (!string.IsNullOrEmpty(model.TransactionId))
+            {
+                if (Guid.TryParse(model.TransactionId, out Guid transactionId))
+                {
+                    operation.ParkingTransactionId = transactionId;
+                }
+            }
+
+            _context.GateOperations.Add(operation);
+            
+            // Log to Journal
+            var journal = new Journal
+            {
+                EventType = "GateOperation",
+                Description = $"{model.GateType} Gate Operation: {model.OperationType}",
+                EntityId = model.GateId,
+                EntityType = $"{model.GateType}Gate",
+                Details = model.Details,
+                UserName = model.OperatorName,
+                Timestamp = DateTime.Now
+            };
+            
+            _context.Journal.Add(journal);
+            
+            await _context.SaveChangesAsync();
+            
+            return Ok(operation.Id);
         }
     }
 }

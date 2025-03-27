@@ -1,40 +1,49 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Parking_Zone.Models
 {
     public class Shift
     {
-        public int Id { get; set; }
-
-        [Required]
-        public DateTime StartTime { get; set; }
-
-        [Required]
-        public DateTime EndTime { get; set; }
-
-        public DateTime? CheckIn { get; set; }
-        public DateTime? CheckOut { get; set; }
-
-        [StringLength(500)]
+        public Guid Id { get; set; }
+        
+        public DateTime? StartTime { get; set; }
+        
+        public DateTime? EndTime { get; set; }
+        
+        public bool IsActive { get; set; }
+        
+        public Guid? OperatorId { get; set; }
+        public string OperatorName { get; set; }
+        
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal InitialCashAmount { get; set; }
+        
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal FinalCashAmount { get; set; }
+        
+        public decimal? TotalRevenue { get; set; }
+        
+        public int? TotalTransactions { get; set; }
+        
         public string Notes { get; set; }
-
-        public ShiftStatus Status { get; set; } = ShiftStatus.Scheduled;
-
-        // Navigation properties
+        
+        public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
+        
+        public DateTime? UpdatedAt { get; set; }
+        
+        public DateTime? LastUpdated { get; set; } = DateTime.UtcNow;
+        
+        // Navigation property
         public virtual Operator Operator { get; set; }
-        public int OperatorId { get; set; }
 
-        public virtual ParkingGate Gate { get; set; }
-        public int GateId { get; set; }
-    }
+        public bool IsTimeInShift(DateTime checkTime)
+        {
+            return StartTime.HasValue && EndTime.HasValue &&
+                   checkTime >= StartTime.Value && checkTime <= EndTime.Value;
+        }
 
-    public enum ShiftStatus
-    {
-        Scheduled,
-        InProgress,
-        Completed,
-        Missed,
-        Cancelled
+        public DateTime? Date => StartTime?.Date;
     }
-} 
+}

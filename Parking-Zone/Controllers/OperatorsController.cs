@@ -46,7 +46,7 @@ namespace Parking_Zone.Controllers
             return View(operatorModel);
         }
 
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(Guid? id)
         {
             if (id == null)
             {
@@ -65,7 +65,7 @@ namespace Parking_Zone.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Operator operatorModel)
+        public async Task<IActionResult> Edit(Guid id, Operator operatorModel)
         {
             if (id != operatorModel.Id)
             {
@@ -97,7 +97,7 @@ namespace Parking_Zone.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> Delete(Guid id)
         {
             var operatorModel = await _context.Operators.FindAsync(id);
             if (operatorModel != null)
@@ -109,7 +109,7 @@ namespace Parking_Zone.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private async Task<bool> OperatorExists(int id)
+        private async Task<bool> OperatorExists(Guid id)
         {
             return await _context.Operators.AnyAsync(e => e.Id == id);
         }

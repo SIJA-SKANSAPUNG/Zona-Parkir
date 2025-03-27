@@ -1,4 +1,7 @@
 using Parking_Zone.Models;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Parking_Zone.Services
 {
@@ -8,14 +11,5 @@ namespace Parking_Zone.Services
         Task<decimal> GetBaseFee(string vehicleType, Guid parkingZoneId);
         Task UpdateFeeConfiguration(decimal baseFee, string vehicleType, Guid parkingZoneId);
         Task<IEnumerable<FeeConfiguration>> GetAllFeeConfigurations();
-    }
-
-    public class FeeConfiguration
-    {
-        public Guid Id { get; set; }
-        public string VehicleType { get; set; }
-        public decimal BaseFee { get; set; }
-        public Guid ParkingZoneId { get; set; }
-        public virtual ParkingZone ParkingZone { get; set; }
     }
 } 

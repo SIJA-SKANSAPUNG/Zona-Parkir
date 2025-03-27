@@ -1,140 +1,121 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Parking_Zone.Data;
-using Parking_Zone.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Parking_Zone.Data;
+using Parking_Zone.Models;
 
 namespace Parking_Zone.Services
 {
     public class ParkingGateService : IParkingGateService
     {
         private readonly ApplicationDbContext _context;
-        private readonly ILogger<ParkingGateService> _logger;
-        private readonly IVehicleService _vehicleService;
 
-        public ParkingGateService(ApplicationDbContext context, ILogger<ParkingGateService> logger, IVehicleService vehicleService)
+        public ParkingGateService(ApplicationDbContext context)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _vehicleService = vehicleService;
+            _context = context;
         }
 
-        public async Task<ParkingGate> GetGateByIdAsync(Guid id)
-        {
-            try
-            {
-                return await _context.ParkingGates
-                    .Include(g => g.ParkingZone)
-                    .FirstOrDefaultAsync(g => g.Id == id);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving gate {GateId}", id);
-                throw;
-            }
-        }
-
-        public async Task<IEnumerable<ParkingGate>> GetAllGatesAsync()
-        {
-            try
-            {
-                return await _context.ParkingGates
-                    .Include(g => g.ParkingZone)
-                    .ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving all gates");
-                throw;
-            }
-        }
-
-        public async Task<bool> OpenGateAsync(int gateId)
-        {
-            var gate = await _context.ParkingGates.FindAsync(gateId);
-            if (gate == null) return false;
-
-            gate.IsOpen = true;
-            gate.LastOperationTime = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
-        public async Task<bool> CloseGateAsync(int gateId)
-        {
-            var gate = await _context.ParkingGates.FindAsync(gateId);
-            if (gate == null) return false;
-
-            gate.IsOpen = false;
-            gate.LastOperationTime = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
-            return true;
-        }
-
-        public async Task<bool> IsGateOpenAsync(int gateId)
-        {
-            var gate = await _context.ParkingGates.FindAsync(gateId);
-            return gate?.IsOpen ?? false;
-        }
-
-        public async Task<ParkingGate> GetGateStatusAsync(int gateId)
+        public async Task<IEnumerable<ParkingGate>> GetAllEntryGatesAsync()
         {
             return await _context.ParkingGates
-                .Include(g => g.ParkingZone)
-                .FirstOrDefaultAsync(g => g.Id == gateId);
+                .Where(g => g.GateType == "Entry")
+                .Include(g => g.Operations)
+                .ToListAsync();
         }
 
-        public async Task<bool> ValidateEntryAsync(string vehiclePlateNumber, int gateId)
+        public async Task<IEnumerable<ParkingGate>> GetAllExitGatesAsync()
         {
-            var gate = await _context.ParkingGates
-                .Include(g => g.ParkingZone)
-                .FirstOrDefaultAsync(g => g.Id == gateId);
-
-            if (gate == null || !gate.IsOperational) return false;
-
-            var vehicle = await _vehicleService.GetVehicleByPlateNumberAsync(vehiclePlateNumber);
-            if (vehicle == null) return false;
-
-            // Check if vehicle has active reservation or subscription
-            var hasActiveReservation = await _context.Reservations
-                .AnyAsync(r => r.VehiclePlateNumber == vehiclePlateNumber && 
-                              r.Status == ReservationStatus.Confirmed &&
-                              r.StartTime <= DateTime.UtcNow &&
-                              r.EndTime >= DateTime.UtcNow);
-
-            return hasActiveReservation;
+            return await _context.ParkingGates
+                .Where(g => g.GateType == "Exit")
+                .Include(g => g.Operations)
+                .ToListAsync();
         }
 
-        public async Task<bool> ValidateExitAsync(string vehiclePlateNumber, int gateId)
+        public async Task<ParkingGate> GetEntryGateByIdAsync(Guid id)
         {
-            var gate = await _context.ParkingGates
-                .Include(g => g.ParkingZone)
-                .FirstOrDefaultAsync(g => g.Id == gateId);
-
-            if (gate == null || !gate.IsOperational) return false;
-
-            var transaction = await _context.ParkingTransactions
-                .Include(t => t.Vehicle)
-                .FirstOrDefaultAsync(t => t.Vehicle.PlateNumber == vehiclePlateNumber && 
-                                        t.ExitTime == null);
-
-            return transaction != null;
+            return await _context.ParkingGates
+                .Where(g => g.GateType == "Entry")
+                .Include(g => g.Operations)
+                .FirstOrDefaultAsync(g => g.Id == id);
         }
 
-        public async Task LogGateOperationAsync(int gateId, string operation, string userId)
+        public async Task<ParkingGate> GetExitGateByIdAsync(Guid id)
         {
-            var log = new ParkingTransaction
+            return await _context.ParkingGates
+                .Where(g => g.GateType == "Exit")
+                .Include(g => g.Operations)
+                .FirstOrDefaultAsync(g => g.Id == id);
+        }
+
+        public async Task<bool> IsGateOperationalAsync(Guid gateId)
+        {
+            var gate = await _context.ParkingGates.FindAsync(gateId);
+            return gate?.IsOperational ?? false;
+        }
+
+        public async Task<GateStatus> GetGateStatusAsync(Guid gateId)
+        {
+            var gate = await _context.ParkingGates.FindAsync(gateId);
+
+            if (gate == null)
             {
-                GateId = gateId,
-                OperatorId = userId,
-                OperationType = operation,
-                Timestamp = DateTime.UtcNow
-            };
+                return new GateStatus
+                {
+                    IsOperational = false,
+                    StatusDescription = "Gate not found",
+                    LastChecked = DateTime.UtcNow
+                };
+            }
 
-            _context.ParkingTransactions.Add(log);
+            return new GateStatus
+            {
+                IsOperational = gate.IsOperational,
+                StatusDescription = gate.Status,
+                LastChecked = gate.LastActivity ?? DateTime.UtcNow
+            };
+        }
+
+        public async Task<ParkingGate> GetGateByIdAsync(Guid gateId)
+        {
+            var gate = await _context.ParkingGates
+                .Include(g => g.Camera)
+                .Include(g => g.Printer)
+                .Include(g => g.Scanner)
+                .FirstOrDefaultAsync(g => g.Id == gateId);
+
+            if (gate == null)
+                throw new KeyNotFoundException($"Gate with ID {gateId} not found");
+
+            return gate;
+        }
+
+        public async Task<ParkingGate> OpenGateAsync(Guid gateId)
+        {
+            var gate = await GetGateByIdAsync(gateId);
+            
+            if (!gate.IsOperational)
+            {
+                throw new InvalidOperationException($"Gate {gateId} is not operational");
+            }
+
+            gate.IsOpen = true;
+            gate.LastActivity = DateTime.UtcNow;
             await _context.SaveChangesAsync();
+
+            return gate;
+        }
+
+        public async Task<ParkingGate> CloseGateAsync(Guid gateId)
+        {
+            var gate = await GetGateByIdAsync(gateId);
+
+            gate.IsOpen = false;
+            gate.LastActivity = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            return gate;
         }
     }
 }

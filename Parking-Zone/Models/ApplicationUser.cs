@@ -1,3 +1,5 @@
+#nullable enable
+
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -57,4 +59,6 @@ namespace Parking_Zone.Models
             IsOnDuty = false;
         }
     }
-} 
+}
+
+#nullable restore 

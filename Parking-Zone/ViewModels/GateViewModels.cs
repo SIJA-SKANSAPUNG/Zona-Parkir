@@ -5,7 +5,7 @@ using Parking_Zone.Models;
 
 namespace Parking_Zone.ViewModels
 {
-    public class EntryGateViewModel
+    public class GateOperationalViewModel
     {
         [Display(Name = "Gate ID")]
         public string GateId { get; set; } = "GATE-01";
@@ -31,7 +31,7 @@ namespace Parking_Zone.ViewModels
         public List<VehicleEntry> RecentEntries { get; set; } = new();
     }
 
-    public class ExitGateViewModel
+    public class GateExitOperationViewModel
     {
         [Display(Name = "Gate ID")]
         public string GateId { get; set; } = "GATE-02";
@@ -78,4 +78,4 @@ namespace Parking_Zone.ViewModels
         public string GateId { get; set; } = string.Empty;
         public string OperatorId { get; set; } = string.Empty;
     }
-} 
+}

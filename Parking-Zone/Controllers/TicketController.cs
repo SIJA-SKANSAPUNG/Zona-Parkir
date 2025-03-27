@@ -1,13 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ParkIRC.Data;
+using Parking_Zone.Data;
 using Parking_Zone.Models;
-using ParkIRC.Web.Data;
-using Parking_Zone.Models;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Parking_Zone.Services;
 using System;
-using System.Threading.Tasks;
 
 namespace Parking_Zone.Controllers
 {

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ParkIRC.Web.Data;
+using Parking_Zone.Data;
 using Parking_Zone.Models;
 using System;
 using System.Collections.Generic;

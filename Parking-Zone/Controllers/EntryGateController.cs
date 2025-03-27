@@ -1,16 +1,25 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ParkIRC.Web.Data;
-using ParkIRC.Data.Models;
-using ParkIRC.Data.Services;
-using ParkIRC.Data.Hub;
+using Parking_Zone.Data;
+using Parking_Zone.Models;
+using Parking_Zone.Services;
+using Parking_Zone.ViewModels;
+using Parking_Zone.Hubs;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR;
+using System;
+using System.Linq;
+using Microsoft.Extensions.Logging;
+using Parking_Zone.Extensions;
+
+using ModelVehicleEntry = Parking_Zone.Models.VehicleEntry;
+using ViewModelVehicleEntry = Parking_Zone.ViewModels.VehicleEntry;
 
 namespace Parking_Zone.Controllers
 {
     [Authorize(Roles = "Admin,Operator")]
-    public class EntryGateController : Controller
+    public class EntryGateController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<EntryGateController> _logger;
@@ -43,41 +52,58 @@ namespace Parking_Zone.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var model = new EntryGateMonitoringViewModel();
-            
-            // Get entry gates statuses
-            model.EntryGates = await _context.EntryGates
-                .Where(g => g.IsActive)
-                .Select(g => new EntryGateStatusViewModel
-                {
-                    Id = g.Id,
-                    Name = g.Name,
-                    IsOnline = g.IsOnline,
-                    IsOpen = g.IsOpen,
-                    LastActivity = g.LastActivity,
-                    VehiclesProcessed = _context.ParkingTransactions
-                        .Count(t => t.EntryPoint == g.Id && t.EntryTime.Date == DateTime.Today)
-                })
-                .ToListAsync();
-            
-            // Get recent transactions
-            model.RecentTransactions = await _context.ParkingTransactions
-                .Include(t => t.Vehicle)
-                .Where(t => t.EntryTime > DateTime.Now.AddHours(-1))
-                .OrderByDescending(t => t.EntryTime)
-                .Take(10)
-                .Select(t => new RecentTransactionViewModel
-                {
-                    Id = t.Id.ToString(),
-                    TicketNumber = t.TicketNumber,
-                    VehicleNumber = t.Vehicle.VehicleNumber,
-                    VehicleType = t.Vehicle.VehicleType,
-                    EntryTime = t.EntryTime,
-                    EntryPoint = t.EntryPoint
-                })
-                .ToListAsync();
-            
-            return View(model);
+            var viewModel = new GatesViewModel
+            {
+                EntryGates = await _context.EntryGates
+                    .Select(g => new GateOperationalViewModel
+                    {
+                        GateId = g.Id.ToString(),
+                        OperatorName = g.Name,
+                        Status = g.Status,
+                        IsCameraActive = g.IsActive,
+                        LastSync = g.LastActivity ?? DateTime.Now,
+                        RecentEntries = g.Transactions
+                            .Where(t => t.EntryTime.Date == DateTime.Today)
+                            .Select(t => new ViewModelVehicleEntry
+                            {
+                                LicensePlate = t.LicensePlate,
+                                VehicleType = t.VehicleType,
+                                EntryTime = t.EntryTime,
+                                TicketNumber = t.TicketNumber,
+                                GateId = g.Id.ToString(),
+                                OperatorId = t.OperatorId.ToString()
+                            })
+                            .ToList()
+                    })
+                    .ToListAsync(),
+
+                ExitGates = await _context.ExitGates
+                    .Select(g => new GateExitOperationalViewModel
+                    {
+                        GateId = g.Id.ToString(),
+                        OperatorName = g.Name,
+                        Status = g.Status,
+                        IsCameraActive = g.IsActive,
+                        LastSync = g.LastActivity ?? DateTime.Now,
+                        RecentExits = g.Transactions
+                            .Where(t => t.ExitTime.HasValue && t.ExitTime.Value.Date == DateTime.Today)
+                            .Select(t => new VehicleExit
+                            {
+                                LicensePlate = t.LicensePlate,
+                                VehicleType = t.VehicleType,
+                                EntryTime = t.EntryTime,
+                                ExitTime = t.ExitTime.Value,
+                                Fee = t.ParkingFee ?? 0,
+                                TicketNumber = t.TicketNumber,
+                                GateId = g.Id.ToString(),
+                                OperatorId = t.OperatorId.ToString()
+                            })
+                            .ToList()
+                    })
+                    .ToListAsync()
+            };
+
+            return View(viewModel);
         }
 
         [HttpPost]
@@ -86,7 +112,7 @@ namespace Parking_Zone.Controllers
         {
             if (ModelState.IsValid)
             {
-                gate.Id = $"ENTRY{await _context.EntryGates.CountAsync() + 1}";
+                gate.Id = Guid.NewGuid();
                 gate.IsActive = true;
                 gate.LastActivity = DateTime.Now;
                 
@@ -139,12 +165,24 @@ namespace Parking_Zone.Controllers
             });
         }
 
-        [HttpPost]
+        [HttpPost("capture")]
         public async Task<IActionResult> CaptureEntry([FromBody] EntryRequest request)
         {
-            try {
-                // Capture vehicle photo
-                var imageBytes = await _cameraService.TakePhoto();
+            try 
+            {
+                // Validate vehicle type
+                var vehicleType = await _context.VehicleTypes
+                    .FirstOrDefaultAsync(vt => vt.Id == request.VehicleTypeId);
+                
+                if (vehicleType == null)
+                {
+                    return BadRequest(new { message = "Invalid vehicle type" });
+                }
+
+                // Capture vehicle photo if not provided
+                byte[] imageBytes = request.ImagePath != null 
+                    ? Convert.FromBase64String(request.ImagePath)
+                    : await _cameraService.TakePhoto();
                 
                 // Generate unique filename
                 string fileName = $"{DateTime.Now:yyyyMMddHHmmss}_{request.GateId}.jpg";
@@ -152,33 +190,50 @@ namespace Parking_Zone.Controllers
                 // Save photo
                 string imagePath = await _storageService.SaveImage(fileName, imageBytes);
                 
-                // Create parking transaction
-                var ticket = await _ticketService.GenerateTicketAsync(new Vehicle
+                // Create vehicle entry
+                var vehicleEntry = new VehicleEntry
                 {
                     VehicleNumber = request.VehicleNumber,
-                    VehicleType = request.VehicleType,
-                    EntryTime = DateTime.Now
-                }, User.GetOperatorId());
+                    LicensePlate = request.LicensePlate,
+                    VehicleTypeId = request.VehicleTypeId,
+                    EntryPhotoPath = imagePath,
+                    EntryTime = DateTime.UtcNow,
+                    GateId = request.GateId
+                };
+
+                _context.VehicleEntries.Add(vehicleEntry);
+                await _context.SaveChangesAsync();
+
+                // Generate ticket
+                var ticket = await _ticketService.GenerateTicketAsync(
+                    request.VehicleNumber, 
+                    request.VehicleTypeId, 
+                    imagePath, 
+                    parkingGateId: request.GateId, 
+                    operatorId: User.GetOperatorGuid()
+                );
 
                 return Ok(new { 
                     ticketNumber = ticket.TicketNumber,
-                    imagePath = imagePath
+                    imagePath = imagePath,
+                    vehicleEntryId = vehicleEntry.Id
                 });
             }
-            catch (Exception ex) {
+            catch (Exception ex) 
+            {
                 _logger.LogError(ex, "Error processing entry");
-                return StatusCode(500);
+                return StatusCode(500, new { message = ex.Message });
             }
         }
 
-        [HttpPost]
-        public async Task<IActionResult> AssignSpace(VehicleEntryRequest request)
+        [HttpPost("assign-space")]
+        public async Task<IActionResult> AssignSpace([FromBody] EntryRequest request)
         {
             try
             {
-                // Automatic space assignment
+                // Find available parking space
                 var availableSpace = await _context.ParkingSpaces
-                    .Where(s => !s.IsOccupied && s.SpaceType == request.VehicleType)
+                    .Where(s => !s.IsOccupied && s.SpaceType == request.VehicleTypeId)
                     .OrderBy(s => s.SpaceNumber)
                     .FirstOrDefaultAsync();
 
@@ -187,68 +242,54 @@ namespace Parking_Zone.Controllers
                     return BadRequest(new { message = "No parking space available" });
                 }
 
-                // Create vehicle
-                var vehicle = new Vehicle
-                {
-                    VehicleNumber = request.VehicleNumber,
-                    VehicleType = request.VehicleType,
-                    EntryTime = DateTime.Now
-                };
-
-                // Generate ticket
-                var ticket = await _ticketService.GenerateTicketAsync(vehicle, User.GetOperatorId());
-
-                // Create transaction
+                // Create parking transaction
                 var transaction = new ParkingTransaction
                 {
-                    TicketNumber = ticket.TicketNumber,
-                    Vehicle = vehicle,
-                    EntryTime = DateTime.Now,
+                    VehicleNumber = request.VehicleNumber,
+                    VehicleLicensePlate = request.LicensePlate,
+                    VehicleTypeId = request.VehicleTypeId,
+                    EntryTime = DateTime.UtcNow,
+                    EntryGateId = request.GateId,
+                    EntryPhotoPath = request.ImagePath,
                     ParkingSpaceId = availableSpace.Id,
-                    EntryPoint = request.GateId,
-                    ImagePath = request.ImagePath,
-                    OperatorId = User.GetOperatorId()
+                    OperatorId = User.GetOperatorGuid(),
+                    Status = "Active"
                 };
 
                 _context.ParkingTransactions.Add(transaction);
                 
                 // Update space status
                 availableSpace.IsOccupied = true;
-                availableSpace.CurrentVehicleId = vehicle.Id;
-
+                
                 await _context.SaveChangesAsync();
 
-                // Print ticket
-                await _printerService.PrintTicketAsync(ticket.TicketNumber, request.VehicleNumber, DateTime.Now, request.VehicleType);
-
                 return Ok(new { 
-                    ticketNumber = ticket.TicketNumber,
-                    spaceNumber = availableSpace.SpaceNumber
+                    transactionId = transaction.Id,
+                    parkingSpaceId = availableSpace.Id 
                 });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error in automatic space assignment");
-                return StatusCode(500);
+                _logger.LogError(ex, "Error assigning parking space");
+                return StatusCode(500, new { message = ex.Message });
             }
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ProcessVehicleEntry(VehicleEntryRequest request)
         {
             try
             {
                 // Cari kendaraan berdasarkan nomor plat atau buat baru jika belum ada
                 var vehicle = await _context.Vehicles
-                    .FirstOrDefaultAsync(v => v.PlateNumber == request.PlateNumber);
+                    .FirstOrDefaultAsync(v => v.LicensePlate == request.PlateNumber);
 
                 if (vehicle == null)
                 {
                     vehicle = new Vehicle
                     {
-                        PlateNumber = request.PlateNumber,
-                        Type = request.VehicleType,
+                        LicensePlate = request.PlateNumber,
+                        Type = (int)request.VehicleType,
                         CreatedAt = DateTime.Now,
                         IsActive = true
                     };
@@ -258,7 +299,7 @@ namespace Parking_Zone.Controllers
 
                 // Cari space parkir yang tersedia
                 var parkingSpace = await _context.ParkingSpaces
-                    .FirstOrDefaultAsync(ps => ps.IsActive && !ps.IsOccupied && ps.Type == request.VehicleType);
+                    .FirstOrDefaultAsync(ps => ps.IsActive && !ps.IsOccupied && ps.Type == (int)request.VehicleType);
 
                 if (parkingSpace == null)
                 {
@@ -267,15 +308,15 @@ namespace Parking_Zone.Controllers
                 }
 
                 // Buat entry vehicle baru
-                var vehicleEntry = new VehicleEntry
+                var vehicleEntry = new ModelVehicleEntry
                 {
-                    PlateNumber = request.PlateNumber,
-                    VehicleType = request.VehicleType,
+                    LicensePlate = request.PlateNumber,
+                    VehicleType = (int)request.VehicleType,
                     EntryTime = DateTime.Now,
                     EntryPhotoPath = request.PhotoPath,
                     VehicleId = vehicle.Id,
                     ParkingSpaceId = parkingSpace.Id,
-                    OperatorId = User.Identity.Name,
+                    OperatorId = User.GetOperatorGuid(),
                     Notes = request.Notes
                 };
 
@@ -287,7 +328,7 @@ namespace Parking_Zone.Controllers
                     VehicleId = vehicle.Id,
                     ParkingSpaceId = parkingSpace.Id,
                     EntryTime = DateTime.Now,
-                    OperatorId = User.Identity.Name,
+                    OperatorId = User.GetOperatorGuid(),
                     EntryPhotoPath = request.PhotoPath,
                     CreatedAt = DateTime.Now
                 };
@@ -310,7 +351,7 @@ namespace Parking_Zone.Controllers
                     await _parkingHubContext.Clients.All.SendAsync("PrintTicket", new
                     {
                         plateNumber = request.PlateNumber,
-                        vehicleType = request.VehicleType,
+                        vehicleType = (int)request.VehicleType,
                         entryTime = transaction.EntryTime,
                         transactionId = transaction.Id
                     });
@@ -365,8 +406,8 @@ namespace Parking_Zone.Controllers
                 // Kirim perintah untuk mencetak tiket
                 await _parkingHubContext.Clients.All.SendAsync("PrintTicket", new
                 {
-                    plateNumber = transaction.Vehicle?.PlateNumber,
-                    vehicleType = transaction.Vehicle?.Type,
+                    plateNumber = transaction.Vehicle?.LicensePlate,
+                    vehicleType = (int)transaction.Vehicle?.Type,
                     entryTime = transaction.EntryTime,
                     transactionId = transaction.Id
                 });

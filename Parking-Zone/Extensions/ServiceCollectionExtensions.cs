@@ -48,19 +48,31 @@ namespace Parking_Zone.Extensions
         public static IServiceCollection AddCustomServices(this IServiceCollection services)
         {
             // Core services
-            services.AddScoped<IParkingFeeService, ParkingFeeService>();
-            services.AddScoped<IParkingGateService, ParkingGateService>();
+            services.AddScoped<IParkingService, ParkingService>();
+            services.AddScoped<IParkingSlotService, ParkingSlotService>();
+            services.AddScoped<IParkingZoneService, ParkingZoneService>();
             services.AddScoped<IParkingTransactionService, ParkingTransactionService>();
+            services.AddScoped<IParkingFeeService, ParkingFeeService>();
+            services.AddScoped<IVehicleService, VehicleService>();
+            services.AddScoped<IReservationService, ReservationService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IParkingNotificationService, ParkingNotificationService>();
+            services.AddScoped<IParkingGateService, ParkingGateService>();
+            services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<IEmailTemplateService, EmailTemplateService>();
+            services.AddScoped<ISiteSettingsService, SiteSettingsService>();
 
-            // Hardware services
-            services.AddSingleton<IPCameraService, PCameraService>();
-            services.AddSingleton<IPrinterService, PrinterService>();
+            // Hardware services (singleton as they manage hardware state)
+            services.AddSingleton<IHardwareManager, HardwareManager>();
+            services.AddSingleton<IIPCameraService, IPCameraService>();
+            
+            // Replace broken services with stub implementations
+            services.AddSingleton<IPrinterService, StubPrinterService>();
             services.AddSingleton<IScannerService, ScannerService>();
             services.AddSingleton<ITicketService, TicketService>();
 
-            // Notification services
-            services.AddScoped<IParkingNotificationService, ParkingNotificationService>();
+            // Replace broken service with stub implementation
+            services.AddScoped<ICameraService, StubCameraService>();
 
             return services;
         }

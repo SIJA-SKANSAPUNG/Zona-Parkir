@@ -4,13 +4,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Parking_Zone.Services
 {
-    public interface IScannerService
-    {
-        Task<string> ScanBarcodeAsync();
-        Task<bool> IsReadyAsync();
-        Task<string> GetDeviceInfoAsync();
-    }
-
     public class ScannerService : IScannerService
     {
         private readonly ILogger<ScannerService> _logger;
@@ -56,13 +49,13 @@ namespace Parking_Zone.Services
             try
             {
                 // TODO: Implement actual device info retrieval
-                await Task.Delay(100); // Simulate device info retrieval
+                await Task.Delay(100); // Simulate info retrieval
                 return "Mock Scanner Device v1.0";
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting scanner device info");
-                return string.Empty;
+                _logger.LogError(ex, "Error getting device info");
+                throw;
             }
         }
     }

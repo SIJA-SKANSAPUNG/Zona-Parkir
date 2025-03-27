@@ -15,6 +15,12 @@ namespace Parking_Zone.Models
         public DateTime? VerificationTime { get; set; }
         public string? Notes { get; set; }
 
+        // Properties referenced in error messages
+        public decimal Cost { get; set; }
+        public TimeSpan Duration { get; set; }
+        public string PaymentMethod { get; set; } = "Cash";
+        public string PaymentStatus { get; set; } = "Pending";
+
         public virtual Vehicle Vehicle { get; set; } = null!;
         public virtual ParkingTransaction Transaction { get; set; } = null!;
     }

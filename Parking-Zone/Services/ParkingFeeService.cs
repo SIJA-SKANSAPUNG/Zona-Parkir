@@ -1,41 +1,48 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
-using Parking_Zone.Data;
 using Parking_Zone.Models;
+using Parking_Zone.Data;
 
 namespace Parking_Zone.Services
 {
     public class ParkingFeeService : IParkingFeeService
     {
-        private readonly ApplicationDbContext _context;
         private readonly ILogger<ParkingFeeService> _logger;
+        private readonly ApplicationDbContext _context;
 
-        public ParkingFeeService(ApplicationDbContext context, ILogger<ParkingFeeService> logger)
+        public ParkingFeeService(
+            ILogger<ParkingFeeService> logger,
+            ApplicationDbContext context)
         {
-            _context = context;
             _logger = logger;
+            _context = context;
         }
 
         public async Task<decimal> CalculateFee(DateTime entryTime, DateTime exitTime, string vehicleType, Guid parkingZoneId)
         {
             try
             {
-                var baseFee = await GetBaseFee(vehicleType, parkingZoneId);
+                var feeConfig = await _context.FeeConfigurations
+                    .FirstOrDefaultAsync(f => f.VehicleType == vehicleType && f.ParkingZoneId == parkingZoneId);
+
+                if (feeConfig == null)
+                {
+                    throw new InvalidOperationException($"No fee configuration found for vehicle type {vehicleType} in parking zone {parkingZoneId}");
+                }
+
                 var duration = exitTime - entryTime;
                 var hours = Math.Ceiling(duration.TotalHours);
-                
-                // Minimum 1 hour
-                if (hours < 1) hours = 1;
+                var fee = feeConfig.BaseFee * (decimal)hours;
 
-                var totalFee = baseFee * (decimal)hours;
-                
-                _logger.LogInformation($"Calculated parking fee for vehicle type {vehicleType}: {totalFee:C} " +
-                                     $"(Duration: {hours} hours, Base fee: {baseFee:C})");
-                
-                return totalFee;
+                _logger.LogInformation($"Calculated fee for {vehicleType} in zone {parkingZoneId}: {fee:C} for {hours} hours");
+                return fee;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error calculating parking fee for vehicle type {vehicleType}");
+                _logger.LogError(ex, $"Error calculating fee for {vehicleType} in zone {parkingZoneId}");
                 throw;
             }
         }
@@ -44,26 +51,19 @@ namespace Parking_Zone.Services
         {
             try
             {
-                var feeConfig = await _context.Set<FeeConfiguration>()
+                var feeConfig = await _context.FeeConfigurations
                     .FirstOrDefaultAsync(f => f.VehicleType == vehicleType && f.ParkingZoneId == parkingZoneId);
 
                 if (feeConfig == null)
                 {
-                    // Default fees if not configured
-                    return vehicleType.ToLower() switch
-                    {
-                        "car" => 5000m,
-                        "motorcycle" => 2000m,
-                        "truck" => 10000m,
-                        _ => 5000m
-                    };
+                    throw new InvalidOperationException($"No fee configuration found for vehicle type {vehicleType} in parking zone {parkingZoneId}");
                 }
 
                 return feeConfig.BaseFee;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error getting base fee for vehicle type {vehicleType}");
+                _logger.LogError(ex, $"Error retrieving base fee for {vehicleType} in zone {parkingZoneId}");
                 throw;
             }
         }
@@ -72,28 +72,31 @@ namespace Parking_Zone.Services
         {
             try
             {
-                var feeConfig = await _context.Set<FeeConfiguration>()
+                var feeConfig = await _context.FeeConfigurations
                     .FirstOrDefaultAsync(f => f.VehicleType == vehicleType && f.ParkingZoneId == parkingZoneId);
 
                 if (feeConfig == null)
                 {
                     feeConfig = new FeeConfiguration
                     {
-                        Id = Guid.NewGuid(),
                         VehicleType = vehicleType,
-                        ParkingZoneId = parkingZoneId
+                        ParkingZoneId = parkingZoneId,
+                        BaseFee = baseFee
                     };
-                    _context.Add(feeConfig);
+                    _context.FeeConfigurations.Add(feeConfig);
+                }
+                else
+                {
+                    feeConfig.BaseFee = baseFee;
+                    _context.FeeConfigurations.Update(feeConfig);
                 }
 
-                feeConfig.BaseFee = baseFee;
                 await _context.SaveChangesAsync();
-                
-                _logger.LogInformation($"Updated parking fee configuration for {vehicleType}: {baseFee:C}");
+                _logger.LogInformation($"Updated fee configuration for {vehicleType} in zone {parkingZoneId}: {baseFee:C}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error updating fee configuration for vehicle type {vehicleType}");
+                _logger.LogError(ex, $"Error updating fee configuration for {vehicleType} in zone {parkingZoneId}");
                 throw;
             }
         }
@@ -102,13 +105,13 @@ namespace Parking_Zone.Services
         {
             try
             {
-                return await _context.Set<FeeConfiguration>()
+                return await _context.FeeConfigurations
                     .Include(f => f.ParkingZone)
                     .ToListAsync();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting all fee configurations");
+                _logger.LogError(ex, "Error retrieving all fee configurations");
                 throw;
             }
         }

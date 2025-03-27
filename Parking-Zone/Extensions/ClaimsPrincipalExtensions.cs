@@ -1,6 +1,7 @@
 using System;
 using System.Security.Claims;
 using System.Linq;
+using System.Globalization;
 
 namespace Parking_Zone.Extensions
 {
@@ -90,5 +91,30 @@ namespace Parking_Zone.Extensions
             var claim = principal.FindFirst("AssignedGate");
             return claim?.Value;
         }
+
+        public static Guid GetOperatorId(this ClaimsPrincipal principal)
+        {
+            if (principal == null)
+                throw new ArgumentNullException(nameof(principal));
+
+            var claim = principal.FindFirst("OperatorId");
+            return claim != null ? Guid.Parse(claim.Value) : Guid.Empty;
+        }
+
+        public static int GetOperatorIdInt(this ClaimsPrincipal principal)
+        {
+            var operatorIdClaim = principal.FindFirst("OperatorId");
+            return operatorIdClaim != null 
+                ? int.Parse(operatorIdClaim.Value, CultureInfo.InvariantCulture) 
+                : 0;
+        }
+
+        public static Guid GetOperatorGuid(this ClaimsPrincipal principal)
+        {
+            var operatorIdClaim = principal.FindFirst("OperatorId");
+            return operatorIdClaim != null 
+                ? Guid.Parse(operatorIdClaim.Value) 
+                : Guid.Empty;
+        }
     }
-} 
+}

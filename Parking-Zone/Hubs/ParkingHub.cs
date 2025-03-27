@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Parking_Zone.Data;
 using Parking_Zone.Services;
+using Parking_Zone.Extensions;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -130,7 +131,7 @@ namespace Parking_Zone.Hubs
                     {
                         await _printerService.PrintEntryTicket(transaction);
                         await Clients.Caller.SendAsync("ShowSuccess", "Vehicle entered successfully");
-                        await SendVehicleEntry(plateNumber);
+                        await SendVehicleEntry(new Hubs.Models.VehicleEntry { PlateNumber = plateNumber });
                     }
                 }
                 else
@@ -168,7 +169,7 @@ namespace Parking_Zone.Hubs
                     {
                         await _printerService.PrintExitReceipt(transaction);
                         await Clients.Caller.SendAsync("ShowSuccess", "Vehicle exited successfully");
-                        await SendVehicleExit(plateNumber);
+                        await SendVehicleExit(new Hubs.Models.VehicleExit { PlateNumber = plateNumber });
                     }
                 }
                 else
@@ -187,6 +188,16 @@ namespace Parking_Zone.Hubs
         {
             await Clients.All.SendAsync("PrintReceipt", receiptData);
         }
+
+        private async Task SendVehicleEntry(Hubs.Models.VehicleEntry entry)
+        {
+            await Clients.All.SendAsync("ReceiveVehicleEntry", entry);
+        }
+
+        private async Task SendVehicleExit(Hubs.Models.VehicleExit exit)
+        {
+            await Clients.All.SendAsync("ReceiveVehicleExit", exit);
+        }
     }
 
     public static class ParkingHubMethods
@@ -201,5 +212,18 @@ namespace Parking_Zone.Hubs
         public const string BarrierStateChanged = "BarrierStateChanged";
         public const string GateEventReceived = "GateEventReceived";
         public const string CommandResultReceived = "CommandResultReceived";
+    }
+}
+
+namespace Parking_Zone.Hubs.Models
+{
+    public class VehicleEntry
+    {
+        public string PlateNumber { get; set; }
+    }
+
+    public class VehicleExit
+    {
+        public string PlateNumber { get; set; }
     }
 }

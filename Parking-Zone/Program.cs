@@ -1,11 +1,9 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 using Parking_Zone.Data;
 using Parking_Zone.Middleware;
 using Parking_Zone.Models;
-using Parking_Zone.Repositories;
 using Parking_Zone.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,6 +14,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using Parking_Zone.Hardware;
+using System.IO.Ports;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,8 +31,11 @@ builder.Services
     .AddCustomMemoryCache()
     .AddCustomSignalR();
 
-// Register CameraService
-builder.Services.AddScoped<ICameraService, CameraService>();
+// Add hardware configurations
+builder.Services.Configure<CameraConfiguration>(builder.Configuration.GetSection("Hardware:Camera"));
+builder.Services.Configure<PrinterConfiguration>(builder.Configuration.GetSection("Hardware:Printer"));
+builder.Services.Configure<ScannerConfiguration>(builder.Configuration.GetSection("Hardware:Scanner"));
+builder.Services.Configure<GateConfiguration>(builder.Configuration.GetSection("Hardware:Gate"));
 
 // Add Swagger
 builder.Services.AddSwaggerGen(c =>
@@ -122,5 +125,9 @@ app.UseCustomHttpsRedirection()
    .UseAuthorization();
 
 app.UseCustomEndpoints();
+
+// Map SignalR hubs
+app.MapHub<ParkingHub>("/parkingHub");
+app.MapHub<GateHub>("/gateHub");
 
 app.Run();

@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using Parking_Zone.Hardware;
 
 namespace Parking_Zone.Models
 {
@@ -9,36 +10,40 @@ namespace Parking_Zone.Models
 
         [Required]
         [StringLength(50)]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [Required]
         [StringLength(100)]
-        public string ConnectionString { get; set; }
+        public string ConnectionString { get; set; } = string.Empty;
 
         [StringLength(50)]
-        public string Type { get; set; } // USB, Network, etc.
+        public string Type { get; set; } = string.Empty; // USB, Network, etc.
 
         [StringLength(50)]
-        public string Model { get; set; }
+        public string Model { get; set; } = string.Empty;
 
         public bool IsDefault { get; set; }
-
         public bool IsActive { get; set; } = true;
+        public bool IsOperational { get; set; }
 
         [StringLength(500)]
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
+        public DateTime LastActivity { get; set; } = DateTime.UtcNow;
         public DateTime LastChecked { get; set; }
+        public DateTime? LastMaintenanceDate { get; set; }
 
         public bool IsOnline { get; set; }
+        public bool NeedsMaintenance { get; set; }
 
-        public virtual ParkingGate Gate { get; set; }
-        public int? GateId { get; set; }
+        public string Status { get; set; } = "Ready";
+        public int ErrorCode { get; set; }
+        public string? ErrorMessage { get; set; }
+        public int PaperLevel { get; set; } = 100;
 
-        // Printer settings
-        public int PaperWidth { get; set; } = 80; // mm
-        public int CharactersPerLine { get; set; } = 48;
-        public bool CutPaperAfterPrint { get; set; } = true;
-        public bool OpenCashDrawerAfterPrint { get; set; } = false;
+        public string GateId { get; set; } = string.Empty;
+        public virtual ParkingGate? Gate { get; set; }
+
+        public PrinterConfig? Config { get; set; }
     }
 } 

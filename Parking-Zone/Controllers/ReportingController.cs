@@ -1,15 +1,16 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ParkIRC.Web.Data;
+using Parking_Zone.Data;
 using Parking_Zone.Models;
 using Parking_Zone.Services;
 using System.Threading.Tasks;
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using ParkIRC.Extensions;
+using Parking_Zone.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
+using Parking_Zone.ViewModels;
 
 namespace Parking_Zone.Controllers
 {
@@ -64,7 +65,7 @@ namespace Parking_Zone.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error generating report");
-                return View("Error", new ParkIRC.Models.ErrorViewModel 
+                return View("Error", new ErrorViewModel 
                 { 
                     Message = "Error generating report: " + ex.Message,
                     RequestId = HttpContext.TraceIdentifier
@@ -233,7 +234,7 @@ namespace Parking_Zone.Controllers
                     HourlyData = fullHourlyData,
                     TotalRevenue = transactions.Sum(t => t.TotalAmount),
                     TotalTransactions = transactions.Count,
-                    PeakHour = fullHourlyData.OrderByDescending(h => h.Count).First()
+                    PeakHour = fullHourlyData.OrderByDescending(x => x.Count).First()
                 };
 
                 return View(viewModel);

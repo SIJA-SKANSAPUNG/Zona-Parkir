@@ -1,44 +1,31 @@
-using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
-using Parking_Zone.Hubs;
-using Parking_Zone.Models;
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Parking_Zone.Models;
 
 namespace Parking_Zone.Services
 {
     public class ParkingNotificationService : IParkingNotificationService
     {
-        private readonly IHubContext<ParkingHub> _hubContext;
         private readonly ILogger<ParkingNotificationService> _logger;
 
-        public ParkingNotificationService(
-            IHubContext<ParkingHub> hubContext,
-            ILogger<ParkingNotificationService> logger)
+        public ParkingNotificationService(ILogger<ParkingNotificationService> logger)
         {
-            _hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _logger = logger;
         }
 
         public async Task NotifyVehicleEntered(Guid parkingZoneId, Vehicle vehicle)
         {
             try
             {
-                await _hubContext.Clients.Group(parkingZoneId.ToString())
-                    .SendAsync(ParkingHubMethods.VehicleEntered, new
-                    {
-                        vehicle.Id,
-                        vehicle.PlateNumber,
-                        vehicle.VehicleType,
-                        EntryTime = DateTime.UtcNow
-                    });
-
-                _logger.LogInformation("Notified vehicle entry: {PlateNumber} in zone {ZoneId}", 
-                    vehicle.PlateNumber, parkingZoneId);
+                _logger.LogInformation($"Vehicle {vehicle.PlateNumber} entered parking zone {parkingZoneId}");
+                // TODO: Implement real-time notification using SignalR
+                await Task.CompletedTask;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error notifying vehicle entry: {PlateNumber}", vehicle.PlateNumber);
+                _logger.LogError(ex, $"Error notifying vehicle entry for {vehicle.PlateNumber}");
+                throw;
             }
         }
 
@@ -46,21 +33,14 @@ namespace Parking_Zone.Services
         {
             try
             {
-                await _hubContext.Clients.Group(parkingZoneId.ToString())
-                    .SendAsync(ParkingHubMethods.VehicleExited, new
-                    {
-                        vehicle.Id,
-                        vehicle.PlateNumber,
-                        vehicle.VehicleType,
-                        ExitTime = DateTime.UtcNow
-                    });
-
-                _logger.LogInformation("Notified vehicle exit: {PlateNumber} from zone {ZoneId}", 
-                    vehicle.PlateNumber, parkingZoneId);
+                _logger.LogInformation($"Vehicle {vehicle.PlateNumber} exited parking zone {parkingZoneId}");
+                // TODO: Implement real-time notification using SignalR
+                await Task.CompletedTask;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error notifying vehicle exit: {PlateNumber}", vehicle.PlateNumber);
+                _logger.LogError(ex, $"Error notifying vehicle exit for {vehicle.PlateNumber}");
+                throw;
             }
         }
 
@@ -68,22 +48,14 @@ namespace Parking_Zone.Services
         {
             try
             {
-                await _hubContext.Clients.Group(parkingZoneId.ToString())
-                    .SendAsync(ParkingHubMethods.GateStatusChanged, new
-                    {
-                        gate.Id,
-                        gate.Name,
-                        gate.IsOpen,
-                        gate.IsOnline,
-                        gate.LastActivity
-                    });
-
-                _logger.LogInformation("Notified gate status change: {GateId} in zone {ZoneId}", 
-                    gate.Id, parkingZoneId);
+                _logger.LogInformation($"Gate {gate.Id} status changed in parking zone {parkingZoneId}. New status: {gate.Status}");
+                // TODO: Implement real-time notification using SignalR
+                await Task.CompletedTask;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error notifying gate status change: {GateId}", gate.Id);
+                _logger.LogError(ex, $"Error notifying gate status change for gate {gate.Id}");
+                throw;
             }
         }
 
@@ -91,22 +63,14 @@ namespace Parking_Zone.Services
         {
             try
             {
-                await _hubContext.Clients.Group(parkingZoneId.ToString())
-                    .SendAsync(ParkingHubMethods.SpotStatusChanged, new
-                    {
-                        spot.Id,
-                        spot.Number,
-                        spot.IsOccupied,
-                        spot.VehicleType,
-                        UpdatedAt = DateTime.UtcNow
-                    });
-
-                _logger.LogInformation("Notified spot status change: {SpotId} in zone {ZoneId}", 
-                    spot.Id, parkingZoneId);
+                _logger.LogInformation($"Spot {spot.Id} status changed in parking zone {parkingZoneId}. New status: {spot.Status}");
+                // TODO: Implement real-time notification using SignalR
+                await Task.CompletedTask;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error notifying spot status change: {SpotId}", spot.Id);
+                _logger.LogError(ex, $"Error notifying spot status change for spot {spot.Id}");
+                throw;
             }
         }
 
@@ -114,24 +78,14 @@ namespace Parking_Zone.Services
         {
             try
             {
-                await _hubContext.Clients.Group(parkingZoneId.ToString())
-                    .SendAsync(ParkingHubMethods.TransactionUpdated, new
-                    {
-                        transaction.Id,
-                        transaction.VehicleId,
-                        transaction.Status,
-                        transaction.StartTime,
-                        transaction.EndTime,
-                        transaction.Amount,
-                        UpdatedAt = DateTime.UtcNow
-                    });
-
-                _logger.LogInformation("Notified transaction update: {TransactionId} in zone {ZoneId}", 
-                    transaction.Id, parkingZoneId);
+                _logger.LogInformation($"Transaction {transaction.Id} updated in parking zone {parkingZoneId}. Status: {transaction.Status}");
+                // TODO: Implement real-time notification using SignalR
+                await Task.CompletedTask;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error notifying transaction update: {TransactionId}", transaction.Id);
+                _logger.LogError(ex, $"Error notifying transaction update for transaction {transaction.Id}");
+                throw;
             }
         }
 
@@ -139,23 +93,15 @@ namespace Parking_Zone.Services
         {
             try
             {
-                var occupancyRate = totalSpots > 0 ? (double)occupiedSpots / totalSpots * 100 : 0;
-                await _hubContext.Clients.Group(parkingZoneId.ToString())
-                    .SendAsync(ParkingHubMethods.OccupancyUpdated, new
-                    {
-                        ParkingZoneId = parkingZoneId,
-                        TotalSpots = totalSpots,
-                        OccupiedSpots = occupiedSpots,
-                        OccupancyRate = Math.Round(occupancyRate, 2),
-                        UpdatedAt = DateTime.UtcNow
-                    });
-
-                _logger.LogInformation("Notified occupancy update: {OccupiedSpots}/{TotalSpots} in zone {ZoneId}", 
-                    occupiedSpots, totalSpots, parkingZoneId);
+                var occupancyPercentage = (occupiedSpots * 100.0) / totalSpots;
+                _logger.LogInformation($"Occupancy updated in parking zone {parkingZoneId}. {occupiedSpots}/{totalSpots} spots occupied ({occupancyPercentage:F1}%)");
+                // TODO: Implement real-time notification using SignalR
+                await Task.CompletedTask;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error notifying occupancy update for zone {ZoneId}", parkingZoneId);
+                _logger.LogError(ex, $"Error notifying occupancy update for parking zone {parkingZoneId}");
+                throw;
             }
         }
     }

@@ -30,6 +30,19 @@ namespace Parking_Zone.Models
         [StringLength(500)]
         public string Notes { get; set; }
 
+        public string VehicleNumber { get; set; }
+        public DateTime? EntryTime { get; set; }
+        public DateTime? IssueTime { get; set; }
+        public string Status { get; set; }
+        public string BarcodeData { get; set; }
+        public string BarcodeImagePath { get; set; }
+        public string ParkingSpaceNumber { get; set; }
+        public string VehicleType { get; set; }
+        public Guid? VehicleId { get; set; }
+        public Vehicle Vehicle { get; set; }
+        public Guid? OperatorId { get; set; }
+        public Guid? ShiftId { get; set; }
+
         // Navigation properties
         public virtual ParkingTransaction Transaction { get; set; }
         public int TransactionId { get; set; }
@@ -43,4 +56,4 @@ namespace Parking_Zone.Models
         public virtual ParkingGate Gate { get; set; }
         public int GateId { get; set; }
     }
-} 
+}

@@ -1,44 +1,40 @@
 using System;
 using System.Collections.Generic;
+using Parking_Zone.Models;
 
 namespace Parking_Zone.ViewModels
 {
     public class DashboardParkingActivity
     {
-        public string VehicleType { get; set; } = string.Empty;
-        public string LicensePlate { get; set; } = string.Empty;
-        public string PlateNumber { get; set; } = string.Empty;
+        public Guid Id { get; set; }
+        public string VehicleType { get; set; }
+        public string LicensePlate { get; set; }
         public DateTime Timestamp { get; set; }
-        public string ActionType { get; set; } = string.Empty;
+        public string ActionType { get; set; } // "Entry" or "Exit"
         public decimal Fee { get; set; }
-        public decimal Cost { get; set; }
-        public string ParkingType { get; set; } = string.Empty;
-        public string VehicleNumber { get; set; } = string.Empty;
-        public DateTime? LastActivity { get; set; }
-        public DateTime? EntryTime { get; set; }
-        public DateTime? ExitTime { get; set; }
+        public string ParkingType { get; set; }
+        public string VehicleNumber { get; set; }
+        public DateTime LastActivity { get; set; }
     }
 
     public class OccupancyData
     {
-        public string Hour { get; set; } = string.Empty;
+        public int Hour { get; set; }
         public int Count { get; set; }
-        public double OccupancyPercentage { get; set; }
+        public decimal OccupancyPercentage { get; set; }
     }
 
     public class VehicleDistributionData
     {
-        public string Type { get; set; } = string.Empty;
-        public string VehicleType { get; set; } = string.Empty;
+        public string Type { get; set; }
         public int Count { get; set; }
+        public decimal Percentage { get; set; }
     }
 
     public class OccupancyDataComparer : IEqualityComparer<OccupancyData>
     {
-        public bool Equals(OccupancyData? x, OccupancyData? y)
+        public bool Equals(OccupancyData x, OccupancyData y)
         {
-            if (x is null && y is null) return true;
-            if (x is null || y is null) return false;
             return x.Hour == y.Hour;
         }
 
@@ -50,37 +46,37 @@ namespace Parking_Zone.ViewModels
 
     public class DashboardViewModel
     {
-        // Parking Space Information
-        public int TotalParkingSpaces { get; set; }
-        public int AvailableParkingSpaces { get; set; }
-        public int OccupiedParkingSpaces { get; set; }
-        public double OccupancyRate { get; set; }
-
-        // Properties referenced in views
-        public int TotalSpaces => TotalParkingSpaces;
-        public int AvailableSpaces => AvailableParkingSpaces;
-
-        // Transaction Information
-        public int TotalTransactionsToday { get; set; }
-        public int ActiveTransactions { get; set; }
+        public int TotalSpaces { get; set; }
+        public int OccupiedSpaces { get; set; }
         public decimal DailyRevenue { get; set; }
-        public decimal WeeklyRevenue { get; set; }
-        public decimal MonthlyRevenue { get; set; }
+        public double OccupancyRate => TotalSpaces > 0 ? (double)OccupiedSpaces / TotalSpaces * 100 : 0;
 
-        // Activity Lists
-        public List<DashboardParkingActivity> RecentEntries { get; set; } = new();
-        public List<DashboardParkingActivity> RecentExits { get; set; } = new();
-        public List<DashboardParkingActivity> RecentActivity { get; set; } = new();
+        public List<VehicleTypeStats> VehicleTypeDistribution { get; set; } = new List<VehicleTypeStats>();
+        public List<int> HourlyOccupancy { get; set; } = new List<int>();
 
-        // Analytics
-        public List<OccupancyData> HourlyOccupancy { get; set; } = new();
-        public List<VehicleDistributionData> VehicleDistribution { get; set; } = new();
+        public int TotalVehiclesToday { get; set; }
+        public int TotalVehiclesThisMonth { get; set; }
 
-        // Pagination
-        public bool HasPreviousPage { get; set; }
-        public bool HasNextPage { get; set; }
-        public int CurrentPage { get; set; }
-        public int PageSize { get; set; }
-        public int TotalPages { get; set; }
+        public int AvailableSpaces => TotalSpaces - OccupiedSpaces;
+        public List<RecentActivityViewModel> RecentActivity { get; set; } = new List<RecentActivityViewModel>();
+        public List<VehicleDistributionData> VehicleDistribution { get; set; } = new List<VehicleDistributionData>();
+
+        public List<GateViewModel> Gates { get; set; } = new List<GateViewModel>();
+
+        public class GateViewModel
+        {
+            public Guid Id { get; set; }
+            public string Name { get; set; }
+            public bool IsOperational { get; set; }
+            public int TransactionsToday { get; set; }
+            public bool IsOpen { get; set; } = false;
+        }
+
+        public class RecentActivityViewModel
+        {
+            public string Action { get; set; }
+            public DateTime Timestamp { get; set; }
+            public string Details { get; set; }
+        }
     }
-} 
+}

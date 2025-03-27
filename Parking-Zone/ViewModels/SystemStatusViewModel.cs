@@ -40,8 +40,8 @@ namespace Parking_Zone.ViewModels
         public int Id { get; set; }
         public string Name { get; set; }
         public string Location { get; set; }
-        public GateType Type { get; set; }
-        public GateStatus Status { get; set; }
+        public string Type { get; set; } // Entry, Exit, Both
+        public string Status { get; set; } // Online, Offline, Maintenance
         public DateTime? LastActivity { get; set; }
         public string CurrentOperator { get; set; }
     }
@@ -68,4 +68,4 @@ namespace Parking_Zone.ViewModels
         public decimal? Amount { get; set; }
         public string VehicleInfo { get; set; }
     }
-} 
+}

@@ -10,4 +10,4 @@ namespace Parking_Zone.Models
         public Guid ParkingZoneId { get; set; }
         public virtual ParkingZone ParkingZone { get; set; }
     }
-} 
+}

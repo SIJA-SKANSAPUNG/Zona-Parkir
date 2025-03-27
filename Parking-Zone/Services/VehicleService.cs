@@ -1,18 +1,171 @@
+using System;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
-using Parking_Zone.Data;
 using Parking_Zone.Models;
+using Parking_Zone.Data;
 
 namespace Parking_Zone.Services
 {
     public class VehicleService : IVehicleService
     {
-        private readonly ApplicationDbContext _context;
         private readonly ILogger<VehicleService> _logger;
+        private readonly ApplicationDbContext _context;
 
-        public VehicleService(ApplicationDbContext context, ILogger<VehicleService> logger)
+        public VehicleService(
+            ILogger<VehicleService> logger,
+            ApplicationDbContext context)
         {
-            _context = context;
             _logger = logger;
+            _context = context;
+        }
+
+        public async Task<Vehicle> GetVehicleByLicensePlateAsync(string licensePlate)
+        {
+            try
+            {
+                var vehicle = await _context.Vehicles
+                    .Include(v => v.VehicleType)
+                    .FirstOrDefaultAsync(v => v.LicensePlate == licensePlate);
+
+                if (vehicle == null)
+                {
+                    _logger.LogWarning($"Vehicle with license plate {licensePlate} not found");
+                    return null;
+                }
+
+                _logger.LogInformation($"Retrieved vehicle with license plate {licensePlate}");
+                return vehicle;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error retrieving vehicle with license plate {licensePlate}");
+                throw;
+            }
+        }
+
+        public async Task<IEnumerable<Vehicle>> GetAllVehiclesAsync()
+        {
+            try
+            {
+                var vehicles = await _context.Vehicles
+                    .Include(v => v.VehicleType)
+                    .ToListAsync();
+
+                _logger.LogInformation($"Retrieved {vehicles.Count} vehicles");
+                return vehicles;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving all vehicles");
+                throw;
+            }
+        }
+
+        public async Task<Vehicle> RegisterVehicleAsync(string licensePlate, string vehicleTypeId)
+        {
+            try
+            {
+                var existingVehicle = await _context.Vehicles
+                    .FirstOrDefaultAsync(v => v.LicensePlate == licensePlate);
+
+                if (existingVehicle != null)
+                {
+                    _logger.LogWarning($"Vehicle with license plate {licensePlate} already exists");
+                    return existingVehicle;
+                }
+
+                var vehicleType = await _context.VehicleTypes
+                    .FirstOrDefaultAsync(vt => vt.Id == vehicleTypeId);
+
+                if (vehicleType == null)
+                {
+                    throw new KeyNotFoundException($"Vehicle type with ID {vehicleTypeId} not found");
+                }
+
+                var vehicle = new Vehicle
+                {
+                    LicensePlate = licensePlate,
+                    VehicleTypeId = vehicleTypeId,
+                    RegistrationDate = DateTime.UtcNow
+                };
+
+                _context.Vehicles.Add(vehicle);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation($"Registered new vehicle with license plate {licensePlate}");
+                return vehicle;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error registering vehicle with license plate {licensePlate}");
+                throw;
+            }
+        }
+
+        public async Task<bool> UpdateVehicleTypeAsync(string licensePlate, string newVehicleTypeId)
+        {
+            try
+            {
+                var vehicle = await _context.Vehicles
+                    .FirstOrDefaultAsync(v => v.LicensePlate == licensePlate);
+
+                if (vehicle == null)
+                {
+                    _logger.LogWarning($"Vehicle with license plate {licensePlate} not found");
+                    return false;
+                }
+
+                var vehicleType = await _context.VehicleTypes
+                    .FirstOrDefaultAsync(vt => vt.Id == newVehicleTypeId);
+
+                if (vehicleType == null)
+                {
+                    _logger.LogWarning($"Vehicle type with ID {newVehicleTypeId} not found");
+                    return false;
+                }
+
+                vehicle.VehicleTypeId = newVehicleTypeId;
+                vehicle.LastUpdated = DateTime.UtcNow;
+
+                _context.Vehicles.Update(vehicle);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation($"Updated vehicle type for license plate {licensePlate}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error updating vehicle type for license plate {licensePlate}");
+                return false;
+            }
+        }
+
+        public async Task<bool> DeregisterVehicleAsync(string licensePlate)
+        {
+            try
+            {
+                var vehicle = await _context.Vehicles
+                    .FirstOrDefaultAsync(v => v.LicensePlate == licensePlate);
+
+                if (vehicle == null)
+                {
+                    _logger.LogWarning($"Vehicle with license plate {licensePlate} not found");
+                    return false;
+                }
+
+                _context.Vehicles.Remove(vehicle);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation($"Deregistered vehicle with license plate {licensePlate}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error deregistering vehicle with license plate {licensePlate}");
+                return false;
+            }
         }
 
         public async Task<Vehicle> RecordEntry(string plateNumber, string vehicleType, byte[] photoEntry, Guid parkingZoneId)

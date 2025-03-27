@@ -1,25 +1,26 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ParkIRC.Web.Data;
+using Parking_Zone.Data;
 using Parking_Zone.Models;
 using Parking_Zone.Services;
-using System.Threading.Tasks;
-using ParkIRC.Web.Hubs;
+using Parking_Zone.Hubs;
 using Microsoft.AspNetCore.SignalR;
+using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Parking_Zone.Extensions;
-using System;
 using System.Collections.Generic;
 
 namespace Parking_Zone.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ParkingTransactionController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly IHubContext<ParkingHub> _parkingHubContext;
+        private readonly IHubContext<ParkingHub> _parkingHub;
         private readonly IParkingService _parkingService;
         private readonly ILogger<ParkingTransactionController> _logger;
         private readonly IParkingTransactionService _transactionService;
@@ -27,14 +28,14 @@ namespace Parking_Zone.Controllers
 
         public ParkingTransactionController(
             ApplicationDbContext context,
-            IHubContext<ParkingHub> parkingHubContext,
+            IHubContext<ParkingHub> parkingHub,
             IParkingService parkingService,
             ILogger<ParkingTransactionController> logger,
             IParkingTransactionService transactionService,
             IParkingFeeService feeService)
         {
             _context = context;
-            _parkingHubContext = parkingHubContext;
+            _parkingHub = parkingHub;
             _parkingService = parkingService;
             _logger = logger;
             _transactionService = transactionService;
@@ -93,8 +94,8 @@ namespace Parking_Zone.Controllers
                 await _context.SaveChangesAsync();
 
                 // Kirim notifikasi melalui SignalR
-                await _parkingHubContext.Clients.All.SendAsync("ReceiveVehicleEntry", transaction);
-                await _parkingHubContext.Clients.All.SendAsync("ReceiveSpaceUpdate", parkingSpace);
+                await _parkingHub.Clients.All.SendAsync("ReceiveVehicleEntry", transaction);
+                await _parkingHub.Clients.All.SendAsync("ReceiveSpaceUpdate", parkingSpace);
 
                 return Ok(new
                 {
@@ -145,10 +146,10 @@ namespace Parking_Zone.Controllers
                 await _context.SaveChangesAsync();
 
                 // Kirim notifikasi melalui SignalR
-                await _parkingHubContext.Clients.All.SendAsync("ReceiveVehicleExit", transaction);
+                await _parkingHub.Clients.All.SendAsync("ReceiveVehicleExit", transaction);
                 if (transaction.ParkingSpace != null)
                 {
-                    await _parkingHubContext.Clients.All.SendAsync("ReceiveSpaceUpdate", transaction.ParkingSpace);
+                    await _parkingHub.Clients.All.SendAsync("ReceiveSpaceUpdate", transaction.ParkingSpace);
                 }
 
                 return Ok(new
