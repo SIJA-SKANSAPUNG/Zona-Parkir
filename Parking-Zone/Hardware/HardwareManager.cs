@@ -10,6 +10,7 @@ namespace Parking_Zone.Hardware
         private readonly ILogger<HardwareManager> _logger;
         private readonly Dictionary<string, DeviceConfiguration> _devices;
         private readonly Dictionary<string, object> _deviceSettings;
+        private string _lastResponse = string.Empty;
 
         public HardwareManager(ILogger<HardwareManager> logger)
         {
@@ -23,7 +24,23 @@ namespace Parking_Zone.Hardware
             try
             {
                 _logger.LogInformation($"Initializing device {config.DeviceId}");
-                _devices[config.DeviceId] = config;
+                
+                // Convert PrinterConfiguration to DeviceConfiguration
+                var deviceConfig = new DeviceConfiguration
+                {
+                    DeviceId = config.DeviceId,
+                    DeviceType = "Printer",
+                    Name = config.DeviceName ?? config.DeviceId,
+                    IsEnabled = true,
+                    Settings = new Dictionary<string, string>
+                    {
+                        { "PaperSize", config.PaperSize },
+                        { "DPI", config.DPI.ToString() },
+                        { "AutoCut", config.AutoCut.ToString() }
+                    }
+                };
+
+                _devices[config.DeviceId] = deviceConfig;
                 return true;
             }
             catch (Exception ex)
@@ -44,6 +61,12 @@ namespace Parking_Zone.Hardware
 
                 _logger.LogInformation($"Sending command {command} to device {deviceId}");
                 // Implement actual hardware communication here
+                // Simulate response for testing
+                if (command == "CAPTURE")
+                {
+                    _lastResponse = $"/images/vehicles/{deviceId}_ENTRY.jpg";
+                }
+
                 return true;
             }
             catch (Exception ex)
@@ -148,5 +171,10 @@ namespace Parking_Zone.Hardware
                 return null;
             }
         }
+
+        public async Task<string> ReadResponseAsync()
+        {
+            return _lastResponse;
+        }
     }
-} 
+}

@@ -35,5 +35,8 @@ namespace Parking_Zone.Models
 
         public string Status { get; set; } = "Available";
         public string? Notes { get; set; }
+
+        // New property to resolve ExitGateController error
+        public string? Name { get; set; }
     }
-} 
+}

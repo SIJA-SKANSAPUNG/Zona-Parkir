@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Parking_Zone.Models;
+using Parking_Zone.Enums;
+
+// Resolve VehicleType ambiguity
+using VehicleType = Parking_Zone.Enums.VehicleType;
 
 namespace Parking_Zone.Data
 {
@@ -22,10 +26,7 @@ namespace Parking_Zone.Data
         public DbSet<VehicleEntry> VehicleEntries { get; set; }
         public DbSet<VehicleExit> VehicleExits { get; set; }
         public DbSet<VehicleEntryRequest> VehicleEntryRequests { get; set; }
-        public DbSet<VehicleType> VehicleTypes { get; set; }
-        public DbSet<Journal> Journals { get; set; }
-
-        // Gates and Operations
+        public DbSet<Journal> Journals { get; set; } = null!;
         public DbSet<ParkingGate> ParkingGates { get; set; }
         public DbSet<EntryGate> EntryGates { get; set; }
         public DbSet<ExitGate> ExitGates { get; set; }
@@ -75,7 +76,47 @@ namespace Parking_Zone.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // Configure relationships for ParkingZone
+            // Configure relationships for Reservation
+            modelBuilder.Entity<Reservation>(entity =>
+            {
+                entity.Property(r => r.Status)
+                    .HasConversion(
+                        v => v.ToString(),
+                        v => (ReservationStatus)Enum.Parse(typeof(ReservationStatus), v)
+                    );
+
+                entity.HasOne(r => r.Vehicle)
+                    .WithMany()
+                    .HasForeignKey(r => r.VehicleId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(r => r.ParkingSpot)
+                    .WithMany()
+                    .HasForeignKey(r => r.ParkingSpotId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure relationships for ParkingTransaction
+            modelBuilder.Entity<ParkingTransaction>(entity =>
+            {
+                entity.Property(p => p.Status)
+                    .HasConversion(
+                        v => v.ToString(),
+                        v => (ParkingTransactionStatus)Enum.Parse(typeof(ParkingTransactionStatus), v)
+                    );
+
+                entity.HasOne(p => p.Vehicle)
+                    .WithMany()
+                    .HasForeignKey(p => p.VehicleId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(p => p.ParkingSpot)
+                    .WithMany()
+                    .HasForeignKey(p => p.ParkingSpotId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Existing relationships for ParkingZone and ParkingGate
             modelBuilder.Entity<ParkingZone>(entity =>
             {
                 entity.HasMany(z => z.ParkingSlots)
@@ -94,7 +135,6 @@ namespace Parking_Zone.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Configure relationships for ParkingGate
             modelBuilder.Entity<ParkingGate>(entity =>
             {
                 entity.HasOne(g => g.ParkingZone)
@@ -111,30 +151,6 @@ namespace Parking_Zone.Data
                 entity.Property(e => e.IsActive).HasDefaultValue(true);
             });
 
-            // Configure relationships for ParkingTransaction
-            modelBuilder.Entity<ParkingTransaction>(entity =>
-            {
-                entity.HasOne(t => t.ParkingZone)
-                    .WithMany(z => z.ParkingTransactions)
-                    .HasForeignKey(t => t.ParkingZoneId)
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
-
-            // Configure relationships for ParkingSlot
-            modelBuilder.Entity<ParkingSlot>(entity =>
-            {
-                entity.HasMany(s => s.Reservations)
-                    .WithOne()
-                    .HasForeignKey("ParkingSlotId")
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasMany(s => s.ParkingTransactions)
-                    .WithOne()
-                    .HasForeignKey("ParkingSlotId")
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
-
-            // Configure CameraConfiguration
             modelBuilder.Entity<CameraConfiguration>(entity =>
             {
                 entity.HasKey(e => e.Id);
@@ -142,7 +158,6 @@ namespace Parking_Zone.Data
                 entity.Property(e => e.Port).IsRequired();
             });
 
-            // Configure PrinterConfiguration
             modelBuilder.Entity<PrinterConfiguration>(entity =>
             {
                 entity.HasKey(e => e.Id);

@@ -19,8 +19,8 @@ namespace Parking_Zone.Models
 
         public string GateType { get; set; }  // "Entry", "Exit", "Both"
 
-        [Required]
-        public string Status { get; set; } = "Online";  // Online, Offline, Maintenance, Disabled
+        public bool IsOnline { get; set; } = true;
+        public string Status { get; set; } = "Closed";  // Online, Offline, Maintenance, Disabled
 
         [StringLength(500)]
         public string Description { get; set; }

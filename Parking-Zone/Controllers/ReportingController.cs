@@ -65,7 +65,7 @@ namespace Parking_Zone.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error generating report");
-                return View("Error", new ErrorViewModel 
+                return View("Error", new Parking_Zone.ViewModels.ErrorViewModel 
                 { 
                     Message = "Error generating report: " + ex.Message,
                     RequestId = HttpContext.TraceIdentifier
@@ -132,7 +132,7 @@ namespace Parking_Zone.Controllers
             }
             catch (Exception ex)
             {
-                return View("Error", new ErrorViewModel { Message = "Error generating daily revenue report: " + ex.Message });
+                return View("Error", new Parking_Zone.ViewModels.ErrorViewModel { Message = "Error generating daily revenue report: " + ex.Message });
             }
         }
 
@@ -189,7 +189,7 @@ namespace Parking_Zone.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error generating vehicle type statistics");
-                return View("Error", new ErrorViewModel { Message = "Error generating statistics" });
+                return View("Error", new Parking_Zone.ViewModels.ErrorViewModel { Message = "Error generating statistics" });
             }
         }
 
@@ -241,7 +241,7 @@ namespace Parking_Zone.Controllers
             }
             catch (Exception ex)
             {
-                return View("Error", new ErrorViewModel { Message = "Error generating peak hour analysis: " + ex.Message });
+                return View("Error", new Parking_Zone.ViewModels.ErrorViewModel { Message = "Error generating peak hour analysis: " + ex.Message });
             }
         }
     }

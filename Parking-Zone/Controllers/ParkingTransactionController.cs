@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Parking_Zone.Extensions;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Parking_Zone.Controllers
 {
@@ -80,9 +81,16 @@ namespace Parking_Zone.Controllers
                     VehicleId = vehicle.Id,
                     ParkingSpaceId = parkingSpace.Id,
                     EntryTime = DateTime.Now,
-                    OperatorId = request.OperatorId,
+                    OperatorId = request.OperatorId ?? Guid.Empty,
                     EntryPhotoPath = request.PhotoPath,
-                    CreatedAt = DateTime.Now
+                    CreatedAt = DateTime.Now,
+                    VehicleNumber = request.PlateNumber,
+                    VehicleType = request.VehicleType,
+                    VehicleTypeId = 1, // Hardcoded for now, should be dynamically fetched
+                    TransactionNumber = Guid.NewGuid().ToString("N").Substring(0, 10),
+                    Amount = 0, // Initial amount
+                    ParkingZoneId = parkingSpace.ParkingZoneId,
+                    GateId = request.GateId.HasValue ? request.GateId.Value : Guid.Empty
                 };
 
                 _context.ParkingTransactions.Add(transaction);
@@ -166,17 +174,26 @@ namespace Parking_Zone.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Index(DateTime? startDate = null, DateTime? endDate = null)
+        [HttpGet("transactions")]
+        public async Task<IActionResult> Index(DateTime? startDate, DateTime? endDate)
         {
             startDate ??= DateTime.Now.StartOfDay();
             endDate ??= DateTime.Now.EndOfDay();
 
-            var transactions = await _transactionService.GetTransactionsAsync(startDate.Value, endDate.Value);
-            return View(transactions);
+            var transactions = await _context.ParkingTransactions
+                .Where(t => t.EntryTime >= startDate && t.EntryTime <= endDate)
+                .ToListAsync();
+
+            // Set formatted times
+            foreach (var transaction in transactions)
+            {
+                transaction.SetFormattedTimes();
+            }
+
+            return Ok(transactions);
         }
 
-        [HttpGet]
+        [HttpGet("details/{id}")]
         public async Task<IActionResult> Details(string id)
         {
             if (!id.IsValidGuid())
@@ -185,20 +202,25 @@ namespace Parking_Zone.Controllers
                 return BadRequest("Invalid transaction ID format");
             }
 
-            var transaction = await _transactionService.GetTransactionByIdAsync(Guid.Parse(id));
+            var transaction = await _context.ParkingTransactions
+                .FirstOrDefaultAsync(t => t.Id == Guid.Parse(id));
+
             if (transaction == null)
                 return NotFound();
 
             // Format license plate
-            transaction.VehicleLicensePlate = transaction.VehicleLicensePlate.FormatLicensePlate();
+            transaction.LicensePlate = transaction.LicensePlate.FormatLicensePlate();
 
             // Calculate duration
             transaction.Duration = transaction.EntryTime.CalculateParkingDuration(transaction.ExitTime);
 
-            return View(transaction);
+            // Set formatted times
+            transaction.SetFormattedTimes();
+
+            return Ok(transaction);
         }
 
-        [HttpPost]
+        [HttpPost("update-fee")]
         [Authorize(Roles = "Admin,Supervisor")]
         public async Task<IActionResult> UpdateFee(string id, decimal newFee)
         {
@@ -210,9 +232,20 @@ namespace Parking_Zone.Controllers
 
             try
             {
-                await _transactionService.UpdateTransactionFeeAsync(Guid.Parse(id), newFee);
+                var transaction = await _context.ParkingTransactions
+                    .FirstOrDefaultAsync(t => t.Id == Guid.Parse(id));
+
+                if (transaction == null)
+                    return NotFound();
+
+                transaction.Fee = newFee;
+                transaction.UpdatedAt = DateTime.Now;
+
+                _context.ParkingTransactions.Update(transaction);
+                await _context.SaveChangesAsync();
+
                 _logger.LogUserAction(User.GetUserId(), "Update Fee", $"Updated fee for transaction {id} to {newFee}");
-                return RedirectToAction(nameof(Details), new { id });
+                return Ok(transaction);
             }
             catch (Exception ex)
             {
@@ -221,28 +254,31 @@ namespace Parking_Zone.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet("receipt/{id}")]
         public async Task<IActionResult> Receipt(string id)
         {
             if (!id.IsValidGuid())
                 return BadRequest("Invalid transaction ID format");
 
-            var transaction = await _transactionService.GetTransactionByIdAsync(Guid.Parse(id));
+            var transaction = await _context.ParkingTransactions
+                .FirstOrDefaultAsync(t => t.Id == Guid.Parse(id));
+
             if (transaction == null)
                 return NotFound();
 
             // Format data for receipt
-            transaction.VehicleLicensePlate = transaction.VehicleLicensePlate.FormatLicensePlate();
+            transaction.LicensePlate = transaction.LicensePlate.FormatLicensePlate();
             transaction.Duration = transaction.EntryTime.CalculateParkingDuration(transaction.ExitTime);
-            transaction.EntryTimeFormatted = transaction.EntryTime.ToTimeZoneString();
-            transaction.ExitTimeFormatted = transaction.ExitTime?.ToTimeZoneString();
+            
+            // Set formatted times
+            transaction.SetFormattedTimes();
 
-            return View(transaction);
+            return Ok(transaction);
         }
 
         public class VehicleExitRequest
         {
-            public int TransactionId { get; set; }
+            public Guid TransactionId { get; set; }
             public decimal Fee { get; set; }
             public bool IsPaid { get; set; }
             public string? PhotoPath { get; set; }

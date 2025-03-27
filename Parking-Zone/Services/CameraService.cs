@@ -1,10 +1,12 @@
-using System;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
+using Parking_Zone.Services.Interfaces;
 using Parking_Zone.Hardware;
-using Parking_Zone.Models;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 using Parking_Zone.Services.Models;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Parking_Zone.Services
 {
@@ -12,135 +14,74 @@ namespace Parking_Zone.Services
     {
         private readonly ILogger<CameraService> _logger;
         private readonly IHardwareManager _hardwareManager;
-        private readonly IIPCameraService _ipCameraService;
+        private readonly IIpCameraService _ipCameraService;
 
         public CameraService(
             ILogger<CameraService> logger,
             IHardwareManager hardwareManager,
-            IIPCameraService ipCameraService)
+            IIpCameraService ipCameraService)
         {
             _logger = logger;
             _hardwareManager = hardwareManager;
             _ipCameraService = ipCameraService;
         }
 
-        public async Task<bool> InitializeCameraAsync(Parking_Zone.Models.CameraConfiguration config)
-        {
-            _logger.LogInformation("Basic implementation of InitializeCameraAsync");
-            return true;
-        }
-
-        public async Task<bool> InitializeServiceCameraAsync(Services.Models.CameraConfiguration config)
+        public async Task<bool> InitializeCameraAsync(Parking_Zone.Services.Models.CameraConfiguration config)
         {
             try
             {
-                _logger.LogInformation($"Initializing camera {config.IpAddress}");
-                var deviceConfig = new DeviceConfiguration
+                if (config == null)
                 {
-                    DeviceId = config.CameraId,
-                    DeviceType = "Camera",
-                    IpAddress = config.IpAddress,
-                    Port = config.Port,
-                    Settings = new
-                    {
-                        Username = config.Username,
-                        Password = config.Password,
-                        StreamUrl = config.StreamUrl,
-                        SnapshotUrl = config.SnapshotUrl,
-                        ImageQuality = config.ImageQuality,
-                        ImageResolutionWidth = config.ImageResolutionWidth,
-                        ImageResolutionHeight = config.ImageResolutionHeight
-                    }
-                };
-
-                var initialized = await _hardwareManager.InitializeDeviceAsync(deviceConfig);
-                if (!initialized)
-                {
+                    _logger.LogError("Camera configuration is null");
                     return false;
                 }
 
-                // For IP cameras, check if they're online
+                // Validate camera configuration
+                if (string.IsNullOrEmpty(config.CameraId))
+                {
+                    _logger.LogError("Camera ID is required");
+                    return false;
+                }
+
+                // Send initialization command to hardware manager
+                bool result = await _hardwareManager.SendCommandAsync(config.CameraId, "INITIALIZE", config);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error initializing camera {config?.CameraId}");
+                return false;
+            }
+        }
+
+        public async Task<bool> InitializeServiceCameraAsync(Parking_Zone.Services.Models.CameraConfiguration config)
+        {
+            try
+            {
+                // Additional service-specific initialization logic
+                if (config == null)
+                {
+                    _logger.LogError("Camera configuration is null");
+                    return false;
+                }
+
+                // Validate IP camera configuration
                 if (!string.IsNullOrEmpty(config.IpAddress))
                 {
-                    return await _ipCameraService.IsOnlineAsync(config.IpAddress);
+                    // Attempt to connect to IP camera
+                    bool ipCameraInitialized = await _ipCameraService.InitializeCameraAsync(config);
+                    if (!ipCameraInitialized)
+                    {
+                        _logger.LogError($"Failed to initialize IP camera {config.CameraId}");
+                        return false;
+                    }
                 }
 
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error initializing camera {config.IpAddress}");
-                return false;
-            }
-        }
-
-        public async Task<byte[]?> CaptureImageAsync(string gateId, string reason)
-        {
-            try
-            {
-                var camera = await GetCameraByGateIdAsync(gateId);
-                if (camera == null || !camera.IsOperational)
-                {
-                    throw new InvalidOperationException($"Camera at gate {gateId} is not available");
-                }
-
-                _logger.LogInformation($"Capturing image at gate {gateId} for reason: {reason}");
-
-                // For IP cameras, use the IPCameraService
-                if (!string.IsNullOrEmpty(camera.IpAddress))
-                {
-                    var base64Image = await _ipCameraService.CaptureImageAsync(camera.IpAddress, camera.Port);
-                    if (base64Image.StartsWith("data:image/jpeg;base64,"))
-                    {
-                        return Convert.FromBase64String(base64Image.Substring("data:image/jpeg;base64,".Length));
-                    }
-                }
-
-                // For other cameras, use the hardware manager
-                var result = await _hardwareManager.SendCommandAsync(gateId, "CAPTURE", new { Reason = reason });
-                if (!result)
-                {
-                    throw new InvalidOperationException($"Failed to capture image at gate {gateId}");
-                }
-
-                // Get the image data from the hardware manager
-                var response = await _hardwareManager.GetDeviceSettingsAsync(gateId);
-                if (response is byte[] imageData)
-                {
-                    return imageData;
-                }
-
-                throw new InvalidOperationException($"Failed to get image data from gate {gateId}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error capturing image at gate {gateId}");
-                return null;
-            }
-        }
-
-        public async Task<bool> IsOperationalAsync(string gateId)
-        {
-            try
-            {
-                return await _hardwareManager.IsDeviceOperationalAsync(gateId);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error checking camera operational status at gate {gateId}");
-                return false;
-            }
-        }
-
-        public async Task<bool> DisconnectAsync(string gateId)
-        {
-            try
-            {
-                return await _hardwareManager.DisconnectDeviceAsync(gateId);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error disconnecting camera at gate {gateId}");
+                _logger.LogError(ex, $"Error initializing service camera {config?.CameraId}");
                 return false;
             }
         }
@@ -156,12 +97,14 @@ namespace Parking_Zone.Services
                 {
                     GateId = gateId,
                     IsOperational = await IsOperationalAsync(gateId),
-                    Settings = await GetCameraSettingsAsync(gateId)
+                    Status = "Active",
+                    LastSync = DateTime.UtcNow,
+                    Name = config.Name ?? gateId
                 };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error retrieving camera information for gate {gateId}");
+                _logger.LogError(ex, $"Error retrieving camera for gate {gateId}");
                 return null;
             }
         }
@@ -175,13 +118,10 @@ namespace Parking_Zone.Services
 
                 foreach (var config in configs)
                 {
-                    if (config.DeviceType == "Camera")
+                    var camera = await GetCameraByGateIdAsync(config.DeviceId);
+                    if (camera != null)
                     {
-                        var camera = await GetCameraByGateIdAsync(config.DeviceId);
-                        if (camera != null)
-                        {
-                            cameras.Add(camera);
-                        }
+                        cameras.Add(camera);
                     }
                 }
 
@@ -194,7 +134,7 @@ namespace Parking_Zone.Services
             }
         }
 
-        public async Task<bool> UpdateCameraSettingsAsync(string gateId, CameraSettings settings)
+        public async Task<bool> UpdateCameraSettingsAsync(string gateId, Parking_Zone.Services.Models.CameraSettings settings)
         {
             try
             {
@@ -207,11 +147,11 @@ namespace Parking_Zone.Services
             }
         }
 
-        public async Task<CameraSettings?> GetCameraSettingsAsync(string gateId)
+        public async Task<Parking_Zone.Services.Models.CameraSettings?> GetCameraSettingsAsync(string gateId)
         {
             try
             {
-                return await _hardwareManager.GetDeviceSettingsAsync(gateId) as CameraSettings;
+                return await _hardwareManager.GetDeviceSettingsAsync(gateId) as Parking_Zone.Services.Models.CameraSettings;
             }
             catch (Exception ex)
             {
@@ -220,23 +160,64 @@ namespace Parking_Zone.Services
             }
         }
 
-        public async Task<byte[]> TakePhoto()
+        public async Task<bool> IsOperationalAsync(string gateId)
         {
-            try 
+            try
             {
-                // Use the first available camera
-                var cameras = await GetAllCamerasAsync();
-                var firstCamera = cameras.FirstOrDefault();
+                // Send a simple ping or status check command
+                bool result = await _hardwareManager.SendCommandAsync(gateId, "STATUS", null);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error checking operational status for gate {gateId}");
+                return false;
+            }
+        }
+
+        public async Task<string> TakePhotoAsync(Parking_Zone.Services.Models.CameraConfiguration config)
+        {
+            if (config == null)
+            {
+                throw new ArgumentNullException(nameof(config));
+            }
+
+            if (!config.IsActive)
+            {
+                throw new InvalidOperationException("Camera is not active");
+            }
+
+            try
+            {
+                string base64Image;
                 
-                if (firstCamera == null)
+                // Attempt to capture image from IP camera
+                if (!string.IsNullOrEmpty(config.IpAddress))
                 {
-                    throw new InvalidOperationException("No cameras available");
+                    base64Image = await _ipCameraService.CaptureImageAsync(config.IpAddress, config.Port);
+                }
+                else
+                {
+                    // Fallback to hardware manager capture
+                    await _hardwareManager.SendCommandAsync(config.CameraId, "CAPTURE", null);
+                    base64Image = await _hardwareManager.ReadResponseAsync();
                 }
 
-                // Capture image from the first camera
-                var imageBytes = await CaptureImageAsync(firstCamera.GateId.ToString(), "Vehicle Entry");
+                // Generate unique filename
+                string fileName = $"{Guid.NewGuid():N}.jpg";
+                string directoryPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "cameras");
                 
-                return imageBytes ?? throw new InvalidOperationException("Failed to capture image");
+                // Ensure directory exists
+                Directory.CreateDirectory(directoryPath);
+                
+                string filePath = Path.Combine(directoryPath, fileName);
+
+                // Convert base64 to byte array and save
+                byte[] imageBytes = Convert.FromBase64String(base64Image.Split(',')[1]);
+                await File.WriteAllBytesAsync(filePath, imageBytes);
+
+                // Return relative path for web access
+                return $"/images/cameras/{fileName}";
             }
             catch (Exception ex)
             {
@@ -244,5 +225,32 @@ namespace Parking_Zone.Services
                 throw;
             }
         }
+
+        public async Task<string> CaptureImageAsync(string gateId, string reason)
+        {
+            try
+            {
+                // Send capture command
+                bool commandSent = await _hardwareManager.SendCommandAsync(gateId, "CAPTURE", new { Reason = reason });
+                if (!commandSent)
+                {
+                    throw new ApplicationException($"Failed to send capture command to camera at gate {gateId}");
+                }
+
+                // Read response
+                string imagePath = await _hardwareManager.ReadResponseAsync();
+                if (string.IsNullOrEmpty(imagePath))
+                {
+                    throw new ApplicationException($"No response from camera at gate {gateId}");
+                }
+
+                return imagePath;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error capturing image at gate {gateId}");
+                throw;
+            }
+        }
     }
-} 
+}

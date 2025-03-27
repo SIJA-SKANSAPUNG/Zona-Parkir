@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Parking_Zone.Enums;
 
 namespace Parking_Zone.Models
 {
@@ -39,6 +40,13 @@ namespace Parking_Zone.Models
         public string VehicleNumber { get; set; }
 
         [Required]
+        [StringLength(50)]
+        public string LicensePlate { get; set; }
+
+        [Required]
+        public VehicleType VehicleType { get; set; }
+
+        [Required]
         public Guid GateId { get; set; }
 
         [ForeignKey("GateId")]
@@ -49,29 +57,9 @@ namespace Parking_Zone.Models
         [ForeignKey("ParkingSpaceId")]
         public virtual ParkingSlot? ParkingSlot { get; set; }
 
-        public Guid? OperatorId { get; set; }
-
-        [ForeignKey("OperatorId")]
-        public virtual AppUser? Operator { get; set; }
-
-        [Required]
-        [StringLength(50)]
-        public string LicensePlate { get; set; }
-
-        [Required]
-        public int VehicleTypeId { get; set; }
-
-        [ForeignKey("VehicleTypeId")]
-        public virtual VehicleType VehicleType { get; set; } = null!;
-
-        [Required]
-        [StringLength(500)]
-        public string EntryPhotoPath { get; set; }
-
-        [Required]
-        public int ParkingZoneId { get; set; }
-
-        [ForeignKey("ParkingZoneId")]
-        public virtual ParkingZone ParkingZone { get; set; } = null!;
+        // Matching ViewModel properties
+        public string? EntryOperator { get; set; }
+        public string? PhotoEntry { get; set; }
+        public string? TicketBarcode { get; set; }
     }
 }

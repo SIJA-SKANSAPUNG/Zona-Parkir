@@ -14,5 +14,6 @@ namespace Parking_Zone.Hardware
         Task<IEnumerable<DeviceConfiguration>> GetAllDeviceConfigurationsAsync();
         Task<bool> UpdateDeviceSettingsAsync(string deviceId, object settings);
         Task<object?> GetDeviceSettingsAsync(string deviceId);
+        Task<string> ReadResponseAsync();
     }
-} 
+}

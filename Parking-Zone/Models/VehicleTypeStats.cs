@@ -8,5 +8,6 @@ namespace Parking_Zone.Models
         public int Count { get; set; }
         public decimal TotalRevenue { get; set; }
         public double Percentage { get; set; }
+        public decimal AverageTransaction { get; set; }
     }
 }

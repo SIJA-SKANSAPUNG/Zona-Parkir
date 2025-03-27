@@ -6,28 +6,21 @@ namespace Parking_Zone.Extensions
 {
     public static class PrinterServiceExtensions
     {
-        public static async Task PrintTicket(this IPrinterService printerService, 
-            string ticketNumber, 
-            string plateNumber, 
-            DateTime entryTime, 
-            int vehicleType)
+        public static async Task<bool> PrintTicket(this IPrinterService printerService, ParkingTicket ticket)
         {
-            await printerService.PrintTicketAsync(ticketNumber, plateNumber, entryTime, vehicleType);
-        }
+            if (ticket == null) return false;
 
-        public static async Task PrintEntryTicket(this IPrinterService printerService, ParkingTicket ticket)
-        {
-            await printerService.PrintTicketAsync(
+            return await printerService.PrintTicketAsync(
                 ticket.TicketNumber, 
-                ticket.VehicleEntry.LicensePlate, 
-                ticket.VehicleEntry.EntryTime, 
-                ticket.VehicleEntry.VehicleType.Id
+                ticket.Vehicle?.LicensePlate ?? ticket.VehicleLicensePlate, 
+                ticket.IssueTime ?? DateTime.Now, 
+                ticket.Vehicle?.VehicleType != null ? int.Parse(ticket.Vehicle.VehicleType) : 0
             );
         }
 
         public static async Task PrintExitReceipt(this IPrinterService printerService, ParkingTransaction transaction)
         {
-            await printerService.PrintReceiptAsync(transaction);
+            await printerService.PrintReceiptAsync(transaction.TicketNumber, transaction);
         }
     }
 }

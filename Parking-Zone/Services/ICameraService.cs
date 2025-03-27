@@ -1,19 +1,19 @@
-using System.Threading.Tasks;
 using System.Collections.Generic;
-using Parking_Zone.Models;
+using System.Threading.Tasks;
+using Parking_Zone.Services.Models;
 
 namespace Parking_Zone.Services
 {
     public interface ICameraService
     {
         Task<bool> InitializeCameraAsync(CameraConfiguration config);
-        Task<byte[]?> CaptureImageAsync(string gateId, string reason);
-        Task<bool> IsOperationalAsync(string gateId);
-        Task<bool> DisconnectAsync(string gateId);
+        Task<bool> InitializeServiceCameraAsync(CameraConfiguration config);
         Task<Camera?> GetCameraByGateIdAsync(string gateId);
         Task<IEnumerable<Camera>> GetAllCamerasAsync();
         Task<bool> UpdateCameraSettingsAsync(string gateId, CameraSettings settings);
         Task<CameraSettings?> GetCameraSettingsAsync(string gateId);
-        Task<byte[]> TakePhoto();
+        Task<string> TakePhotoAsync(CameraConfiguration config);
+        Task<bool> IsOperationalAsync(string gateId);
+        Task<string> CaptureImageAsync(string gateId, string reason);
     }
 }

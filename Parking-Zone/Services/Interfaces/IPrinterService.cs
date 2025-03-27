@@ -10,8 +10,8 @@ namespace Parking_Zone.Services.Interfaces
         /// Prints an entry ticket for a parking transaction
         /// </summary>
         /// <param name="ticket">Parking ticket to print</param>
-        /// <returns>Task representing the print operation</returns>
-        Task PrintEntryTicket(ParkingTicket ticket);
+        /// <returns>Task representing the print operation with a boolean result</returns>
+        Task<bool> PrintEntryTicket(ParkingTicket ticket);
 
         /// <summary>
         /// Prints an exit ticket for a parking transaction

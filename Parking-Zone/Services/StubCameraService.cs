@@ -1,57 +1,82 @@
 using System;
-using System.Threading.Tasks;
 using System.Collections.Generic;
-using Parking_Zone.Models;
+using System.Threading.Tasks;
+using Parking_Zone.Services.Models;
 
 namespace Parking_Zone.Services
 {
     public class StubCameraService : ICameraService
     {
-        public Task<bool> InitializeCameraAsync(CameraConfiguration config)
+        public async Task<bool> InitializeCameraAsync(CameraConfiguration config)
         {
-            return Task.FromResult(true);
+            await Task.Delay(10);
+            return true;
         }
 
-        public Task<byte[]?> CaptureImageAsync(string gateId, string reason)
+        public async Task<bool> InitializeServiceCameraAsync(CameraConfiguration config)
         {
-            return Task.FromResult<byte[]?>(new byte[0]);
+            await Task.Delay(10);
+            return true;
         }
 
-        public Task<bool> IsOperationalAsync(string gateId)
+        public async Task<Camera?> GetCameraByGateIdAsync(string gateId)
         {
-            return Task.FromResult(true);
+            await Task.Delay(10);
+            return new Camera
+            {
+                GateId = gateId,
+                IsOperational = true,
+                Status = "Active",
+                LastSync = DateTime.UtcNow,
+                Name = $"Camera {gateId}",
+                Model = "StubCamera",
+                Resolution = "1920x1080"
+            };
         }
 
-        public Task<bool> DisconnectAsync(string gateId)
+        public async Task<IEnumerable<Camera>> GetAllCamerasAsync()
         {
-            return Task.FromResult(true);
+            await Task.Delay(10);
+            return new List<Camera>
+            {
+                new Camera { GateId = "GATE001", IsOperational = true, Status = "Active", Model = "StubCamera", Resolution = "1920x1080" },
+                new Camera { GateId = "GATE002", IsOperational = true, Status = "Active", Model = "StubCamera", Resolution = "1920x1080" }
+            };
         }
 
-        public Task<Camera?> GetCameraByGateIdAsync(string gateId)
+        public async Task<bool> UpdateCameraSettingsAsync(string gateId, CameraSettings settings)
         {
-            return Task.FromResult<Camera?>(new Camera());
+            await Task.Delay(10);
+            return true;
         }
 
-        public Task<IEnumerable<Camera>> GetAllCamerasAsync()
+        public async Task<CameraSettings?> GetCameraSettingsAsync(string gateId)
         {
-            return Task.FromResult<IEnumerable<Camera>>(new List<Camera>());
+            await Task.Delay(10);
+            return new CameraSettings
+            {
+                GateId = gateId,
+                BaudRate = 9600,
+                Resolution = "1920x1080"
+            };
         }
 
-        public Task<bool> UpdateCameraSettingsAsync(string gateId, CameraSettings settings)
+        public async Task<string> TakePhotoAsync(CameraConfiguration config)
         {
-            return Task.FromResult(true);
+            await Task.Delay(10);
+            return $"/images/cameras/{config.CameraId}_{DateTime.UtcNow:yyyyMMddHHmmss}.jpg";
         }
 
-        public Task<CameraSettings?> GetCameraSettingsAsync(string gateId)
+        public async Task<bool> IsOperationalAsync(string gateId)
         {
-            return Task.FromResult<CameraSettings?>(new CameraSettings());
+            await Task.Delay(10);
+            return true;
         }
 
-        // Add TakePhoto method
-        public Task<byte[]> TakePhoto()
+        public async Task<string> CaptureImageAsync(string gateId, string reason)
         {
-            // Return a dummy byte array
-            return Task.FromResult(new byte[1024]);
+            await Task.Delay(10);
+            return $"/images/vehicles/{gateId}_{reason}_{DateTime.UtcNow:yyyyMMddHHmmss}.jpg";
         }
     }
-} 
+}

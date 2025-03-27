@@ -60,8 +60,8 @@ namespace Parking_Zone.Controllers
                         PaymentTime = t.PaymentTime.HasValue ? t.PaymentTime.Value.ToString("dd/MM/yyyy HH:mm:ss") : "-",
                         EntryGate = t.EntryPoint,
                         ExitGate = t.ExitPoint,
-                        EntryOperator = t.OperatorId,
-                        ExitOperator = t.ExitOperatorId,
+                        EntryOperator = t.OperatorId.ToString(),
+                        ExitOperator = t.ExitOperatorId.HasValue ? t.ExitOperatorId.Value.ToString() : null,
                         Status = t.Status,
                         IsPaid = t.PaymentStatus == "Paid"
                     })
@@ -115,8 +115,8 @@ namespace Parking_Zone.Controllers
                         PaymentTime = t.PaymentTime.HasValue ? t.PaymentTime.Value.ToString("dd/MM/yyyy HH:mm:ss") : "-",
                         EntryGate = t.EntryPoint,
                         ExitGate = t.ExitPoint,
-                        EntryOperator = t.OperatorId,
-                        ExitOperator = t.ExitOperatorId,
+                        EntryOperator = t.OperatorId.ToString(),
+                        ExitOperator = t.ExitOperatorId.HasValue ? t.ExitOperatorId.Value.ToString() : null,
                         Status = t.Status,
                         IsPaid = t.PaymentStatus == "Paid"
                     })
@@ -148,24 +148,53 @@ namespace Parking_Zone.Controllers
             }
         }
 
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(Guid? id)
         {
-            if (id == null)
+            if (!id.HasValue)
             {
-                return NotFound();
+                return BadRequest("Invalid transaction ID");
             }
 
-            var transaction = await _context.ParkingTransactions
-                .Include(t => t.Vehicle)
-                .Include(t => t.ParkingSpace)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            
-            if (transaction == null)
+            try
             {
-                return NotFound();
-            }
+                var transaction = await _context.ParkingTransactions
+                    .Include(t => t.Vehicle)
+                    .Include(t => t.ParkingSpace)
+                    .FirstOrDefaultAsync(t => t.Id == id.Value);
 
-            return View(transaction);
+                if (transaction == null)
+                {
+                    return NotFound();
+                }
+
+                var model = new TransactionHistoryItem
+                {
+                    Id = transaction.TransactionNumber,
+                    TicketNumber = transaction.TicketNumber,
+                    PlateNumber = transaction.Vehicle != null ? transaction.Vehicle.VehicleNumber : string.Empty,
+                    VehicleType = transaction.Vehicle != null ? transaction.Vehicle.VehicleType : string.Empty,
+                    EntryTime = transaction.EntryTime.ToString("dd/MM/yyyy HH:mm:ss"),
+                    ExitTime = transaction.ExitTime.HasValue ? transaction.ExitTime.Value.ToString("dd/MM/yyyy HH:mm:ss") : "-",
+                    Duration = transaction.ExitTime.HasValue ? (transaction.ExitTime.Value - transaction.EntryTime).ToString() : "-",
+                    Amount = transaction.TotalAmount.ToString(),
+                    PaymentStatus = transaction.PaymentStatus,
+                    PaymentMethod = transaction.PaymentMethod,
+                    PaymentTime = transaction.PaymentTime.HasValue ? transaction.PaymentTime.Value.ToString("dd/MM/yyyy HH:mm:ss") : "-",
+                    EntryGate = transaction.EntryPoint,
+                    ExitGate = transaction.ExitPoint,
+                    EntryOperator = transaction.OperatorId.ToString(),
+                    ExitOperator = transaction.ExitOperatorId.HasValue ? transaction.ExitOperatorId.Value.ToString() : null,
+                    Status = transaction.Status,
+                    IsPaid = transaction.PaymentStatus == "Paid"
+                };
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error retrieving transaction details for ID {id}");
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         private byte[] GenerateExcel(List<TransactionHistoryItem> data)

@@ -40,6 +40,7 @@ namespace Parking_Zone.Models
         public virtual ICollection<ParkingSlot> ParkingSlots { get; set; }
         public virtual ICollection<Rate> Rates { get; set; }
         public virtual ICollection<ParkingTransaction> ParkingTransactions { get; set; }
+        public virtual ICollection<VehicleType> VehicleTypes { get; set; } = new HashSet<VehicleType>();
 
         public ParkingZone()
         {
@@ -47,6 +48,7 @@ namespace Parking_Zone.Models
             ParkingSlots = new HashSet<ParkingSlot>();
             Rates = new HashSet<Rate>();
             ParkingTransactions = new HashSet<ParkingTransaction>();
+            VehicleTypes = new HashSet<VehicleType>();
         }
     }
 }

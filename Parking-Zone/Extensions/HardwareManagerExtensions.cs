@@ -11,12 +11,8 @@ namespace Parking_Zone.Extensions
             string deviceId, 
             byte[] command)
         {
-            var responses = hardwareManager.ReadResponseAsync(deviceId, command);
-            await foreach (var response in responses)
-            {
-                return response;
-            }
-            return string.Empty;
+            var responseTask = hardwareManager.ReadResponseAsync(deviceId, command);
+            return await responseTask;
         }
     }
 }

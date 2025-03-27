@@ -9,9 +9,11 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Parking_Zone.Extensions;
 using QRCoder;
 using System.Drawing;
-using Parking_Zone.Extensions;
+using System.IO;
+using System.Security.Claims;
 
 namespace Parking_Zone.Controllers
 {
@@ -63,7 +65,8 @@ namespace Parking_Zone.Controllers
                 }
 
                 // Find available parking space
-                var parkingSpace = await FindOptimalParkingSpace(model.VehicleType);
+                var vehicleType = await _context.VehicleTypes.FirstOrDefaultAsync(vt => vt.Name == Parking_Zone.Models.VehicleType.Car.ToString());
+                var parkingSpace = await FindOptimalParkingSpace(vehicleType?.Name);
                 if (parkingSpace == null)
                 {
                     return Json(new { success = false, message = "Tidak ada slot parkir yang tersedia untuk jenis kendaraan ini" });
@@ -454,6 +457,34 @@ namespace Parking_Zone.Controllers
             return (decimal)hours * feePerHour;
         }
 
+        private VehicleEntryModel MapToVehicleEntryModel(ParkingTransaction transaction)
+        {
+            return new VehicleEntryModel
+            {
+                LicensePlate = transaction.Vehicle?.LicensePlate ?? string.Empty,
+                VehicleType = transaction.Vehicle?.Type ?? Parking_Zone.Models.VehicleType.Car,
+                EntryTime = transaction.EntryTime,
+                TicketBarcode = transaction.TicketNumber ?? string.Empty,
+                OperatorId = transaction.OperatorId ?? Guid.Empty,
+                ParkingSpaceId = transaction.ParkingSpaceId
+            };
+        }
+
+        private VehicleExitModel MapToVehicleExitModel(ParkingTransaction transaction)
+        {
+            return new VehicleExitModel
+            {
+                LicensePlate = transaction.Vehicle?.LicensePlate ?? string.Empty,
+                VehicleType = transaction.Vehicle?.Type ?? Parking_Zone.Models.VehicleType.Car,
+                EntryTime = transaction.EntryTime,
+                ExitTime = transaction.ExitTime ?? DateTime.MinValue,
+                ParkingDuration = transaction.ExitTime.HasValue 
+                    ? transaction.ExitTime.Value - transaction.EntryTime 
+                    : TimeSpan.Zero,
+                TotalAmount = transaction.TotalAmount
+            };
+        }
+
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -469,15 +500,7 @@ namespace Parking_Zone.Controllers
                         LastSync = g.LastActivity ?? DateTime.Now,
                         RecentEntries = g.Transactions
                             .Where(t => t.EntryTime.Date == DateTime.Today)
-                            .Select(t => new VehicleEntry
-                            {
-                                LicensePlate = t.LicensePlate,
-                                VehicleType = t.VehicleType,
-                                EntryTime = t.EntryTime,
-                                TicketNumber = t.TicketNumber,
-                                GateId = g.Id.ToString(),
-                                OperatorId = t.OperatorId.ToString()
-                            })
+                            .Select(MapToVehicleEntryModel)
                             .ToList()
                     })
                     .ToListAsync(),
@@ -492,17 +515,7 @@ namespace Parking_Zone.Controllers
                         LastSync = g.LastActivity ?? DateTime.Now,
                         RecentExits = g.Transactions
                             .Where(t => t.ExitTime.HasValue && t.ExitTime.Value.Date == DateTime.Today)
-                            .Select(t => new VehicleExit
-                            {
-                                LicensePlate = t.LicensePlate,
-                                VehicleType = t.VehicleType,
-                                EntryTime = t.EntryTime,
-                                ExitTime = t.ExitTime.Value,
-                                Fee = t.ParkingFee ?? 0,
-                                TicketNumber = t.TicketNumber,
-                                GateId = g.Id.ToString(),
-                                OperatorId = t.OperatorId.ToString()
-                            })
+                            .Select(MapToVehicleExitModel)
                             .ToList()
                     })
                     .ToListAsync()

@@ -25,8 +25,11 @@ namespace Parking_Zone.Controllers
         {
             try
             {
-                var gates = await _gateService.GetAllGatesAsync();
-                return Ok(gates);
+                var entryGates = await _gateService.GetAllEntryGatesAsync();
+                var exitGates = await _gateService.GetAllExitGatesAsync();
+                var allGates = entryGates.Concat(exitGates);
+                
+                return Ok(allGates);
             }
             catch (Exception ex)
             {

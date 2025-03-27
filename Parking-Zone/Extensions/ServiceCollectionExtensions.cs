@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Parking_Zone.Models;
 using Parking_Zone.Services;
 using Parking_Zone.Data;
+using Parking_Zone.HealthChecks;
 
 namespace Parking_Zone.Extensions
 {
@@ -138,8 +139,8 @@ namespace Parking_Zone.Extensions
             services.AddHealthChecks()
                 .AddSqlServer(configuration.GetConnectionString("DefaultConnection"))
                 .AddCheck<ParkingGateHealthCheck>("ParkingGates")
-                .AddCheck<PrinterHealthCheck>("Printers")
-                .AddCheck<CameraHealthCheck>("Cameras");
+                .AddCheck<PrinterHealthCheck>("Printer")
+                .AddCheck<CameraHealthCheck>("Camera");
 
             return services;
         }

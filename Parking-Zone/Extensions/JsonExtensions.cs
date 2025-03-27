@@ -127,5 +127,16 @@ namespace Parking_Zone.Extensions
 
             return JsonSerializer.Serialize(obj, options);
         }
+
+        public static bool TryGetValue(this JsonElement element, out string value)
+        {
+            if (element.ValueKind == JsonValueKind.String)
+            {
+                value = element.GetString() ?? string.Empty;
+                return true;
+            }
+            value = string.Empty;
+            return false;
+        }
     }
 }

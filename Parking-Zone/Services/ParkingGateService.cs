@@ -49,59 +49,41 @@ namespace Parking_Zone.Services
                 .FirstOrDefaultAsync(g => g.Id == id);
         }
 
+        public async Task<ParkingGate> GetGateByIdAsync(Guid gateId)
+        {
+            return await _context.ParkingGates
+                .Include(g => g.Operations)
+                .FirstOrDefaultAsync(g => g.Id == gateId);
+        }
+
         public async Task<bool> IsGateOperationalAsync(Guid gateId)
         {
-            var gate = await _context.ParkingGates.FindAsync(gateId);
-            return gate?.IsOperational ?? false;
+            var gate = await GetGateByIdAsync(gateId);
+            return gate != null && gate.IsOnline;
         }
 
         public async Task<GateStatus> GetGateStatusAsync(Guid gateId)
         {
-            var gate = await _context.ParkingGates.FindAsync(gateId);
-
-            if (gate == null)
-            {
-                return new GateStatus
-                {
-                    IsOperational = false,
-                    StatusDescription = "Gate not found",
-                    LastChecked = DateTime.UtcNow
-                };
-            }
-
+            var gate = await GetGateByIdAsync(gateId);
+            
             return new GateStatus
             {
-                IsOperational = gate.IsOperational,
-                StatusDescription = gate.Status,
-                LastChecked = gate.LastActivity ?? DateTime.UtcNow
+                IsOperational = gate?.IsOnline ?? false,
+                StatusDescription = gate?.Status ?? "Unknown",
+                LastChecked = DateTime.UtcNow
             };
-        }
-
-        public async Task<ParkingGate> GetGateByIdAsync(Guid gateId)
-        {
-            var gate = await _context.ParkingGates
-                .Include(g => g.Camera)
-                .Include(g => g.Printer)
-                .Include(g => g.Scanner)
-                .FirstOrDefaultAsync(g => g.Id == gateId);
-
-            if (gate == null)
-                throw new KeyNotFoundException($"Gate with ID {gateId} not found");
-
-            return gate;
         }
 
         public async Task<ParkingGate> OpenGateAsync(Guid gateId)
         {
             var gate = await GetGateByIdAsync(gateId);
-            
-            if (!gate.IsOperational)
-            {
-                throw new InvalidOperationException($"Gate {gateId} is not operational");
-            }
+            if (gate == null)
+                throw new ArgumentException("Gate not found", nameof(gateId));
 
-            gate.IsOpen = true;
-            gate.LastActivity = DateTime.UtcNow;
+            gate.IsOnline = true;
+            gate.Status = "Open";
+            
+            _context.ParkingGates.Update(gate);
             await _context.SaveChangesAsync();
 
             return gate;
@@ -110,9 +92,13 @@ namespace Parking_Zone.Services
         public async Task<ParkingGate> CloseGateAsync(Guid gateId)
         {
             var gate = await GetGateByIdAsync(gateId);
+            if (gate == null)
+                throw new ArgumentException("Gate not found", nameof(gateId));
 
-            gate.IsOpen = false;
-            gate.LastActivity = DateTime.UtcNow;
+            gate.IsOnline = false;
+            gate.Status = "Closed";
+            
+            _context.ParkingGates.Update(gate);
             await _context.SaveChangesAsync();
 
             return gate;
