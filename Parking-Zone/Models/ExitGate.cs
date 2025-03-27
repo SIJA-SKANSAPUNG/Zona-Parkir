@@ -1,0 +1,35 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace Parking_Zone.Models
+{
+    public class ExitGate
+    {
+        public Guid Id { get; set; }
+        
+        [Required]
+        public string Name { get; set; }
+        
+        public string Location { get; set; }
+        
+        public bool IsActive { get; set; } = true;
+        
+        public string Status { get; set; } = "Operational";
+        
+        public DateTime? LastActivity { get; set; }
+        
+        public string IPAddress { get; set; }
+        
+        public string SerialNumber { get; set; }
+        
+        public string Notes { get; set; }
+        
+        public DateTime CreatedDate { get; set; } = DateTime.Now;
+        
+        // Navigation properties
+        public virtual ICollection<ParkingTransaction> Transactions { get; set; } = new List<ParkingTransaction>();
+        public virtual ICollection<GateOperation> Operations { get; set; } = new List<GateOperation>();
+    }
+}

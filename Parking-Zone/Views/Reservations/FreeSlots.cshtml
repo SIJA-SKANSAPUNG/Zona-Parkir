@@ -1,0 +1,79 @@
+﻿@model Parking_Zone.ViewModels.Reservation.FreeSlotsVM
+
+@if (Model.ParkingSlots is null)
+{
+    <div class="row">
+        <div class="col-md-4">
+            <form asp-action="FreeSlots">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="form-group">
+                    <label class="control-label">Choose Parking Zone</label>
+                    <select asp-for="ParkingZoneId" class="form-select" asp-items="@Model.ParkingZones"><option label=" "></option></select>
+                    <span asp-validation-for="ParkingZoneId" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="StartTime" class="control-label"></label>
+                    <input asp-for="StartTime" type="datetime-local" class="form-control" />
+                    <span asp-validation-for="StartTime" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Duration" class="control-label"></label>
+                    <input asp-for="Duration" type="number" class="form-control" />
+                    <span asp-validation-for="Duration" class="text-danger"></span>
+                </div>
+                <br />
+                <div class="form-group">
+                    <input type="submit" value="Select" class="btn btn-primary" />
+                </div>
+                <br />
+            </form>
+        </div>
+    </div>
+    <br />
+}
+
+@if (Model.ParkingSlots is not null && Model.ParkingSlots.Count() > 0)
+{
+    <h1>All free slots for booking</h1>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>
+                    Number
+                </th>
+                <th>
+                    Category
+                </th>
+                <th>
+                </th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (var item in Model.ParkingSlots)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Number)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(ApplicationModelConventionExtensions => item.Category)
+                    </td>
+                    <td>
+                        <a class="btn btn-outline-primary" asp-controller="Reservations" asp-action="Reserve" asp-route-slotId="@item.Id" asp-route-startTime="@Model.StartTime" asp-route-duration="@Model.Duration">Select</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <a class="btn btn-primary btn-lg" asp-controller="Reservations" asp-action="FreeSlots">Back</a>
+}
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
