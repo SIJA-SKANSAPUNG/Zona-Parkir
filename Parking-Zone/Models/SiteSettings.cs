@@ -9,6 +9,7 @@ namespace Parking_Zone.Models
         public string? ThemeColor { get; set; }
         public bool ShowLogo { get; set; }
         public string? LogoPath { get; set; }
+        public string? LogoUrl { get; set; }
         public string? FaviconPath { get; set; }
         public string? WelcomeMessage { get; set; }
         public string? FooterText { get; set; }
@@ -18,5 +19,11 @@ namespace Parking_Zone.Models
         public bool EnableNotifications { get; set; }
         public DateTime LastUpdated { get; set; }
         public string UpdatedBy { get; set; } = null!;
+        
+        // New properties
+        public string? Theme { get; set; }
+        public string? CurrencySymbol { get; set; }
+        public string? TimeFormat { get; set; }
+        public string? DateFormat { get; set; }
     }
 }

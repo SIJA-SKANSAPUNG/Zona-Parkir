@@ -1,23 +1,26 @@
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Parking_Zone.Models
 {
     public class VehicleType
     {
-        public int Id { get; set; }
+        [Key]
+        public string Id { get; set; } = Guid.NewGuid().ToString();
 
         [Required]
         [StringLength(50)]
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
 
-        [Required]
+        [StringLength(200)]
+        public string? Description { get; set; }
+
         public decimal BaseRate { get; set; }
-
-        [Required]
-        public decimal AdditionalHourlyRate { get; set; }
 
         public bool IsActive { get; set; } = true;
 
-        public string Description { get; set; }
+        // Navigation property
+        public virtual ICollection<Vehicle> Vehicles { get; set; } = new HashSet<Vehicle>();
     }
 }

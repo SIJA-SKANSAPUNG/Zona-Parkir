@@ -67,6 +67,13 @@ namespace Parking_Zone.Services
         {
             try
             {
+                // Validate and parse vehicleTypeId
+                if (!int.TryParse(vehicleTypeId, out int parsedVehicleTypeId))
+                {
+                    throw new ArgumentException($"Invalid vehicle type ID: {vehicleTypeId}");
+                }
+
+                // Check for existing vehicle
                 var existingVehicle = await _context.Vehicles
                     .FirstOrDefaultAsync(v => v.LicensePlate == licensePlate);
 
@@ -76,19 +83,24 @@ namespace Parking_Zone.Services
                     return existingVehicle;
                 }
 
+                // Verify vehicle type exists
                 var vehicleType = await _context.VehicleTypes
-                    .FirstOrDefaultAsync(vt => vt.Id == vehicleTypeId);
+                    .FirstOrDefaultAsync(vt => vt.Id == parsedVehicleTypeId);
 
                 if (vehicleType == null)
                 {
                     throw new KeyNotFoundException($"Vehicle type with ID {vehicleTypeId} not found");
                 }
 
+                // Create new vehicle
                 var vehicle = new Vehicle
                 {
+                    Id = Guid.NewGuid(),
                     LicensePlate = licensePlate,
-                    VehicleTypeId = vehicleTypeId,
-                    RegistrationDate = DateTime.UtcNow
+                    PlateNumber = licensePlate,
+                    VehicleTypeId = parsedVehicleTypeId,
+                    RegistrationDate = DateTime.UtcNow,
+                    IsInside = false
                 };
 
                 _context.Vehicles.Add(vehicle);
@@ -108,6 +120,12 @@ namespace Parking_Zone.Services
         {
             try
             {
+                // Validate and parse newVehicleTypeId
+                if (!int.TryParse(newVehicleTypeId, out int parsedNewVehicleTypeId))
+                {
+                    throw new ArgumentException($"Invalid vehicle type ID: {newVehicleTypeId}");
+                }
+
                 var vehicle = await _context.Vehicles
                     .FirstOrDefaultAsync(v => v.LicensePlate == licensePlate);
 
@@ -118,7 +136,7 @@ namespace Parking_Zone.Services
                 }
 
                 var vehicleType = await _context.VehicleTypes
-                    .FirstOrDefaultAsync(vt => vt.Id == newVehicleTypeId);
+                    .FirstOrDefaultAsync(vt => vt.Id == parsedNewVehicleTypeId);
 
                 if (vehicleType == null)
                 {
@@ -126,7 +144,7 @@ namespace Parking_Zone.Services
                     return false;
                 }
 
-                vehicle.VehicleTypeId = newVehicleTypeId;
+                vehicle.VehicleTypeId = parsedNewVehicleTypeId;
                 vehicle.LastUpdated = DateTime.UtcNow;
 
                 _context.Vehicles.Update(vehicle);
@@ -178,15 +196,26 @@ namespace Parking_Zone.Services
                     throw new InvalidOperationException($"Vehicle with plate number {plateNumber} is already inside the parking.");
                 }
 
+                // Find the vehicle type
+                var vehicleTypeEntity = await _context.VehicleTypes
+                    .FirstOrDefaultAsync(vt => vt.Name == vehicleType);
+
+                if (vehicleTypeEntity == null)
+                {
+                    throw new KeyNotFoundException($"Vehicle type {vehicleType} not found");
+                }
+
+                // Create vehicle entry
                 var vehicle = new Vehicle
                 {
                     Id = Guid.NewGuid(),
                     PlateNumber = plateNumber,
-                    VehicleType = vehicleType,
+                    LicensePlate = plateNumber,
+                    VehicleTypeId = int.Parse(vehicleTypeEntity.Id),
                     EntryTime = DateTime.UtcNow,
-                    PhotoEntry = photoEntry,
+                    PhotoEntry = Convert.ToBase64String(photoEntry),
                     IsInside = true,
-                    TicketBarcode = await GenerateTicketBarcode(null) // Pass null since vehicle is not yet created
+                    TicketBarcode = await GenerateTicketBarcode(null)
                 };
 
                 _context.Vehicles.Add(vehicle);
@@ -218,7 +247,7 @@ namespace Parking_Zone.Services
                 }
 
                 vehicle.ExitTime = DateTime.UtcNow;
-                vehicle.PhotoExit = photoExit;
+                vehicle.PhotoExit = Convert.ToBase64String(photoExit);
                 vehicle.IsInside = false;
 
                 await _context.SaveChangesAsync();
@@ -280,4 +309,4 @@ namespace Parking_Zone.Services
             return $"PKR{timestamp}{randomNum}";
         }
     }
-} 
+}

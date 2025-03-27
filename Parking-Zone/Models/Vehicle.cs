@@ -12,56 +12,39 @@ namespace Parking_Zone.Models
         
         [Required]
         [StringLength(20)]
-        public string LicensePlate { get; set; }
+        public string LicensePlate { get; set; } = null!;
         
         [Required]
         [StringLength(50)]
-        public string VehicleType { get; set; }
-
+        public string PlateNumber { get; set; } = null!;
+        
         [Required]
-        public int VehicleTypeId { get; set; }
-
-        [ForeignKey("VehicleTypeId")]
-        public virtual VehicleType VehicleTypeNavigation { get; set; }
-
+        [StringLength(50)]
+        public string VehicleTypeId { get; set; } = null!;
+        
+        [Required]
+        [StringLength(50)]
+        public string VehicleType { get; set; } = null!;
+        
         [Required]
         public DateTime RegistrationDate { get; set; } = DateTime.UtcNow;
-
-        public string ExitPhotoPath { get; set; }
-
-        // Properties referenced in error messages
-        public string VehicleNumber { get; set; }
-        public string Type { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public bool IsActive { get; set; } = true;
-
-        // Additional properties
-        public string PlateNumber { get; set; }
+        
         public DateTime? EntryTime { get; set; }
+        
         public DateTime? ExitTime { get; set; }
-        public string PhotoEntry { get; set; }
-        public string PhotoExit { get; set; }
+        
         public bool IsInside { get; set; }
-        public string TicketBarcode { get; set; }
+        
+        public byte[]? PhotoEntry { get; set; }
+        
+        public byte[]? PhotoExit { get; set; }
+        
+        public string? TicketBarcode { get; set; }
+        
         public DateTime? LastUpdated { get; set; }
-        public string DriverName { get; set; }
-        public string PhoneNumber { get; set; }
-        public string EntryPhotoPath { get; set; }
-        public Guid? ParkingSpaceId { get; set; }
-        public Guid? ShiftId { get; set; }
-        public string BarcodeImagePath { get; set; }
-        public bool IsParked { get; set; }
-
-        // Navigation properties
-        public virtual ICollection<ParkingTransaction> ParkingTransactions { get; set; }
-        public virtual ICollection<VehicleEntry> VehicleEntries { get; set; }
-        public virtual ICollection<VehicleExit> VehicleExits { get; set; }
-
-        public Vehicle()
-        {
-            ParkingTransactions = new HashSet<ParkingTransaction>();
-            VehicleEntries = new HashSet<VehicleEntry>();
-            VehicleExits = new HashSet<VehicleExit>();
-        }
+        
+        // Navigation property
+        [ForeignKey("VehicleTypeId")]
+        public virtual VehicleType? VehicleTypeNavigation { get; set; }
     }
 }
